@@ -67,3 +67,8 @@ class UploadOptions(BaseModel):
 
 class ResourceLocationResponse(BaseModel):
     location: str
+
+class FAWithCode(BaseModel):
+    code: str
+    username: str
+    password: str    

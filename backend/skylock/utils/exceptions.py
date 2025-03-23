@@ -61,3 +61,10 @@ class RootFolderAlreadyExistsException(Exception):
     def __init__(self, message="Root folder already exists"):
         self.message = message
         super().__init__(self.message)
+
+class Wrong2FAException(Exception):
+    """Exception raised when given 2FA code if wrong"""
+
+    def __init__(self, message="Wrong 2FA code"):
+        self.message = message
+        super().__init__(self.message)

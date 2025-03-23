@@ -9,6 +9,7 @@ from skylock.utils.exceptions import (
     InvalidPathException,
     ResourceNotFoundException,
     ForbiddenActionException,
+    Wrong2FAException,
 )
 
 
@@ -57,5 +58,11 @@ def folder_not_empty_handler(_request: Request, exc: FolderNotEmptyException):
 def forbidden_action_handler(_request: Request, exc: ForbiddenActionException):
     return JSONResponse(
         status_code=403,
+        content={"detail": str(exc)},
+    )
+
+def wrong_code_handler(_request: Request, exc: Wrong2FAException):
+    return JSONResponse(
+        status_code=401,
         content={"detail": str(exc)},
     )
