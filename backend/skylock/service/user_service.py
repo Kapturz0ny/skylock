@@ -12,15 +12,16 @@ from skylock.utils.exceptions import (
     InvalidCredentialsException,
     Wrong2FAException,
 )
-
+from utils.logger import logger
+from utils.reddis_mem import redis_mem
 
 class UserService:
     def __init__(self, user_repository: UserRepository) -> str:
         self.user_repository = user_repository
         self.password_hasher = argon2.PasswordHasher()
-        self.redis_mem = redis.Redis(host=os.getenv("REDIS_HOST", "redis"),
-                                    port=int(os.getenv("REDIS_PORT", 6379)),
-                                    decode_responses=True)
+
+        self.logger = logger
+        self.redis_mem = redis_mem
 
     def register_user(self, username: str, password: str) -> None:
         existing_user_entity = self.user_repository.get_by_username(username)
@@ -33,7 +34,8 @@ class UserService:
         # generate OTP code
         totp = pyotp.TOTP(user_secret)
         # send OTP code using email
-        print(totp)
+        if os.getenv("ENV", "dev") == "dev":
+            self.logger.info(f"TOTP for user: {totp.now()}")
         # tutaj jeszcze nie ma uzytkownika
         return
 
