@@ -36,6 +36,9 @@ def register(
         raise typer.Exit(code=1)
 
     auth.register_user(username, password)
+
+    code = typer.prompt("Enter 2FA code", hide_input=True)
+    auth.verify_code(username, password, code)
     typer.secho("User registered successfully", fg=typer.colors.GREEN)
 
 

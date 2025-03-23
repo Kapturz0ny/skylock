@@ -61,7 +61,7 @@ def register_user(
                 "application/json": {"example": {"message": "User successfully registered"}}
             },
         },
-        409: {
+        401: {
             "description": "2FA code is wrong",
             "content": {
                 "application/json": {

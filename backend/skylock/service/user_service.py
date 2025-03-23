@@ -47,7 +47,7 @@ class UserService:
         if not user_secret:
             raise Wrong2FAException(message="Code has expired")
 
-        totp = pyotp.TOTP(user_secret.decode())
+        totp = pyotp.TOTP(user_secret)
         if totp.verify(code):
             hashed_password = self.password_hasher.hash(password)
             new_user_entity = db_models.UserEntity(username=username, password=hashed_password)
