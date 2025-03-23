@@ -1,7 +1,5 @@
 import argon2
 import pyotp
-import redis
-import os
 
 from skylock.api import models
 from skylock.database.repository import UserRepository
@@ -12,8 +10,9 @@ from skylock.utils.exceptions import (
     InvalidCredentialsException,
     Wrong2FAException,
 )
-from utils.logger import logger
-from utils.reddis_mem import redis_mem
+from skylock.utils.logger import logger
+from skylock.utils.reddis_mem import redis_mem
+from skylock.config import ENV_TYPE
 
 class UserService:
     def __init__(self, user_repository: UserRepository) -> str:
@@ -34,10 +33,8 @@ class UserService:
         # generate OTP code
         totp = pyotp.TOTP(user_secret)
         # send OTP code using email
-        if os.getenv("ENV", "dev") == "dev":
+        if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
-        # tutaj jeszcze nie ma uzytkownika
-        return
 
     def verify_2FA(self, 
                     username: str, 

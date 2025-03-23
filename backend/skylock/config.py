@@ -10,3 +10,5 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/db.sqlite")
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+
+ENV_TYPE = os.getenv("ENV", "dev")

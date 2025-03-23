@@ -56,7 +56,7 @@ def send_verify_code_request(_user: user_with_code.UserWithCode) -> None:
     response = client.post(url, json=_user.model_dump(), headers=API_HEADERS)
 
     standard_error_dict = {
-        HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError(_user.username)
+        HTTPStatus.UNAUTHORIZED: api_exceptions.WrongVerificationCodeError(_user.code)
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)
