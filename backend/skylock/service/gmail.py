@@ -7,15 +7,11 @@ from google.auth import exceptions
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
+from skylock.config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN
 
 load_dotenv()
 
 SCOPES = ["https://mail.google.com/"]
-
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
-
 
 def get_access_token() -> Credentials:
 
