@@ -39,8 +39,8 @@ def register(
 
     auth.register_user(username, password, email)
     typer.secho("Check you mailbox for the 2FA code")
-    code = typer.prompt("Enter 2FA code", hide_input=True)
-    auth.verify_code(username, password, code)
+    code = typer.prompt("Enter 2FA code")
+    auth.verify_code(username, password, code, email)
     typer.secho("User registered successfully", fg=typer.colors.GREEN)
 
 

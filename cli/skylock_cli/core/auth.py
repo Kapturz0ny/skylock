@@ -25,7 +25,7 @@ def register_user(login: str, password: str, email: str) -> None:
     with CLIExceptionHandler():
         send_register_request(_user)
 
-def verify_code(login: str, password: str, code: str) -> None:
+def verify_code(login: str, password: str, code: str, email: str) -> None:
     """
     Verify 2FA code given over email.
 
@@ -37,7 +37,7 @@ def verify_code(login: str, password: str, code: str) -> None:
     Returns:
         None
     """
-    _user = user_with_code.UserWithCode(username=login, password=password, code=code)
+    _user = user_with_code.UserWithCode(username=login, password=password, code=code, email=email)
     with CLIExceptionHandler():
         send_verify_code_request(_user)
 

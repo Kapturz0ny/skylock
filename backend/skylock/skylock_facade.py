@@ -32,8 +32,8 @@ class SkylockFacade:
         user = self._user_service.register_user(username, password, email)
         # self._resource_service.create_root_folder(UserPath.root_folder_of(user))
 
-    def verify_2FA(self, username: str, password: str, code: str):
-        user = self._user_service.verify_2FA(username, password, code)
+    def verify_2FA(self, username: str, password: str, code: str, email: str):
+        user = self._user_service.verify_2FA(username, password, code, email)
         self._resource_service.create_root_folder(UserPath.root_folder_of(user))
 
     def login_user(self, username: str, password: str) -> models.Token:
