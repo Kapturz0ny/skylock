@@ -22,7 +22,7 @@ class TestRegisterUser(unittest.TestCase):
         """Test successful registration"""
         mock_post.return_value = mock_response_with_status(HTTPStatus.CREATED)
 
-        register_user("testuser", "testpass", "k@g.com")
+        register_user("testuser", "testpass", "test@g.com")
         mock_post.assert_called_once()
 
     @patch("skylock_cli.api.auth_requests.client.post")
@@ -32,7 +32,7 @@ class TestRegisterUser(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                register_user("testuser", "testpass")
+                register_user("testuser", "testpass", "test@g.com")
             self.assertIn(
                 "User with username `testuser` already exists!", mock_stderr.getvalue()
             )
@@ -46,7 +46,7 @@ class TestRegisterUser(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                register_user("testuser", "testpass")
+                register_user("testuser", "testpass", "test@g.com")
             self.assertIn("Failed to register user", mock_stderr.getvalue())
 
     @patch("skylock_cli.api.auth_requests.client.post")
@@ -56,7 +56,7 @@ class TestRegisterUser(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                register_user("testuser", "testpass")
+                register_user("testuser", "testpass", "test@g.com")
             self.assertIn(
                 "The server is not reachable at the moment. Please try again later.",
                 mock_stderr.getvalue(),
