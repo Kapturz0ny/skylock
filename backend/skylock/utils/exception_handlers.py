@@ -61,6 +61,7 @@ def forbidden_action_handler(_request: Request, exc: ForbiddenActionException):
         content={"detail": str(exc)},
     )
 
+
 def wrong_code_handler(_request: Request, exc: Wrong2FAException):
     return JSONResponse(
         status_code=401,

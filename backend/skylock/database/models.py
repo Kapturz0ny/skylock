@@ -18,6 +18,7 @@ class UserEntity(Base):
 
     username: orm.Mapped[str] = orm.mapped_column(unique=True, nullable=False)
     password: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    email: orm.Mapped[str] = orm.mapped_column(nullable=False)
 
     folders: orm.Mapped[List["FolderEntity"]] = orm.relationship(
         "FolderEntity", back_populates="owner", lazy="selectin"

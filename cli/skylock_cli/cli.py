@@ -29,14 +29,16 @@ def register(
     """
     Register a new user in the SkyLock
     """
+    email = typer.prompt("Email")
+    #TODO email validation
     password = typer.prompt("Password", hide_input=True)
     confirm_password = typer.prompt("Confirm password", hide_input=True)
     if password != confirm_password:
         typer.secho("Passwords do not match. Please try again.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    auth.register_user(username, password)
-
+    auth.register_user(username, password, email)
+    typer.secho("Check you mailbox for the 2FA code")
     code = typer.prompt("Enter 2FA code", hide_input=True)
     auth.verify_code(username, password, code)
     typer.secho("User registered successfully", fg=typer.colors.GREEN)

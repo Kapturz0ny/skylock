@@ -9,18 +9,19 @@ from skylock_cli.model import user, context, directory, user_with_code
 from skylock_cli.config import ROOT_PATH
 
 
-def register_user(login: str, password: str) -> None:
+def register_user(login: str, password: str, email: str) -> None:
     """
     Register a new user.
 
     Args:
         login (str): The username of the new user.
         password (str): The password of the new user.
+        email (str): The email address of the new user.
 
     Returns:
         None
     """
-    _user = user.User(username=login, password=password)
+    _user = user.User(username=login, password=password, email=email)
     with CLIExceptionHandler():
         send_register_request(_user)
 

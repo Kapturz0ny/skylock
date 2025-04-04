@@ -62,6 +62,7 @@ class RootFolderAlreadyExistsException(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class Wrong2FAException(Exception):
     """Exception raised when given 2FA code if wrong"""
 

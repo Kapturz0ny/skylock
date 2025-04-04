@@ -39,7 +39,7 @@ def register_user(
     request: models.RegisterUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    skylock.register_user(username=request.username, password=request.password)
+    skylock.register_user(username=request.username, password=request.password, email=request.email)
     return {"message": "User is not in the database"}
 
 
@@ -64,9 +64,7 @@ def register_user(
         401: {
             "description": "2FA code is wrong",
             "content": {
-                "application/json": {
-                    "example": {"detail": "2FA code is wrong/has expired"}
-                }
+                "application/json": {"example": {"detail": "2FA code is wrong/has expired"}}
             },
         },
     },
