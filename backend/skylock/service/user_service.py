@@ -63,7 +63,9 @@ class UserService:
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
 
-    def verify_2FA(self, username: str, password: str, code: str, email: str) -> db_models.UserEntity:
+    def verify_2FA(
+        self, username: str, password: str, code: str, email: str
+    ) -> db_models.UserEntity:
         user_secret = self.redis_mem.get(f"2fa:{username}")
         if not user_secret:
             raise Wrong2FAException(message="Code has expired")
@@ -71,7 +73,9 @@ class UserService:
         totp = pyotp.TOTP(user_secret)
         if totp.verify(code):
             hashed_password = self.password_hasher.hash(password)
-            new_user_entity = db_models.UserEntity(username=username, password=hashed_password, email=email)
+            new_user_entity = db_models.UserEntity(
+                username=username, password=hashed_password, email=email
+            )
             return self.user_repository.save(new_user_entity)
 
         raise Wrong2FAException

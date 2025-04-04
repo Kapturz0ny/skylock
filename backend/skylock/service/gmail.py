@@ -13,6 +13,7 @@ load_dotenv()
 
 SCOPES = ["https://mail.google.com/"]
 
+
 def get_access_token() -> Credentials:
 
     creds = Credentials.from_authorized_user_info(
