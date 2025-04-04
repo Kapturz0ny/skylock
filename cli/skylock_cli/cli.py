@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 from typing_extensions import Annotated
 import typer
+import re
 from rich.console import Console
 from rich.table import Table
 from art import text2art
@@ -30,7 +31,11 @@ def register(
     Register a new user in the SkyLock
     """
     email = typer.prompt("Email")
-    #TODO email validation
+    
+    email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not re.fullmatch(email_regex, email):
+        typer.secho("Invalid email address. Please enter a valid email.", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
     password = typer.prompt("Password", hide_input=True)
     confirm_password = typer.prompt("Confirm password", hide_input=True)
     if password != confirm_password:
