@@ -1,4 +1,4 @@
-from skylock_cli.model import user
+from skylock_cli.model import user_with_email
 
-class UserWithCode(user.User):
+class UserWithCode(user_with_email.UserWithEmail):
     code: str

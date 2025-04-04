@@ -22,7 +22,7 @@ class TestRegisterUser(unittest.TestCase):
         """Test successful registration"""
         mock_post.return_value = mock_response_with_status(HTTPStatus.CREATED)
 
-        register_user("testuser", "testpass")
+        register_user("testuser", "testpass", "k@g.com")
         mock_post.assert_called_once()
 
     @patch("skylock_cli.api.auth_requests.client.post")
