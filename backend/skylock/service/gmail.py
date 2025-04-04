@@ -35,7 +35,7 @@ def send_mail(to_email: str, subject: str, body: str) -> None:
         message["To"] = to_email
         message["From"] = "skylock.zprp@gmail.com"
         message["Subject"] = subject
-        message.attach(MIMEText(body, "plain"))
+        message.attach(MIMEText(body, "html"))
 
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 

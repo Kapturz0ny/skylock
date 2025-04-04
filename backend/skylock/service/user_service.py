@@ -36,9 +36,29 @@ class UserService:
         totp = pyotp.TOTP(user_secret)
         # send OTP code using email
         subject = "Complete you registration to Skylock!"
-        body = f"Hi {username}!\nEnter your 2FA token to complete your registration process.\n" + \
-            f"Your 2FA token: {totp.now()}"
-        send_mail(email, subject, body)
+
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>Hello {username}!</h2>
+            <p>
+            Thank you for registering with Skylock.
+            Please use the following <strong>2FA token</strong> to complete your registration:
+            </p>
+            <p style="font-size: 1.2em; font-weight: bold; color: #2E86C1;">
+            {totp.now()}
+            </p>
+            <p>
+            If you did not initiate this request, please disregard this email.
+            </p>
+            <p>
+            Best regards,<br>
+            The Skylock Team
+            </p>
+        </body>
+        </html>
+        """
+        send_mail(email, subject, html_body)
         # TODO handle potential send_mail error
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
