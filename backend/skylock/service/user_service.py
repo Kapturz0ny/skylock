@@ -23,18 +23,18 @@ class UserService:
 
         self.logger = logger
         self.redis_mem = redis_mem
+        self.TOKEN_LIFE = 600
 
     def register_user(self, username: str, password: str, email: str) -> None:
         existing_user_entity = self.user_repository.get_by_username(username)
         if existing_user_entity:
             raise UserAlreadyExists(f"User with username {username} already exists")
-        # generate user_secret code
         user_secret = pyotp.random_base32()
-        # cache user_secret
-        self.redis_mem.setex(f"2fa:{username}", 300, user_secret)
-        # generate OTP code
-        totp = pyotp.TOTP(user_secret)
-        # send OTP code using email
+
+        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE+5, user_secret)
+
+        totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
+
         subject = "Complete you registration to Skylock!"
 
         html_body = f"""
@@ -49,6 +49,7 @@ class UserService:
             {totp.now()}
             </p>
             <p>
+            Please note that the code will expire in {self.TOKEN_LIFE / 60} minutes
             If you did not initiate this request, please disregard this email.
             </p>
             <p>
@@ -70,7 +71,7 @@ class UserService:
         if not user_secret:
             raise Wrong2FAException(message="Code has expired")
 
-        totp = pyotp.TOTP(user_secret)
+        totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
         if totp.verify(code):
             hashed_password = self.password_hasher.hash(password)
             new_user_entity = db_models.UserEntity(
