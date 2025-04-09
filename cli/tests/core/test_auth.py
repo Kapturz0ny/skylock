@@ -34,7 +34,7 @@ class TestRegisterUser(unittest.TestCase):
             with self.assertRaises(exceptions.Exit):
                 register_user("testuser", "testpass", "test@g.com")
             self.assertIn(
-                "User with username `testuser` already exists!", mock_stderr.getvalue()
+                "User with given username/email already exists.", mock_stderr.getvalue()
             )
 
     @patch("skylock_cli.api.auth_requests.client.post")

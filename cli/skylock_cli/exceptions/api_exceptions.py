@@ -34,7 +34,7 @@ class UserAlreadyExistsError(SkyLockAPIError):
     """
 
     def __init__(self) -> None:
-        message = f"User with given username/email already exists!"
+        message = f"User with given username/email already exists."
         super().__init__(message)
 
 
