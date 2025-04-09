@@ -3,6 +3,7 @@ Tests for the register command
 """
 
 import unittest
+import typer
 from unittest.mock import patch
 from typer.testing import CliRunner
 from httpx import ConnectError
@@ -43,8 +44,6 @@ class TestRegisterCommand(unittest.TestCase):
         self.assertEqual(result.exit_code, 1)
         self.assertIn("User with given username/email already exists.", result.output)
 
-    def test_register_wrong_email_format(self):
-        pass
 
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_skylock_api_error(self, mock_send):
@@ -58,6 +57,14 @@ class TestRegisterCommand(unittest.TestCase):
         )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("An unexpected API error occurred", result.output)
+
+    def test_register_invalid_email(self):
+        """Test the register command with an invalid email format"""
+        result = self.runner.invoke(
+            app, ["register", "testuser"], input="bad_email\ntestpass\ntestpass"
+        )
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn("Invalid email address. Please enter a valid email.", result.output)
 
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_connection_error(self, mock_send):
