@@ -30,7 +30,7 @@ class UserService:
         existing_mail_entity = self.user_repository.get_by_email(email)
 
         if existing_user_entity or existing_mail_entity:
-            raise UserAlreadyExists(f"User with given username/email already exists")
+            raise UserAlreadyExists()
         user_secret = pyotp.random_base32()
 
         self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE+5, user_secret)

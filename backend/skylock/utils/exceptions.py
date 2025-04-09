@@ -1,7 +1,7 @@
 class UserAlreadyExists(Exception):
     """Exception raised when trying to register a user that already exists."""
 
-    def __init__(self, message="User already exists"):
+    def __init__(self, message="User with given username/email already exists"):
         self.message = message
         super().__init__(self.message)
 
