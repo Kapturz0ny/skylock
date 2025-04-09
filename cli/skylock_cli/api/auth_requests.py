@@ -29,7 +29,7 @@ def send_register_request(_user: user_with_email.UserWithEmail) -> None:
     response = client.post(url, json=_user.model_dump(), headers=API_HEADERS)
 
     standard_error_dict = {
-        HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError(_user.username)
+        HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError()
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)

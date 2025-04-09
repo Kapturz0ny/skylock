@@ -47,6 +47,9 @@ class UserRepository(DatabaseRepository[models.UserEntity]):
     def get_by_username(self, username: str) -> Optional[models.UserEntity]:
         return self.filter_one_or_none(models.UserEntity.username == username)
 
+    def get_by_email(self, email: str) -> Optional[models.UserEntity]:
+        return self.filter_one_or_none(models.UserEntity.email == email)
+
 
 class FolderRepository(DatabaseRepository[models.FolderEntity]):
     def __init__(self, session: Session):

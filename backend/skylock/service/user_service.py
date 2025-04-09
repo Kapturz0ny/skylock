@@ -10,25 +10,27 @@ from skylock.utils.exceptions import (
     InvalidCredentialsException,
     Wrong2FAException,
 )
-from skylock.utils.logger import logger
-from skylock.utils.reddis_mem import redis_mem
 from skylock.config import ENV_TYPE
 from skylock.service.gmail import send_mail
+from skylock.utils.logger import logger as s_logger
+from skylock.utils.reddis_mem import redis_mem as s_redis_mem
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository) -> str:
+    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None) -> str:
         self.user_repository = user_repository
         self.password_hasher = argon2.PasswordHasher()
 
-        self.logger = logger
-        self.redis_mem = redis_mem
+        self.logger = logger or s_logger
+        self.redis_mem = redis_mem or s_redis_mem
         self.TOKEN_LIFE = 600
 
     def register_user(self, username: str, password: str, email: str) -> None:
         existing_user_entity = self.user_repository.get_by_username(username)
-        if existing_user_entity:
-            raise UserAlreadyExists(f"User with username {username} already exists")
+        existing_mail_entity = self.user_repository.get_by_email(email)
+
+        if existing_user_entity or existing_mail_entity:
+            raise UserAlreadyExists(f"User with given username/email already exists")
         user_secret = pyotp.random_base32()
 
         self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE+5, user_secret)
