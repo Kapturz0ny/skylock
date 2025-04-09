@@ -2,7 +2,7 @@ def test_register_user_success(client):
     username = "testuser"
     password = "securepassword"
 
-    response = client.post("/auth/register", json={"username": username, "password": password, "email": email})
+    response = client.post("/auth/register", json={"username": username, "password": password})
 
     assert response.status_code == 201
 
