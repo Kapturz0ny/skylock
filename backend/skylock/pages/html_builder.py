@@ -48,3 +48,11 @@ class HtmlBuilder:
             "file.html",
             {"file": {"name": file.name, "path": file.path, "download_url": download_url}},
         )
+
+    def build_login_page(self, request: Request, file_id: str) -> HTMLResponse:
+        file = self._skylock.get_file_for_login(file_id)
+        return self._templates.TemplateResponse(
+            request,
+            "login.html",
+            {"file_id": file_id, "name": file.name, "path": file.path},
+        )

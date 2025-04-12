@@ -215,14 +215,14 @@ def upload(
     force: Annotated[
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
-    privacy: Annotated[
+    public: Annotated[
         Optional[bool], typer.Option("--public", help="Make uploaded file public")
     ] = False,
 ) -> None:
     """
     Upload a file to the SkyLock.
     """
-
+    privacy = "private"
     if not file_path.exists():
         typer.secho(f"File {file_path} does not exist.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
@@ -231,7 +231,7 @@ def upload(
         typer.secho(f"{file_path} is not a file.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    if privacy:
+    if public:
         privacy = "public"
         
     new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
@@ -261,68 +261,68 @@ def download(
     )
 
 
-@app.command()
-def make_public(
-    resource_path: Annotated[
-        str,
-        typer.Argument(
-            help="The path of the resource to set as public. If you want to set a directory as public, the path must end with /"
-        ),
-    ],
-    recursive: Annotated[
-        Optional[bool],
-        typer.Option(
-            "-r",
-            "--recursive",
-            help="Make sub-directories and their contents public recursively",
-        ),
-    ] = False,
-) -> None:
-    """
-    Set a resource as public.
-    """
-    resource = (
-        dir_operations.make_directory_public(resource_path, recursive)
-        if path_parser.is_directory(resource_path)
-        else file_operations.make_file_public(resource_path)
-    )
-    pwd()
-    typer.secho(
-        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-        fg=resource.visibility_color,
-    )
+# @app.command()
+# def make_public(
+#     resource_path: Annotated[
+#         str,
+#         typer.Argument(
+#             help="The path of the resource to set as public. If you want to set a directory as public, the path must end with /"
+#         ),
+#     ],
+#     recursive: Annotated[
+#         Optional[bool],
+#         typer.Option(
+#             "-r",
+#             "--recursive",
+#             help="Make sub-directories and their contents public recursively",
+#         ),
+#     ] = False,
+# ) -> None:
+#     """
+#     Set a resource as public.
+#     """
+#     resource = (
+#         dir_operations.make_directory_public(resource_path, recursive)
+#         if path_parser.is_directory(resource_path)
+#         else file_operations.make_file_public(resource_path)
+#     )
+#     pwd()
+#     typer.secho(
+#         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
+#         fg=resource.visibility_color,
+#     )
 
 
-@app.command()
-def make_private(
-    resource_path: Annotated[
-        str,
-        typer.Argument(
-            help="The path of the resource to set as private. If you want to set a directory as private, the path must end with /"
-        ),
-    ],
-    recursive: Annotated[
-        Optional[bool],
-        typer.Option(
-            "-r",
-            "--recursive",
-            help="Make sub-directories and their contents public recursively",
-        ),
-    ] = False,
-) -> None:
-    """
-    Set a resource as private.
-    """
-    resource = (
-        dir_operations.make_directory_private(resource_path, recursive)
-        if path_parser.is_directory(resource_path)
-        else file_operations.make_file_private(resource_path)
-    )
-    pwd()
-    typer.secho(
-        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-        fg=resource.visibility_color,
-    )
+# @app.command()
+# def make_private(
+#     resource_path: Annotated[
+#         str,
+#         typer.Argument(
+#             help="The path of the resource to set as private. If you want to set a directory as private, the path must end with /"
+#         ),
+#     ],
+#     recursive: Annotated[
+#         Optional[bool],
+#         typer.Option(
+#             "-r",
+#             "--recursive",
+#             help="Make sub-directories and their contents public recursively",
+#         ),
+#     ] = False,
+# ) -> None:
+#     """
+#     Set a resource as private.
+#     """
+#     resource = (
+#         dir_operations.make_directory_private(resource_path, recursive)
+#         if path_parser.is_directory(resource_path)
+#         else file_operations.make_file_private(resource_path)
+#     )
+#     pwd()
+#     typer.secho(
+#         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
+#         fg=resource.visibility_color,
+#     )
 
 
 @app.command()

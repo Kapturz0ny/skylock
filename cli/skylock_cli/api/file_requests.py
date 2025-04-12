@@ -130,7 +130,6 @@ def send_change_privacy(token: Token, virtual_path: Path, privacy: Literal["priv
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
     body = {"privacy": privacy, "shared": shared_to}
-    print(shared_to)
     response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
 
     standard_error_dict = {

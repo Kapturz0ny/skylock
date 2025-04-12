@@ -105,7 +105,7 @@ class SkylockFacade:
     def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"], shared_to: list[str]) -> models.File:
         found = self._user_service.find_shared_to_users(shared_to)
         file = self._resource_service.update_file(user_path, privacy, found)
-        return self._response_builder.get_file_response(file=file, user_path=user_path, shared_to=found)
+        return self._response_builder.get_file_response(file=file, user_path=user_path)
 
     def delete_file(self, user_path: UserPath):
         self._resource_service.delete_file(user_path)
@@ -113,13 +113,23 @@ class SkylockFacade:
     def get_file_url(self, user_path: UserPath) -> str:
         file = self._resource_service.get_file(user_path)
 
-        if (file.privacy != "public" ) and (user_path.owner not in file.shared_to) and file.owner != user_path.owner:
-            raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
+        if (file.privacy == "public" ): 
+            return self._url_generator.generate_url_for_file(file.id)
+        
+        if file.owner == user_path.owner:
+            return self._url_generator.generate_login_url_for_file(file.id)
+        elif user_path.owner in file.shared_to and file.privacy == "protected":
+            return self._url_generator.generate_login_url_for_file(file.id)
 
-        return self._url_generator.generate_url_for_file(file.id)
+        raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
 
     # Public Resource Access
     def get_public_file(self, file_id: str) -> models.File:
         file = self._resource_service.get_public_file(file_id)
+        path = self._path_resolver.path_from_file(file)
+        return self._response_builder.get_file_response(file=file, user_path=path)
+
+    def get_file_for_login(self, file_id: str) -> models.File:
+        file = self._resource_service.get_file_by_id(file_id)
         path = self._path_resolver.path_from_file(file)
         return self._response_builder.get_file_response(file=file, user_path=path)

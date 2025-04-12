@@ -21,11 +21,14 @@ def folder_contents(
 ):
     return html_builder.build_folder_contents_page(request, id)
 
+@html_hanlder.get("/files/{id}/login", response_class=HTMLResponse)
+def login_file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
+    return html_builder.build_file_page(request, id)
+
 
 @html_hanlder.get("/files/{id}", response_class=HTMLResponse)
 def file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
     return html_builder.build_file_page(request, id)
-
 
 templates = get_templates()
 
