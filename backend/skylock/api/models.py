@@ -49,6 +49,7 @@ class LoginUserRequest(BaseModel):
 class RegisterUserRequest(BaseModel):
     username: str
     password: str
+    email: str
 
 
 class UpdateFolderRequest(BaseModel):
@@ -67,3 +68,10 @@ class UploadOptions(BaseModel):
 
 class ResourceLocationResponse(BaseModel):
     location: str
+
+
+class FAWithCode(BaseModel):
+    code: str
+    username: str
+    password: str
+    email: str

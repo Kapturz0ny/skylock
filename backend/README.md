@@ -53,7 +53,21 @@ poetry shell
 poetry install
 ```
 
-**3. Start the application using entry point:**
+**3. Start Redis service**
+To be changed...
+
+If starting backend with Poetry, you still have to start Redis service in Docker. First, change your `.env` file:
+```
+REDIS_HOST=localhost
+```
+Now you can start service using command:
+
+```bash
+docker compose -f docker-compose.dev.yml up redis --build
+```
+
+
+**4. Start the application using entry point:**
 
 ```bash
 ./entrypoint_dev.sh

@@ -39,7 +39,43 @@ def register_user(
     request: models.RegisterUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    skylock.register_user(username=request.username, password=request.password)
+    skylock.register_user(username=request.username, password=request.password, email=request.email)
+    return {"message": "User is not in the database"}
+
+
+@router.post(
+    "/2FA",
+    status_code=status.HTTP_201_CREATED,
+    summary="Verify 2FA",
+    description=(
+        """
+    This endpoint allows a new user to verify email using 2FA.
+    If the code has expired or the code is wrong, a 409 Conflict error will be raised.
+    """
+    ),
+    response_model=None,
+    responses={
+        201: {
+            "description": "User successfully registered",
+            "content": {
+                "application/json": {"example": {"message": "User successfully registered"}}
+            },
+        },
+        401: {
+            "description": "2FA code is wrong",
+            "content": {
+                "application/json": {"example": {"detail": "2FA code is wrong/has expired"}}
+            },
+        },
+    },
+)
+def register_user(
+    request: models.FAWithCode,
+    skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
+) -> dict:
+    skylock.verify_2FA(
+        username=request.username, password=request.password, code=request.code, email=request.email
+    )
     return {"message": "User successfully registered"}
 
 

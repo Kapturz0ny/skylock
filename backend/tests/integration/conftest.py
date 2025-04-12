@@ -23,6 +23,7 @@ TEST_DATABASE_URL = "sqlite://"
 
 MOCK_USERNAME = "mockuser"
 MOCK_PASSWORD = "mockpasswd"
+MOCK_EMAIL = "mock@example.com"
 
 
 @pytest.fixture
@@ -111,6 +112,7 @@ def mock_user(db_session, resource_service):
     user = UserEntity(
         username=MOCK_USERNAME,
         password=MOCK_PASSWORD,
+        email=MOCK_EMAIL
     )
     db_session.add(user)
     db_session.commit()

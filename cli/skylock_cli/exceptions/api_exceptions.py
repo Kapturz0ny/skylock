@@ -31,13 +31,10 @@ class InvalidURLError(SkyLockAPIError):
 
 class UserAlreadyExistsError(SkyLockAPIError):
     """Exception raised when attempting to register a user that already exists.
-
-    Args:
-        username (str): The username of the user that already exists.
     """
 
-    def __init__(self, username: str) -> None:
-        message = f"User with username `{username}` already exists!"
+    def __init__(self) -> None:
+        message = f"User with given username/email already exists."
         super().__init__(message)
 
 
@@ -180,4 +177,16 @@ class FileNotPublicError(SkyLockAPIError):
 
     def __init__(self, file_path: Path) -> None:
         message = f"File `{file_path}` is not public!"
+        super().__init__(message)
+
+
+class WrongVerificationCodeError(SkyLockAPIError):
+    """Exception raised when attempting to register a user that already exists.
+
+    Args:
+        username (str): The username of the user that already exists.
+    """
+
+    def __init__(self, code: str) -> None:
+        message = f"The 2FA verification code {code} is not correct"
         super().__init__(message)
