@@ -1,4 +1,4 @@
-from typing import IO, Optional
+from typing import IO, Optional, Literal
 
 from skylock.database import models as db_models
 from skylock.database.repository import FileRepository, FolderRepository
@@ -83,8 +83,8 @@ class ResourceService:
 
         self._folder_repository.save(folder)
 
-    def _update_file(self, file: db_models.FileEntity, is_public: bool) -> None:
-        file.is_public = is_public
+    def _update_file(self, file: db_models.FileEntity, privacy: Literal["private", "protected", "public"]) -> None:
+        file.privacy = privacy
         self._file_repository.save(file)
 
     def create_folder_with_parents(
@@ -140,13 +140,13 @@ class ResourceService:
     def get_public_file(self, file_id: str) -> db_models.FileEntity:
         file = self.get_file_by_id(file_id)
 
-        if not file.is_public:
+        if file.privacy != "public":
             raise ForbiddenActionException(f"folder with id {file_id} is not public")
 
         return file
 
     def create_file(
-        self, user_path: UserPath, data: bytes, force: bool = False, public: bool = False
+        self, user_path: UserPath, data: bytes, force: bool = False, privacy: Literal["private", "protected", "public"] = "private"
     ) -> db_models.FileEntity:
         if not user_path.name:
             raise ForbiddenActionException("Creation of file with no name is forbidden")
@@ -165,7 +165,7 @@ class ResourceService:
 
         new_file = self._file_repository.save(
             db_models.FileEntity(
-                name=file_name, folder=parent, owner=user_path.owner, is_public=public
+                name=file_name, folder=parent, owner=user_path.owner, privacy=privacy
             )
         )
 
@@ -173,9 +173,9 @@ class ResourceService:
 
         return new_file
 
-    def update_file(self, user_path: UserPath, is_public: bool) -> db_models.FileEntity:
+    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"]) -> db_models.FileEntity:
         file = self._path_resolver.file_from_path(user_path)
-        file.is_public = is_public
+        file.privacy = privacy
         return self._file_repository.save(file)
 
     def delete_file(self, user_path: UserPath):
@@ -193,7 +193,7 @@ class ResourceService:
     def get_public_file_data(self, file_id: str) -> IO[bytes]:
         file = self.get_file_by_id(file_id)
 
-        if not file.is_public:
+        if file.privacy != "public":
             raise ForbiddenActionException(f"File with id {file_id} is not public")
 
         return self._get_file_data(file)

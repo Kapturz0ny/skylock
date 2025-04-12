@@ -140,6 +140,6 @@ def change_file_visability(
     path: Annotated[str, Depends(validate_path_not_empty)],
     user: Annotated[db_models.UserEntity, Depends(get_current_user)],
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
-    is_public: models.UpdateFileRequest,
+    privacy: models.UpdateFileRequest,
 ) -> models.File:
-    return skylock.update_file(UserPath(path=path, owner=user), is_public.is_public)
+    return skylock.update_file(UserPath(path=path, owner=user), privacy.privacy)

@@ -1,5 +1,5 @@
 """Resource model"""
-
+from typing import Literal
 from pydantic import BaseModel, PrivateAttr
 from skylock_cli.model.resource_visibility import ResourceVisibility
 
@@ -7,7 +7,7 @@ from skylock_cli.model.resource_visibility import ResourceVisibility
 class Resource(BaseModel):
     """Base class for resources"""
 
-    _is_public: bool = PrivateAttr(False)
+    _privacy: Literal["private", "protected", "public"] = PrivateAttr("private")
     _visibility: ResourceVisibility = PrivateAttr(ResourceVisibility.PRIVATE)
 
     def __init__(self, **data):
@@ -18,18 +18,23 @@ class Resource(BaseModel):
 
     def make_public(self):
         """Make the resource public"""
-        self._is_public = True
+        self._privacy = "public"
         self._visibility = ResourceVisibility.PUBLIC
 
     def make_private(self):
         """Make the resource private"""
-        self._is_public = False
+        self._privacy = "private"
         self._visibility = ResourceVisibility.PRIVATE
 
+    def make_protected(self):
+        """Make the resource protected"""
+        self._privacy = "protected"
+        self._visibility = ResourceVisibility.PROTECTED
+
     @property
-    def is_public(self) -> bool:
-        """Get whether the resource is public"""
-        return self._is_public
+    def privacy(self) -> Literal["private", "protected", "public"]:
+        """Get whether the resource's privacy"""
+        return self.privacy
 
     @property
     def visibility_label(self) -> str:

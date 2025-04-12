@@ -5,6 +5,8 @@ Module to handle logic for file operations
 from pathlib import Path
 import os
 import tempfile
+from typing import Literal
+
 from pydantic import TypeAdapter
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.core import path_parser, context_manager
@@ -20,7 +22,7 @@ def upload_file(
     real_file_path: Path,
     destination_path: Path,
     force: bool = False,
-    public: bool = False,
+    privacy: Literal["private", "public"] = "private",
 ) -> File:
     """Upload a file"""
     current_context = context_manager.ContextManager.get_context()
@@ -37,7 +39,7 @@ def upload_file(
                 joind_path,
                 files,
                 force,
-                public,
+                privacy,
             )
 
         new_file = TypeAdapter(File).validate_python(response)

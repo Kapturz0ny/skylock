@@ -7,6 +7,8 @@ from skylock.api import models
 from skylock.utils.exceptions import ForbiddenActionException
 from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
+from typing import Literal
+
 
 
 class SkylockFacade:
@@ -85,9 +87,9 @@ class SkylockFacade:
 
     # File Operations
     def upload_file(
-        self, user_path: UserPath, file_data: bytes, force: bool = False, public: bool = False
+        self, user_path: UserPath, file_data: bytes, force: bool = False, privacy: Literal["private", "public"] = "private"
     ) -> models.File:
-        file = self._resource_service.create_file(user_path, file_data, force, public)
+        file = self._resource_service.create_file(user_path, file_data, force, privacy)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 
     def download_file(self, user_path: UserPath) -> models.FileData:
@@ -100,8 +102,8 @@ class SkylockFacade:
         data = self._resource_service.get_public_file_data(file_id)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
 
-    def update_file(self, user_path: UserPath, is_public: bool) -> models.File:
-        file = self._resource_service.update_file(user_path, is_public)
+    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"]) -> models.File:
+        file = self._resource_service.update_file(user_path, privacy)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 
     def delete_file(self, user_path: UserPath):

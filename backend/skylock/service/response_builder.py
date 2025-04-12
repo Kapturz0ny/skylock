@@ -13,7 +13,7 @@ class ResponseBuilder:
             models.File(
                 id=file.id,
                 name=file.name,
-                is_public=file.is_public,
+                privacy=file.privacy,
                 path=f"{parent_path}/{file.name}",
             )
             for file in folder.files
@@ -43,7 +43,7 @@ class ResponseBuilder:
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
         return models.File(
-            id=file.id, name=file.name, path=f"/{user_path.path}", is_public=file.is_public
+            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy
         )
 
     def get_file_data_response(

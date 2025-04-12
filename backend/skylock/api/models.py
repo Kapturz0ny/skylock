@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import IO
+from typing import IO, Literal
 from pydantic import BaseModel
 
 
@@ -19,7 +19,7 @@ class File(BaseModel):
     id: str
     name: str
     path: str
-    is_public: bool
+    privacy: Literal["private", "protected", "public"]
 
 
 class FolderContents(BaseModel):
@@ -58,7 +58,7 @@ class UpdateFolderRequest(BaseModel):
 
 
 class UpdateFileRequest(BaseModel):
-    is_public: bool
+    privacy: Literal["private", "protected", "public"]
 
 
 class UploadOptions(BaseModel):

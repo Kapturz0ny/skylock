@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile, status
+from typing import Literal
 
 from skylock.api import models
 from skylock.api.dependencies import get_current_user, get_skylock_facade
@@ -48,11 +49,11 @@ def upload_file(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     file: UploadFile,
     force: bool = False,
-    public: bool = False,
+    privacy: Literal["private", "public"] = "private",
 ) -> models.File:
     return skylock.upload_file(
         user_path=UserPath(path=path, owner=user),
         file_data=file.file.read(),
         force=force,
-        public=public,
+        privacy=privacy,
     )

@@ -6,6 +6,8 @@ from urllib.parse import quote
 from http import HTTPStatus
 from pathlib import Path
 from httpx import Client
+from typing import Literal
+
 from skylock_cli.config import API_URL, API_HEADERS
 from skylock_cli.core.context_manager import ContextManager
 from skylock_cli.model.token import Token
@@ -17,7 +19,7 @@ client = Client(base_url=ContextManager.get_context().base_url + API_URL)
 
 
 def send_upload_request(
-    token: Token, virtual_path: Path, files: dict, force: bool, public: bool
+    token: Token, virtual_path: Path, files: dict, force: bool, privacy: Literal["private", "public"] = "private"
 ) -> dict:
     """
     Send an upload request to the SkyLock backend API.
@@ -29,7 +31,7 @@ def send_upload_request(
     """
     url = "/upload/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
-    params = {"force": force, "public": public}
+    params = {"force": force, "privacy": privacy}
 
     response = client.post(url=url, auth=auth, files=files, params=params)
 
@@ -127,7 +129,7 @@ def send_make_public_request(token: Token, virtual_path: Path) -> dict:
     """
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": True}
+    body = {"privacy": "public"}
 
     response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
 
@@ -156,7 +158,7 @@ def send_make_private_request(token: Token, virtual_path: Path) -> dict:
     """
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": False}
+    body = {"privacy": "private"}
 
     response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
 

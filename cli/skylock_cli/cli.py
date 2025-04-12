@@ -3,7 +3,7 @@ This module contains commands the user can run to interact with the SkyLock.
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 from typing_extensions import Annotated
 import typer
 import re
@@ -22,6 +22,7 @@ from skylock_cli.core import (
 app = typer.Typer(pretty_exceptions_show_locals=False)
 console = Console()
 
+PRIVACY_CHOICES=["private", "protected", "public"]
 
 @app.command()
 def register(
@@ -214,7 +215,7 @@ def upload(
     force: Annotated[
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
-    public: Annotated[
+    privacy: Annotated[
         Optional[bool], typer.Option("--public", help="Make uploaded file public")
     ] = False,
 ) -> None:
@@ -230,7 +231,10 @@ def upload(
         typer.secho(f"{file_path} is not a file.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    new_file = file_operations.upload_file(file_path, destination_path, force, public)
+    if privacy:
+        privacy = "public"
+        
+    new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
     pwd()
     typer.secho(
         f"File {new_file.name} uploaded to {new_file.path} successfully",
