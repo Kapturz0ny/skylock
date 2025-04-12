@@ -102,3 +102,11 @@ class UserService:
             return True
         except argon2.exceptions.VerifyMismatchError:
             return False
+
+    def find_shared_to_users(self, usernames: list[str]) -> list[str]:
+        found_users = []
+        for user in usernames:
+            user_entity = self.user_repository.get_by_username(user)
+            if user_entity:
+                found_users.append(user_entity.username)
+        return found_users

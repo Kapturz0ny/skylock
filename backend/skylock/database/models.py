@@ -33,8 +33,8 @@ class FolderEntity(Base):
     __tablename__ = "folders"
 
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
-    parent_folder_id: orm.Mapped[Optional[int]] = orm.mapped_column(ForeignKey("folders.id"))
-    owner_id: orm.Mapped[int] = orm.mapped_column(ForeignKey("users.id"))
+    parent_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(ForeignKey("folders.id"))
+    owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
     is_public: orm.Mapped[bool] = orm.mapped_column(nullable=False, default=False)
 
     parent_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
@@ -65,10 +65,10 @@ class FileEntity(Base):
     __tablename__ = "files"
 
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
-    folder_id: orm.Mapped[int] = orm.mapped_column(ForeignKey("folders.id"))
-    owner_id: orm.Mapped[int] = orm.mapped_column(ForeignKey("users.id"))
+    folder_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("folders.id"))
+    owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
     privacy: orm.Mapped[str] = orm.mapped_column(Enum("private", "protected", "public"))
-    shared_to: orm.Mapped[Set[str]] = orm.mapped_column(TEXT, default=set)
+    shared_to: orm.Mapped[List[str]] = orm.mapped_column(TEXT, default=set)
 
     folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")
     owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="files")
@@ -76,10 +76,10 @@ class FileEntity(Base):
         secondary=shared_files, back_populates="shared_files"
     )
 
-    def _set_shared_to(self, value: Set[str]):
-        self.__shared_to = json.dumps(list(value))
+    def _set_shared_to(self, value: list[str]):
+        self.__shared_to = json.dumps(value)
 
-    def _get_shared_to(self) -> Set[str]:
+    def _get_shared_to(self) -> list[str]:
         if self.__shared_to:
             return set(json.loads(self.__shared_to))
         return set()

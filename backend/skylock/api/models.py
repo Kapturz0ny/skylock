@@ -20,6 +20,7 @@ class File(BaseModel):
     name: str
     path: str
     privacy: Literal["private", "protected", "public"]
+    shared_to: list[str] = []
 
 
 class FolderContents(BaseModel):
@@ -59,6 +60,7 @@ class UpdateFolderRequest(BaseModel):
 
 class UpdateFileRequest(BaseModel):
     privacy: Literal["private", "protected", "public"]
+    shared: list[str] = []
 
 
 class UploadOptions(BaseModel):

@@ -102,9 +102,10 @@ class SkylockFacade:
         data = self._resource_service.get_public_file_data(file_id)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
 
-    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"]) -> models.File:
-        file = self._resource_service.update_file(user_path, privacy)
-        return self._response_builder.get_file_response(file=file, user_path=user_path)
+    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"], shared_to: list[str]) -> models.File:
+        found = self._user_service.find_shared_to_users(shared_to)
+        file = self._resource_service.update_file(user_path, privacy, found)
+        return self._response_builder.get_file_response(file=file, user_path=user_path, shared_to=found)
 
     def delete_file(self, user_path: UserPath):
         self._resource_service.delete_file(user_path)
@@ -112,8 +113,8 @@ class SkylockFacade:
     def get_file_url(self, user_path: UserPath) -> str:
         file = self._resource_service.get_file(user_path)
 
-        if not file.is_public:
-            raise ForbiddenActionException(f"File {file.name} is not public, cannot be shared")
+        if (file.privacy != "public" ) and (user_path.owner not in file.shared_to) and file.owner != user_path.owner:
+            raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
 
         return self._url_generator.generate_url_for_file(file.id)
 

@@ -173,9 +173,10 @@ class ResourceService:
 
         return new_file
 
-    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"]) -> db_models.FileEntity:
+    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"], shared_to: list[str]) -> db_models.FileEntity:
         file = self._path_resolver.file_from_path(user_path)
         file.privacy = privacy
+        file.shared_to = shared_to
         return self._file_repository.save(file)
 
     def delete_file(self, user_path: UserPath):

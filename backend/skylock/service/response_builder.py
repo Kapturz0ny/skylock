@@ -41,9 +41,9 @@ class ResponseBuilder:
             id=folder.id, name=folder.name, path=f"/{user_path.path}", is_public=folder.is_public
         )
 
-    def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
+    def get_file_response(self, file: db_models.FileEntity, user_path: UserPath, shared_to: list[str]) -> models.File:
         return models.File(
-            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy
+            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy, shared_to=shared_to
         )
 
     def get_file_data_response(

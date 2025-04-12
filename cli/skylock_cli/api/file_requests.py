@@ -119,7 +119,7 @@ def send_rm_request(token: Token, virtual_path: Path) -> None:
         )
 
 
-def send_make_public_request(token: Token, virtual_path: Path) -> dict:
+def send_change_privacy(token: Token, virtual_path: Path, privacy: Literal["private", "protected", "public"], shared_to: list[str] = []) -> dict:
     """
     Send a make public request to the SkyLock backend API.
 
@@ -129,8 +129,8 @@ def send_make_public_request(token: Token, virtual_path: Path) -> dict:
     """
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": "public"}
-
+    body = {"privacy": privacy, "shared": shared_to}
+    print(shared_to)
     response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
 
     standard_error_dict = {
@@ -146,36 +146,6 @@ def send_make_public_request(token: Token, virtual_path: Path) -> dict:
         )
 
     return response.json()
-
-
-def send_make_private_request(token: Token, virtual_path: Path) -> dict:
-    """
-    Send a make private request to the SkyLock backend API.
-
-    Args:
-        token (Token): The token object containing authentication token.
-        virtual_path (Path): The path of the file to be made private.
-    """
-    url = "/files" + quote(str(virtual_path))
-    auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": "private"}
-
-    response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
-
-    standard_error_dict = {
-        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
-        HTTPStatus.NOT_FOUND: api_exceptions.FileNotFoundError(virtual_path),
-    }
-
-    handle_standard_errors(standard_error_dict, response.status_code)
-
-    if response.status_code != HTTPStatus.OK:
-        raise api_exceptions.SkyLockAPIError(
-            f"Failed to make file private (Error Code: {response.status_code})"
-        )
-
-    return response.json()
-
 
 def send_share_request(token: Token, virtual_path: Path) -> dict:
     """

@@ -360,11 +360,40 @@ def share(
         typer.Argument(
             help="The path of the resource to share. If you want to share a directory, the path must end with /"
         ),
-    ]
+    ],
+    mode: Annotated[
+        str,
+        typer.Argument(
+            help="Visibility mode: 'protected', 'public', or 'private'"
+        ),
+    ],
+    users: Annotated[
+        Optional[str],
+        typer.Option(
+            "--to",
+            help="Space-separated list of usernames to share with (for 'protected' mode)",
+        ),
+    ] = None,
 ) -> None:
     """
     Share a resource.
     """
+    mode = mode.lower()
+    if mode == "protected":
+        if users:
+            user_list = [u.strip() for u in users.split(",")]
+            file_operations.make_file_protected(resource_path, user_list)
+        else:
+            typer.secho("Error: Usernames are required for 'prot' mode.", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+    elif mode == "public":
+            file_operations.make_file_public(resource_path)
+    elif mode == "private":
+            file_operations.make_file_private(resource_path)
+    else:
+        typer.secho(f"Error: Invalid visibility mode '{mode}'. Must be 'prot', 'public', or 'private'.", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
     share_link = (
         dir_operations.share_directory(resource_path)
         if path_parser.is_directory(resource_path)
