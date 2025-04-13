@@ -13,8 +13,10 @@ class Resource(BaseModel):
     def __init__(self, **data):
         """Custom initialization to handle is_public logic"""
         super().__init__(**data)
-        if data.get("is_public", False):
-            self.make_public()
+        match data.get("privacy"):
+            case "public": self.make_public()
+            case "protected": self.make_public()
+            case "private": self.make_private()
 
     def make_public(self):
         """Make the resource public"""
@@ -34,7 +36,7 @@ class Resource(BaseModel):
     @property
     def privacy(self) -> Literal["private", "protected", "public"]:
         """Get whether the resource's privacy"""
-        return self.privacy
+        return self._privacy
 
     @property
     def visibility_label(self) -> str:
