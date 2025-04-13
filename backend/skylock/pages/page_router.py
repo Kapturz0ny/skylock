@@ -23,7 +23,7 @@ def folder_contents(
 
 @html_hanlder.get("/files/{id}/login", response_class=HTMLResponse)
 def login_file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
-    return html_builder.build_file_page(request, id)
+    return html_builder.build_login_page(request, id)
 
 
 @html_hanlder.get("/files/{id}", response_class=HTMLResponse)
