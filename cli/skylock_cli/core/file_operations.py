@@ -85,36 +85,13 @@ def remove_file(file_path: str) -> Path:
     return joind_path
 
 
-def make_file_public(file_path: str) -> File:
-    """Make a file public"""
+def change_file_visibility(file_path: str, mode: str, shared_to: str) -> File:
+    """Change files visibitity to one of [protected, private, public]"""
     current_context = context_manager.ContextManager.get_context()
     with CLIExceptionHandler():
         joind_path = path_parser.parse_path(current_context.cwd.path, Path(file_path))
         response = file_requests.send_change_privacy(
-            current_context.token, joind_path, privacy="public"
-        )
-        changed_file = TypeAdapter(File).validate_python(response)
-    return changed_file
-
-
-def make_file_private(file_path: str) -> File:
-    """Make a file private"""
-    current_context = context_manager.ContextManager.get_context()
-    with CLIExceptionHandler():
-        joind_path = path_parser.parse_path(current_context.cwd.path, Path(file_path))
-        response = file_requests.send_change_privacy(
-            current_context.token, joind_path, privacy="private"
-        )
-        changed_file = TypeAdapter(File).validate_python(response)
-    return changed_file
-
-def make_file_protected(file_path: str, shared_to: str) -> File:
-    """Make a file protected"""
-    current_context = context_manager.ContextManager.get_context()
-    with CLIExceptionHandler():
-        joind_path = path_parser.parse_path(current_context.cwd.path, Path(file_path))
-        response = file_requests.send_change_privacy(
-            current_context.token, joind_path, privacy="protected", shared_to=shared_to
+            current_context.token, joind_path, privacy=mode, shared_to=shared_to
         )
         changed_file = TypeAdapter(File).validate_python(response)
     return changed_file

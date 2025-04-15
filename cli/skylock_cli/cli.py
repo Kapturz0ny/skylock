@@ -261,70 +261,6 @@ def download(
     )
 
 
-# @app.command()
-# def make_public(
-#     resource_path: Annotated[
-#         str,
-#         typer.Argument(
-#             help="The path of the resource to set as public. If you want to set a directory as public, the path must end with /"
-#         ),
-#     ],
-#     recursive: Annotated[
-#         Optional[bool],
-#         typer.Option(
-#             "-r",
-#             "--recursive",
-#             help="Make sub-directories and their contents public recursively",
-#         ),
-#     ] = False,
-# ) -> None:
-#     """
-#     Set a resource as public.
-#     """
-#     resource = (
-#         dir_operations.make_directory_public(resource_path, recursive)
-#         if path_parser.is_directory(resource_path)
-#         else file_operations.make_file_public(resource_path)
-#     )
-#     pwd()
-#     typer.secho(
-#         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-#         fg=resource.visibility_color,
-#     )
-
-
-# @app.command()
-# def make_private(
-#     resource_path: Annotated[
-#         str,
-#         typer.Argument(
-#             help="The path of the resource to set as private. If you want to set a directory as private, the path must end with /"
-#         ),
-#     ],
-#     recursive: Annotated[
-#         Optional[bool],
-#         typer.Option(
-#             "-r",
-#             "--recursive",
-#             help="Make sub-directories and their contents public recursively",
-#         ),
-#     ] = False,
-# ) -> None:
-#     """
-#     Set a resource as private.
-#     """
-#     resource = (
-#         dir_operations.make_directory_private(resource_path, recursive)
-#         if path_parser.is_directory(resource_path)
-#         else file_operations.make_file_private(resource_path)
-#     )
-#     pwd()
-#     typer.secho(
-#         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-#         fg=resource.visibility_color,
-#     )
-
-
 @app.command()
 def set_url(
     base_url: Annotated[
@@ -362,11 +298,12 @@ def share(
         ),
     ],
     mode: Annotated[
-        str,
-        typer.Argument(
+        Optional[str],
+        typer.Option(
+            "--mode",
             help="Visibility mode: 'protected', 'public', or 'private'"
         ),
-    ],
+    ] = "private",
     users: Annotated[
         Optional[str],
         typer.Option(
@@ -379,25 +316,28 @@ def share(
     Share a resource.
     """
     mode = mode.lower()
-    if mode == "protected":
-        if users:
-            user_list = [u.strip() for u in users.split(",")]
-            file_operations.make_file_protected(resource_path, user_list)
-        else:
-            typer.secho("Error: Usernames are required for 'prot' mode.", fg=typer.colors.RED)
-            raise typer.Exit(code=1)
-    elif mode == "public":
-            file_operations.make_file_public(resource_path)
-    elif mode == "private":
-            file_operations.make_file_private(resource_path)
-    else:
-        typer.secho(f"Error: Invalid visibility mode '{mode}'. Must be 'prot', 'public', or 'private'.", fg=typer.colors.RED)
+    user_list = []
+
+    if mode not in PRIVACY_CHOICES:
+        typer.secho(f"Error: Invalid visibility mode '{mode}'. Must be 'protected', 'public', or 'private'.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
+    if mode == "protected":
+        if not users:
+            typer.secho("Error: Usernames are required for 'protected' mode.", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+    
+        user_list = [u.strip() for u in users.split(",")]
+    resource = file_operations.change_file_visibility(resource_path, mode, user_list)
+    
     share_link = (
         dir_operations.share_directory(resource_path)
         if path_parser.is_directory(resource_path)
         else file_operations.share_file(resource_path)
+    )
+    typer.secho(
+         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
+         fg=resource.visibility_color,
     )
     pwd()
     typer.secho(

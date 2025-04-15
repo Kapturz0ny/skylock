@@ -15,7 +15,7 @@ class Resource(BaseModel):
         super().__init__(**data)
         match data.get("privacy"):
             case "public": self.make_public()
-            case "protected": self.make_public()
+            case "protected": self.make_protected()
             case "private": self.make_private()
 
     def make_public(self):
