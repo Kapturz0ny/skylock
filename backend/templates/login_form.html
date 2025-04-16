@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             align-items: center;
             min-height: 100vh;
         }
+
         .container {
             max-width: 400px;
             border: 1px solid #ccc;
@@ -26,16 +28,19 @@
             flex-direction: column;
             align-items: stretch;
         }
+
         h1 {
             text-align: center;
             color: #007BFF;
             margin-bottom: 20px;
         }
+
         .form-group {
             margin-bottom: 15px;
             display: flex;
             align-items: center;
         }
+
         .form-group label {
             display: block;
             margin-right: 10px;
@@ -43,6 +48,7 @@
             text-align: right;
             color: #555;
         }
+
         .form-group input[type="text"],
         .form-group input[type="password"] {
             flex-grow: 1;
@@ -52,6 +58,7 @@
             box-sizing: border-box;
             font-size: 16px;
         }
+
         .login-button {
             display: block;
             width: 100%;
@@ -65,10 +72,12 @@
             transition: background 0.3s, transform 0.3s;
             margin-top: 20px;
         }
+
         .login-button:hover {
             background-color: #0056b3;
             transform: translateY(-2px);
         }
+
         .error-message {
             color: red;
             margin-top: 10px;
@@ -76,6 +85,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Login</h1>
@@ -88,8 +98,13 @@
                 <label for="password">Hasło:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit" class="login-button">Submit</button>
-            </form>
+            <p class="error-message">
+                {% if error %}
+                {{ error }}
+                {% endif %}
+                <button type="submit" class="login-button">Submit</button>
+        </form>
     </div>
 </body>
+
 </html>

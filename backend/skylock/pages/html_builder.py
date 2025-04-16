@@ -1,4 +1,4 @@
-from fastapi import Request, Depends
+from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -47,20 +47,21 @@ class HtmlBuilder:
         privacy = file.privacy
 
         token = request.cookies.get("access_token")
-        print(token)
+
         if token:
             token = token.replace("Bearer ", "")
         else:
-            return RedirectResponse(url=f"/files/{file_id}/login")
-        user = get_user_from_jwt(token, self._skylock._user_service.user_repository)
-
-        print(user.id)
-        print(file.shared_to)
+            return self.build_login_page(request, file_id)
+        try:
+            user = get_user_from_jwt(token, self._skylock._user_service.user_repository)
+        except HTTPException:
+            return self.build_login_page(request, file_id, "Invalid Token")
 
         if privacy == "protected" and user.id not in file.shared_to and user.id != file.owner_id:
-            return RedirectResponse(url=f"/files/{file_id}/login")
+            return self.build_login_page(request, file_id, "File not shared with you")
+
         if privacy == "private" and user.id != file.owner_id:
-            return RedirectResponse(url=f"/files/{file_id}/login")
+            return self.build_login_page(request, file_id, "File not shared with you")
 
         return self._templates.TemplateResponse(
             request,
@@ -68,10 +69,9 @@ class HtmlBuilder:
             {"file": {"name": file.name, "path": file.path, "download_url": download_url}},
         )
 
-    def build_login_page(self, request: Request, file_id: str) -> HTMLResponse:
-        file = self._skylock.get_file_for_login(file_id)
+    def build_login_page(self, request: Request, file_id: str, error="") -> HTMLResponse:
         return self._templates.TemplateResponse(
             request,
             "login_form.html",
-            {"file_id": file_id, "name": file.name, "path": file.path},
+            {"file_id": file_id, "error": error},
         )

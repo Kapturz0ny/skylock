@@ -24,10 +24,6 @@ def folder_contents(
 ):
     return html_builder.build_folder_contents_page(request, id)
 
-@html_handler.get("/files/{id}/login", response_class=HTMLResponse)
-def login_file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
-    return html_builder.build_login_page(request, id)
-
 @html_handler.post("/files/{file_id}/login", response_class=HTMLResponse)
 async def login_file_post(
     request: Request,
@@ -50,7 +46,7 @@ async def login_file_post(
     except InvalidCredentialsException:
         return templates.TemplateResponse(
             "login_form.html",
-            {"request": request, "file_id": file_id, "error": "Nieprawidłowe dane logowania"},
+            {"request": request, "file_id": file_id, "error": "Invalid credentials"},
             status_code=401
         )
 

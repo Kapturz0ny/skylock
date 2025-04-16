@@ -112,16 +112,9 @@ class SkylockFacade:
 
     def get_file_url(self, user_path: UserPath) -> str:
         file = self._resource_service.get_file(user_path)
+        return self._url_generator.generate_url_for_file(file.id)
 
-        if (file.privacy == "public" ): 
-            return self._url_generator.generate_url_for_file(file.id)
-        
-        if file.owner == user_path.owner:
-            return self._url_generator.generate_login_url_for_file(file.id)
-        elif user_path.owner in file.shared_to and file.privacy == "protected":
-            return self._url_generator.generate_login_url_for_file(file.id)
-
-        raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
+        # raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
 
     # Public Resource Access
     def get_public_file(self, file_id: str) -> models.File:
