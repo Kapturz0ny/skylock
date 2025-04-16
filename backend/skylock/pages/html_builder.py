@@ -57,7 +57,7 @@ class HtmlBuilder:
         except HTTPException:
             return self.build_login_page(request, file_id, "Invalid Token")
 
-        if privacy == "protected" and user.id not in file.shared_to and user.id != file.owner_id:
+        if privacy == "protected" and user.username not in file.shared_to and user.id != file.owner_id:
             return self.build_login_page(request, file_id, "File not shared with you")
 
         if privacy == "private" and user.id != file.owner_id:
