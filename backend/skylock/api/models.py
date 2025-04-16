@@ -19,6 +19,7 @@ class File(BaseModel):
     id: str
     name: str
     path: str
+    owner_id: str
     privacy: Literal["private", "protected", "public"]
     shared_to: list[str] = []
 

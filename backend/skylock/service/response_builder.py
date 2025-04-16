@@ -15,6 +15,7 @@ class ResponseBuilder:
                 name=file.name,
                 privacy=file.privacy,
                 path=f"{parent_path}/{file.name}",
+                owner_id=file.owner_id,
             )
             for file in folder.files
         ]
@@ -43,7 +44,7 @@ class ResponseBuilder:
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
         return models.File(
-            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy
+            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy, owner_id=file.owner_id
         )
 
     def get_file_data_response(
