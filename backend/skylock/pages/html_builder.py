@@ -1,10 +1,11 @@
-from fastapi import Request
-from fastapi.responses import HTMLResponse
+from fastapi import Request, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.url_generator import UrlGenerator
 
+from skylock.utils.security import get_user_from_jwt
 
 class HtmlBuilder:
     def __init__(
@@ -41,8 +42,26 @@ class HtmlBuilder:
         )
 
     def build_file_page(self, request: Request, file_id: str) -> HTMLResponse:
-        file = self._skylock.get_public_file(file_id)
+        file = self._skylock.get_file_for_login(file_id)
         download_url = self._url_generator.generate_download_url_for_file(file_id)
+        privacy = file.privacy
+
+        token = request.cookies.get("access_token")
+        print(token)
+        if token:
+            token = token.replace("Bearer ", "")
+        else:
+            return RedirectResponse(url=f"/files/{file_id}/login")
+        user = get_user_from_jwt(token, self._skylock._user_service.user_repository)
+
+        print(user.id)
+        print(file.shared_to)
+
+        if privacy == "protected" and user.id not in file.shared_to and user.id != file.owner_id:
+            return RedirectResponse(url=f"/files/{file_id}/login")
+        if privacy == "private" and user.id != file.owner_id:
+            return RedirectResponse(url=f"/files/{file_id}/login")
+
         return self._templates.TemplateResponse(
             request,
             "file.html",
