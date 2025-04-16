@@ -19,7 +19,11 @@ client = Client(base_url=ContextManager.get_context().base_url + API_URL)
 
 
 def send_upload_request(
-    token: Token, virtual_path: Path, files: dict, force: bool, privacy: Literal["private", "public"] = "private"
+    token: Token,
+    virtual_path: Path,
+    files: dict,
+    force: bool,
+    privacy: Literal["private", "public"] = "private",
 ) -> dict:
     """
     Send an upload request to the SkyLock backend API.
@@ -119,7 +123,12 @@ def send_rm_request(token: Token, virtual_path: Path) -> None:
         )
 
 
-def send_change_privacy(token: Token, virtual_path: Path, privacy: Literal["private", "protected", "public"], shared_to: list[str] = []) -> dict:
+def send_change_privacy(
+    token: Token,
+    virtual_path: Path,
+    privacy: Literal["private", "protected", "public"],
+    shared_to: list[str] = [],
+) -> dict:
     """
     Send a make public request to the SkyLock backend API.
 
@@ -145,6 +154,7 @@ def send_change_privacy(token: Token, virtual_path: Path, privacy: Literal["priv
         )
 
     return response.json()
+
 
 def send_share_request(token: Token, virtual_path: Path) -> dict:
     """

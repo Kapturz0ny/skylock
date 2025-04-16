@@ -23,4 +23,3 @@ class ResourceVisibility(str, Enum):
     def color(self):
         """Get the visibility color."""
         return self.value.split(",")[1]
-    

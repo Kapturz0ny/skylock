@@ -96,6 +96,7 @@ def change_file_visibility(file_path: str, mode: str, shared_to: str) -> File:
         changed_file = TypeAdapter(File).validate_python(response)
     return changed_file
 
+
 def share_file(file_path: str) -> ShareLink:
     """Share a file"""
     current_context = context_manager.ContextManager.get_context()

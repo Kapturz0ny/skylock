@@ -30,8 +30,7 @@ class InvalidURLError(SkyLockAPIError):
 
 
 class UserAlreadyExistsError(SkyLockAPIError):
-    """Exception raised when attempting to register a user that already exists.
-    """
+    """Exception raised when attempting to register a user that already exists."""
 
     def __init__(self) -> None:
         message = f"User with given username/email already exists."

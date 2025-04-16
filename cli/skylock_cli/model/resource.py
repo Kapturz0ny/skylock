@@ -1,4 +1,5 @@
 """Resource model"""
+
 from typing import Literal
 from pydantic import BaseModel, PrivateAttr
 from skylock_cli.model.resource_visibility import ResourceVisibility
@@ -14,9 +15,12 @@ class Resource(BaseModel):
         """Custom initialization to handle is_public logic"""
         super().__init__(**data)
         match data.get("privacy"):
-            case "public": self.make_public()
-            case "protected": self.make_protected()
-            case "private": self.make_private()
+            case "public":
+                self.make_public()
+            case "protected":
+                self.make_protected()
+            case "private":
+                self.make_private()
 
     def make_public(self):
         """Make the resource public"""

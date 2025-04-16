@@ -22,20 +22,23 @@ from skylock_cli.core import (
 app = typer.Typer(pretty_exceptions_show_locals=False)
 console = Console()
 
-PRIVACY_CHOICES=["private", "protected", "public"]
+PRIVACY_CHOICES = ["private", "protected", "public"]
+
 
 @app.command()
 def register(
-    username: Annotated[str, typer.Argument(help="The username of the new user")]
+    username: Annotated[str, typer.Argument(help="The username of the new user")],
 ) -> None:
     """
     Register a new user in the SkyLock
     """
     email = typer.prompt("Email")
-    
+
     email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     if not re.fullmatch(email_regex, email):
-        typer.secho("Invalid email address. Please enter a valid email.", fg=typer.colors.RED)
+        typer.secho(
+            "Invalid email address. Please enter a valid email.", fg=typer.colors.RED
+        )
         raise typer.Exit(code=1)
     password = typer.prompt("Password", hide_input=True)
     confirm_password = typer.prompt("Confirm password", hide_input=True)
@@ -52,7 +55,7 @@ def register(
 
 @app.command()
 def login(
-    username: Annotated[str, typer.Argument(help="The username of the user")]
+    username: Annotated[str, typer.Argument(help="The username of the user")],
 ) -> None:
     """
     Login to the SkyLock as a user
@@ -130,7 +133,7 @@ def rm(
         typer.Argument(
             help="The path of the file to remove. Must not end with / as this command removes files, not directories."
         ),
-    ]
+    ],
 ) -> None:
     """
     Remove a file from the SkyLock.
@@ -185,7 +188,7 @@ def ls(
 
 @app.command()
 def cd(
-    directory_path: Annotated[Path, typer.Argument(help="The directory to change to")]
+    directory_path: Annotated[Path, typer.Argument(help="The directory to change to")],
 ) -> None:
     """
     Change the current working directory.
@@ -233,7 +236,7 @@ def upload(
 
     if public:
         privacy = "public"
-        
+
     new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
     pwd()
     typer.secho(
@@ -248,7 +251,7 @@ def upload(
 
 @app.command()
 def download(
-    file_path: Annotated[Path, typer.Argument(help="The path of the file to download")]
+    file_path: Annotated[Path, typer.Argument(help="The path of the file to download")],
 ) -> None:
     """
     Download a file from the SkyLock.
@@ -265,7 +268,7 @@ def download(
 def set_url(
     base_url: Annotated[
         Optional[str], typer.Argument(help="The URL of the SkyLock server")
-    ] = None
+    ] = None,
 ) -> None:
     """
     Set the URL of the SkyLock server.
@@ -300,8 +303,7 @@ def share(
     mode: Annotated[
         Optional[str],
         typer.Option(
-            "--mode",
-            help="Visibility mode: 'protected', 'public', or 'private'"
+            "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
         ),
     ] = "private",
     users: Annotated[
@@ -319,25 +321,31 @@ def share(
     user_list = []
 
     if mode not in PRIVACY_CHOICES:
-        typer.secho(f"Error: Invalid visibility mode '{mode}'. Must be 'protected', 'public', or 'private'.", fg=typer.colors.RED)
+        typer.secho(
+            f"Error: Invalid visibility mode '{mode}'. Must be 'protected', 'public', or 'private'.",
+            fg=typer.colors.RED,
+        )
         raise typer.Exit(code=1)
 
     if mode == "protected":
         if not users:
-            typer.secho("Error: Usernames are required for 'protected' mode.", fg=typer.colors.RED)
+            typer.secho(
+                "Error: Usernames are required for 'protected' mode.",
+                fg=typer.colors.RED,
+            )
             raise typer.Exit(code=1)
-    
+
         user_list = [u.strip() for u in users.split(",")]
     resource = file_operations.change_file_visibility(resource_path, mode, user_list)
-    
+
     share_link = (
         dir_operations.share_directory(resource_path)
         if path_parser.is_directory(resource_path)
         else file_operations.share_file(resource_path)
     )
     typer.secho(
-         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-         fg=resource.visibility_color,
+        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
+        fg=resource.visibility_color,
     )
     pwd()
     typer.secho(
