@@ -63,7 +63,7 @@ def get_resource_service(
         folder_repository=folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
-        user_repository=user_repository
+        user_repository=user_repository,
     )
 
 

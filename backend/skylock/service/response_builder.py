@@ -44,7 +44,12 @@ class ResponseBuilder:
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
         return models.File(
-            id=file.id, name=file.name, path=f"/{user_path.path}", privacy=file.privacy, owner_id=file.owner_id, shared_to=file.shared_to
+            id=file.id,
+            name=file.name,
+            path=f"/{user_path.path}",
+            privacy=file.privacy,
+            owner_id=file.owner_id,
+            shared_to=file.shared_to,
         )
 
     def get_file_data_response(

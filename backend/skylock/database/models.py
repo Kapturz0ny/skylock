@@ -5,13 +5,16 @@ from sqlalchemy.dialects.sqlite import TEXT  # Use TEXT from sqlite dialect
 from skylock.api.models import Privacy
 import json
 
+
 class Base(orm.DeclarativeBase):
     id: orm.Mapped[str] = orm.mapped_column(
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
 
+
 metadata = Base.metadata
+
 
 class UserEntity(Base):
     __tablename__ = "users"
@@ -29,6 +32,7 @@ class UserEntity(Base):
     shared_files: orm.Mapped[List["FileEntity"]] = orm.relationship(
         secondary="shared_files", back_populates="shared_with"
     )
+
 
 class FolderEntity(Base):
     __tablename__ = "folders"
@@ -55,12 +59,14 @@ class FolderEntity(Base):
     def is_root(self) -> bool:
         return self.parent_folder_id is None
 
+
 shared_files = Table(
     "shared_files",
     Base.metadata,
     Column("file_id", ForeignKey("files.id"), primary_key=True),
     Column("user_id", ForeignKey("users.id"), primary_key=True),
 )
+
 
 class FileEntity(Base):
     __tablename__ = "files"

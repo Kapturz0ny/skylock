@@ -18,6 +18,7 @@ from skylock.utils.security import get_user_from_jwt
 
 from fastapi import HTTPException
 
+
 class ResourceService:
     def __init__(
         self,
@@ -148,20 +149,19 @@ class ResourceService:
         privacy = file.privacy
         token = token.replace("Bearer ", "")
 
-        print("Getting verified file")
-
         if privacy == Privacy.PUBLIC:
             return file
 
         try:
             user = get_user_from_jwt(token, self._user_repository)
         except HTTPException:
-            print("Invalid token")
             raise ForbiddenActionException("Invalid token")
 
-        print("Got user")
-
-        if privacy == Privacy.PROTECTED and user.username not in file.shared_to and user.id != file.owner_id:
+        if (
+            privacy == Privacy.PROTECTED
+            and user.username not in file.shared_to
+            and user.id != file.owner_id
+        ):
             raise ForbiddenActionException(f"file is not shared with you")
 
         if privacy == Privacy.PRIVATE and user.id != file.owner_id:
@@ -178,7 +178,11 @@ class ResourceService:
         return file
 
     def create_file(
-        self, user_path: UserPath, data: bytes, force: bool = False, privacy: Privacy = Privacy.PRIVATE
+        self,
+        user_path: UserPath,
+        data: bytes,
+        force: bool = False,
+        privacy: Privacy = Privacy.PRIVATE,
     ) -> db_models.FileEntity:
         if not user_path.name:
             raise ForbiddenActionException("Creation of file with no name is forbidden")
@@ -205,7 +209,9 @@ class ResourceService:
 
         return new_file
 
-    def update_file(self, user_path: UserPath, privacy: Privacy, shared_to: list[str]) -> db_models.FileEntity:
+    def update_file(
+        self, user_path: UserPath, privacy: Privacy, shared_to: list[str]
+    ) -> db_models.FileEntity:
         file = self._path_resolver.file_from_path(user_path)
         file.privacy = privacy
         file.shared_to = shared_to

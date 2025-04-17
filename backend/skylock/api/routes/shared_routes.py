@@ -38,8 +38,6 @@ def download_shared_file(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
     token = request.cookies.get("access_token")
-    print(file_id)
-    print(token)
     file_data = skylock.download_shared_file(file_id, token)
 
     return StreamingResponse(

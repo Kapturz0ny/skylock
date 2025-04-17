@@ -3,6 +3,7 @@ from typing import IO, Literal
 from pydantic import BaseModel
 from enum import Enum as PyEnum
 
+
 class Privacy(str, PyEnum):
     PRIVATE = "private"
     PROTECTED = "protected"

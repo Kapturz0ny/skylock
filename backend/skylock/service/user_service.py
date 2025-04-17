@@ -33,7 +33,7 @@ class UserService:
             raise UserAlreadyExists()
         user_secret = pyotp.random_base32()
 
-        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE+5, user_secret)
+        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE + 5, user_secret)
 
         totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
 

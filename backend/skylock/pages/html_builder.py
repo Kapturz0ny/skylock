@@ -8,6 +8,7 @@ from skylock.utils.url_generator import UrlGenerator
 from skylock.utils.security import get_user_from_jwt
 from skylock.api.models import Privacy
 
+
 class HtmlBuilder:
     def __init__(
         self, skylock: SkylockFacade, templates: Jinja2Templates, url_generator: UrlGenerator
@@ -49,10 +50,10 @@ class HtmlBuilder:
 
         if privacy == Privacy.PUBLIC:
             return self._templates.TemplateResponse(
-            request,
-            "file.html",
-            {"file": {"name": file.name, "path": file.path, "download_url": download_url}},
-        )
+                request,
+                "file.html",
+                {"file": {"name": file.name, "path": file.path, "download_url": download_url}},
+            )
 
         token = request.cookies.get("access_token")
 
@@ -65,7 +66,11 @@ class HtmlBuilder:
         except HTTPException:
             return self.build_login_page(request, file_id, "Invalid Token")
 
-        if privacy == Privacy.PROTECTED and user.username not in file.shared_to and user.id != file.owner_id:
+        if (
+            privacy == Privacy.PROTECTED
+            and user.username not in file.shared_to
+            and user.id != file.owner_id
+        ):
             return self.build_login_page(request, file_id, "File not shared with you")
 
         if privacy == Privacy.PRIVATE and user.id != file.owner_id:

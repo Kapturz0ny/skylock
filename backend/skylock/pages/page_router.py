@@ -5,7 +5,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from skylock.pages.dependencies import get_html_bulder, get_templates
 from skylock.pages.html_builder import HtmlBuilder
-from skylock.utils.exceptions import ForbiddenActionException, ResourceNotFoundException, InvalidCredentialsException
+from skylock.utils.exceptions import (
+    ForbiddenActionException,
+    ResourceNotFoundException,
+    InvalidCredentialsException,
+)
 
 from skylock.api.dependencies import get_user_service
 from skylock.service.user_service import UserService
@@ -24,6 +28,7 @@ def folder_contents(
 ):
     return html_builder.build_folder_contents_page(request, id)
 
+
 @html_handler.post("/files/{file_id}/login", response_class=HTMLResponse)
 async def login_file_post(
     request: Request,
@@ -40,19 +45,21 @@ async def login_file_post(
             value=f"Bearer {token.access_token}",
             httponly=True,
             max_age=3600,
-            samesite="lax"
+            samesite="lax",
         )
         return response
     except InvalidCredentialsException:
         return templates.TemplateResponse(
             "login_form.html",
             {"request": request, "file_id": file_id, "error": "Invalid credentials"},
-            status_code=401
+            status_code=401,
         )
+
 
 @html_handler.get("/files/{id}", response_class=HTMLResponse)
 def file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
     return html_builder.build_file_page(request, id)
+
 
 templates = get_templates()
 

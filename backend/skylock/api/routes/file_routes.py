@@ -10,6 +10,7 @@ from skylock.database import models as db_models
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.api import models
+from skylock.api.models import Privacy
 
 router = APIRouter(tags=["Resource"], prefix="/files")
 
@@ -49,13 +50,13 @@ def upload_file(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     file: UploadFile,
     force: bool = False,
-    public: bool = False,
+    privacy: Privacy = Privacy.PRIVATE,
 ) -> models.File:
     return skylock.upload_file(
         user_path=UserPath(path=path, owner=user),
         file_data=file.file.read(),
         force=force,
-        public=public,
+        privacy=privacy,
     )
 
 
@@ -106,7 +107,7 @@ def delete_file(
     summary="Change file visablity",
     description=(
         """
-        This endpoint allows the user to change the visability of a specified file. 
+        This endpoint allows the user to change the visability of a specified file.
         Sharing a file opens it up to public access.
         """
     ),

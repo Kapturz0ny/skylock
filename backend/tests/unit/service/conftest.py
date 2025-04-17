@@ -35,10 +35,17 @@ def storage_service(tmp_path):
 
 
 @pytest.fixture
-def resource_service(mock_file_repository, mock_folder_repository, path_resolver, storage_service):
+def resource_service(
+    mock_file_repository,
+    mock_folder_repository,
+    path_resolver,
+    storage_service,
+    mock_user_repository,
+):
     return ResourceService(
         file_repository=mock_file_repository,
         folder_repository=mock_folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
+        user_repository=mock_user_repository,
     )

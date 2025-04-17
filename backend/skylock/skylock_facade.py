@@ -11,7 +11,6 @@ from skylock.utils.url_generator import UrlGenerator
 from typing import Literal
 
 
-
 class SkylockFacade:
     def __init__(
         self,
@@ -88,7 +87,11 @@ class SkylockFacade:
 
     # File Operations
     def upload_file(
-        self, user_path: UserPath, file_data: bytes, force: bool = False, privacy: Privacy = Privacy.PRIVATE
+        self,
+        user_path: UserPath,
+        file_data: bytes,
+        force: bool = False,
+        privacy: Privacy = Privacy.PRIVATE,
     ) -> models.File:
         file = self._resource_service.create_file(user_path, file_data, force, privacy)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
@@ -108,7 +111,9 @@ class SkylockFacade:
         data = self._resource_service.get_shared_file_data(file_id)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
 
-    def update_file(self, user_path: UserPath, privacy: Privacy, shared_to: list[str]) -> models.File:
+    def update_file(
+        self, user_path: UserPath, privacy: Privacy, shared_to: list[str]
+    ) -> models.File:
         found = self._user_service.find_shared_to_users(shared_to)
         file = self._resource_service.update_file(user_path, privacy, found)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
