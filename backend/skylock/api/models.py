@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from typing import IO, Literal
 from pydantic import BaseModel
+from enum import Enum as PyEnum
+
+class Privacy(str, PyEnum):
+    PRIVATE = "private"
+    PROTECTED = "protected"
+    PUBLIC = "public"
 
 
 class Token(BaseModel):
@@ -20,7 +26,7 @@ class File(BaseModel):
     name: str
     path: str
     owner_id: str
-    privacy: Literal["private", "protected", "public"]
+    privacy: Privacy
     shared_to: list[str] = []
 
 

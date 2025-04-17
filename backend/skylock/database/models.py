@@ -2,6 +2,7 @@ import uuid
 from typing import Optional, List, Set
 from sqlalchemy import orm, ForeignKey, Enum, Table, Column, Text
 from sqlalchemy.dialects.sqlite import TEXT  # Use TEXT from sqlite dialect
+from skylock.api.models import Privacy
 import json
 
 class Base(orm.DeclarativeBase):
@@ -67,7 +68,7 @@ class FileEntity(Base):
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
     folder_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("folders.id"))
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
-    privacy: orm.Mapped[str] = orm.mapped_column(Enum("private", "protected", "public"))
+    privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
     shared_to: orm.Mapped[List[str]] = orm.mapped_column(TEXT, default=set)
 
     folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")

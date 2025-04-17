@@ -13,6 +13,7 @@ from skylock.utils.exceptions import (
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 
+from skylock.api.models import Privacy
 
 class ResourceService:
     def __init__(
@@ -83,7 +84,7 @@ class ResourceService:
 
         self._folder_repository.save(folder)
 
-    def _update_file(self, file: db_models.FileEntity, privacy: Literal["private", "protected", "public"]) -> None:
+    def _update_file(self, file: db_models.FileEntity, privacy: Privacy) -> None:
         file.privacy = privacy
         self._file_repository.save(file)
 
@@ -140,13 +141,13 @@ class ResourceService:
     def get_public_file(self, file_id: str) -> db_models.FileEntity:
         file = self.get_file_by_id(file_id)
 
-        if file.privacy != "public":
+        if file.privacy != Privacy.PUBLIC:
             raise ForbiddenActionException(f"folder with id {file_id} is not public")
 
         return file
 
     def create_file(
-        self, user_path: UserPath, data: bytes, force: bool = False, privacy: Literal["private", "protected", "public"] = "private"
+        self, user_path: UserPath, data: bytes, force: bool = False, privacy: Privacy = Privacy.PRIVATE
     ) -> db_models.FileEntity:
         if not user_path.name:
             raise ForbiddenActionException("Creation of file with no name is forbidden")
@@ -173,7 +174,7 @@ class ResourceService:
 
         return new_file
 
-    def update_file(self, user_path: UserPath, privacy: Literal["private", "protected", "public"], shared_to: list[str]) -> db_models.FileEntity:
+    def update_file(self, user_path: UserPath, privacy: Privacy, shared_to: list[str]) -> db_models.FileEntity:
         file = self._path_resolver.file_from_path(user_path)
         file.privacy = privacy
         file.shared_to = shared_to
@@ -194,7 +195,7 @@ class ResourceService:
     def get_public_file_data(self, file_id: str) -> IO[bytes]:
         file = self.get_file_by_id(file_id)
 
-        if file.privacy != "public":
+        if file.privacy != Privacy.PUBLIC:
             raise ForbiddenActionException(f"File with id {file_id} is not public")
 
         return self._get_file_data(file)

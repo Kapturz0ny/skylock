@@ -10,6 +10,8 @@ from skylock.skylock_facade import SkylockFacade
 from skylock.database import models as db_models
 from skylock.utils.path import UserPath
 
+from skylock.api.models import Privacy
+
 
 router = APIRouter(tags=["Resource", "Upload"], prefix="/upload")
 
@@ -49,7 +51,7 @@ def upload_file(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     file: UploadFile,
     force: bool = False,
-    privacy: Literal["private", "public"] = "private",
+    privacy: Privacy = Privacy.PRIVATE,
 ) -> models.File:
     return skylock.upload_file(
         user_path=UserPath(path=path, owner=user),
