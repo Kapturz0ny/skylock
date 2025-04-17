@@ -11,6 +11,7 @@ from skylock.database.models import FileEntity, FolderEntity, UserEntity
 from skylock.utils.path import UserPath
 
 from skylock.api.models import Privacy
+from fastapi import HTTPException
 
 
 def test_get_root_folder_success(resource_service, mock_folder_repository):
@@ -320,7 +321,7 @@ def test_get_file_by_id_no_file(resource_service):
         resource_service.get_file_by_id(file_id)
 
 
-def test_get_verified_file(resource_service):
+def test_get_verified_file_public(resource_service):
     file_id = "file-123"
     file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC)
 
@@ -365,3 +366,92 @@ def test_get_verified_file_private_not_owner(resource_service):
     ):
         with pytest.raises(ForbiddenActionException):
             resource_service.get_verified_file(file_id, token)
+
+def test_get_verified_file_protected(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
+    file.shared_to = ["testuser"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-456", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        result = resource_service.get_verified_file(file_id, token)
+        assert result == file
+        resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+def test_get_verified_file_protected_not_shared(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
+    file.shared_to = ["someone"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-789", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        with pytest.raises(ForbiddenActionException):
+            resource_service.get_verified_file(file_id, token)
+
+def test_get_verified_file_protected_owner(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
+    file.shared_to = ["user-456"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-123", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        result = resource_service.get_verified_file(file_id, token)
+        assert result == file
+        resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+def test_get_verified_file_invalid_token(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE)
+
+    resource_service._file_repository.get_by_id.return_value = file
+    token = "Bearer invalid_token"
+    user = UserEntity(id="user-123", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        side_effect=HTTPException(status_code=403),
+    ):
+        with pytest.raises(ForbiddenActionException):
+            resource_service.get_verified_file(file_id, token)
+
+
+def test_get_public_file(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC)
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    result = resource_service.get_public_file(file_id)
+    assert result == file
+    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_public_file_not_public(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE)
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    with pytest.raises(ForbiddenActionException):
+        resource_service.get_public_file(file_id)
