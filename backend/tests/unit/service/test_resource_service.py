@@ -276,6 +276,7 @@ def test_get_folder_by_id(resource_service):
     assert result == folder
     resource_service._folder_repository.get_by_id.assert_called_once_with(folder_id)
 
+
 def test_get_folder_by_id_no_folder(resource_service):
     folder_id = "folder-123"
     resource_service._folder_repository.get_by_id.return_value = None
@@ -294,6 +295,7 @@ def test_get_public_folder(resource_service):
     assert result == folder
     resource_service._folder_repository.get_by_id.assert_called_once_with(folder_id)
 
+
 def test_get_public_folder_not_public(resource_service):
     folder_id = "folder-123"
     folder = FolderEntity(id=folder_id, name="test_folder", is_public=False)
@@ -301,6 +303,7 @@ def test_get_public_folder_not_public(resource_service):
 
     with pytest.raises(ForbiddenActionException):
         resource_service.get_public_folder(folder_id)
+
 
 def test_get_file_by_id(resource_service):
     file_id = "file-123"
@@ -367,6 +370,7 @@ def test_get_verified_file_private_not_owner(resource_service):
         with pytest.raises(ForbiddenActionException):
             resource_service.get_verified_file(file_id, token)
 
+
 def test_get_verified_file_protected(resource_service):
     file_id = "file-123"
     file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
@@ -385,6 +389,7 @@ def test_get_verified_file_protected(resource_service):
         assert result == file
         resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
 
+
 def test_get_verified_file_protected_not_shared(resource_service):
     file_id = "file-123"
     file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
@@ -401,6 +406,7 @@ def test_get_verified_file_protected_not_shared(resource_service):
     ):
         with pytest.raises(ForbiddenActionException):
             resource_service.get_verified_file(file_id, token)
+
 
 def test_get_verified_file_protected_owner(resource_service):
     file_id = "file-123"
@@ -419,6 +425,7 @@ def test_get_verified_file_protected_owner(resource_service):
         result = resource_service.get_verified_file(file_id, token)
         assert result == file
         resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
 
 def test_get_verified_file_invalid_token(resource_service):
     file_id = "file-123"
