@@ -9,7 +9,10 @@ from skylock.utils.url_generator import UrlGenerator
 
 @pytest.fixture
 def mock_skylock_facade():
-    return MagicMock(spec=SkylockFacade)
+    mock = MagicMock(spec=SkylockFacade)
+    mock._user_service = MagicMock()
+    mock._user_service.user_repository = MagicMock()
+    return mock
 
 
 @pytest.fixture
