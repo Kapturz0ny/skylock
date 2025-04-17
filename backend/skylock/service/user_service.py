@@ -14,6 +14,7 @@ from skylock.config import ENV_TYPE
 from skylock.service.gmail import send_mail
 from skylock.utils.logger import logger as s_logger
 from skylock.utils.reddis_mem import redis_mem as s_redis_mem
+from templates.mails import two_fa_code_mail
 
 
 class UserService:
@@ -38,30 +39,9 @@ class UserService:
         totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
 
         subject = "Complete you registration to Skylock!"
+        body = two_fa_code_mail(username, totp.now(), self.TOKEN_LIFE)
 
-        html_body = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2>Hello {username}!</h2>
-            <p>
-            Thank you for registering with Skylock.
-            Please use the following <strong>2FA token</strong> to complete your registration:
-            </p>
-            <p style="font-size: 1.2em; font-weight: bold; color: #2E86C1;">
-            {totp.now()}
-            </p>
-            <p>
-            Please note that the code will expire in {self.TOKEN_LIFE / 60} minutes
-            If you did not initiate this request, please disregard this email.
-            </p>
-            <p>
-            Best regards,<br>
-            The Skylock Team
-            </p>
-        </body>
-        </html>
-        """
-        send_mail(email, subject, html_body)
+        send_mail(email, subject, body)
         # TODO handle potential send_mail error
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
