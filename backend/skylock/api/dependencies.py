@@ -56,12 +56,14 @@ def get_resource_service(
     folder_repository: Annotated[FolderRepository, Depends(get_folder_repository)],
     path_resolver: Annotated[PathResolver, Depends(get_path_resolver)],
     storage_service: Annotated[FileStorageService, Depends(get_storage_service)],
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
 ) -> ResourceService:
     return ResourceService(
         file_repository=file_repository,
         folder_repository=folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
+        user_repository=user_repository
     )
 
 

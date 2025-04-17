@@ -5,7 +5,7 @@ from skylock.api.routes import (
     download_routes,
     file_routes,
     folder_routes,
-    public_routes,
+    shared_routes,
     share_routes,
     upload_routes,
 )
@@ -43,7 +43,7 @@ api.add_exception_handler(Wrong2FAException, wrong_code_handler)
 api.include_router(auth_routes.router)
 api.include_router(folder_routes.router)
 api.include_router(file_routes.router)
-api.include_router(public_routes.router)
+api.include_router(shared_routes.router)
 api.include_router(share_routes.router)
 api.include_router(download_routes.router)
 api.include_router(upload_routes.router)

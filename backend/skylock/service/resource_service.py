@@ -1,7 +1,7 @@
 from typing import IO, Optional, Literal
 
 from skylock.database import models as db_models
-from skylock.database.repository import FileRepository, FolderRepository
+from skylock.database.repository import FileRepository, FolderRepository, UserRepository
 from skylock.service.path_resolver import PathResolver
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -14,6 +14,9 @@ from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 
 from skylock.api.models import Privacy
+from skylock.utils.security import get_user_from_jwt
+
+from fastapi import HTTPException
 
 class ResourceService:
     def __init__(
@@ -22,11 +25,13 @@ class ResourceService:
         folder_repository: FolderRepository,
         path_resolver: PathResolver,
         file_storage_service: FileStorageService,
+        user_repository: UserRepository,
     ):
         self._file_repository = file_repository
         self._folder_repository = folder_repository
         self._path_resolver = path_resolver
         self._file_storage_service = file_storage_service
+        self._user_repository = user_repository
 
     def get_folder(self, user_path: UserPath) -> db_models.FolderEntity:
         return self._path_resolver.folder_from_path(user_path)
@@ -138,6 +143,32 @@ class ResourceService:
 
         return file
 
+    def get_verified_file(self, file_id: str, token) -> db_models.FileEntity:
+        file = self.get_file_by_id(file_id)
+        privacy = file.privacy
+        token = token.replace("Bearer ", "")
+
+        print("Getting verified file")
+
+        if privacy == Privacy.PUBLIC:
+            return file
+
+        try:
+            user = get_user_from_jwt(token, self._user_repository)
+        except HTTPException:
+            print("Invalid token")
+            raise ForbiddenActionException("Invalid token")
+
+        print("Got user")
+
+        if privacy == Privacy.PROTECTED and user.username not in file.shared_to and user.id != file.owner_id:
+            raise ForbiddenActionException(f"file is not shared with you")
+
+        if privacy == Privacy.PRIVATE and user.id != file.owner_id:
+            raise ForbiddenActionException(f"file is not shared with you")
+
+        return file
+
     def get_public_file(self, file_id: str) -> db_models.FileEntity:
         file = self.get_file_by_id(file_id)
 
@@ -198,6 +229,10 @@ class ResourceService:
         if file.privacy != Privacy.PUBLIC:
             raise ForbiddenActionException(f"File with id {file_id} is not public")
 
+        return self._get_file_data(file)
+
+    def get_shared_file_data(self, file_id: str) -> IO[bytes]:
+        file = self.get_file_by_id(file_id)
         return self._get_file_data(file)
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
