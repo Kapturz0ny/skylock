@@ -1,6 +1,7 @@
 import pytest
 from skylock.api.routes import folder_routes
 from skylock.utils.path import UserPath
+from skylock.database.models import Privacy
 
 
 @pytest.fixture(autouse=True)
@@ -74,14 +75,14 @@ def test_create_folder_with_parents(client):
 
 def test_create_folder_with_parents_public(client):
     response = client.post(
-        "/folders/non_existent1/non_existent2/subfolder1?parent=true&is_public=true"
+        "/folders/non_existent1/non_existent2/subfolder1?parent=true&privacy=public"
     )
     folder1 = client.get("/folders/non_existent1").json()
     folder2 = client.get("/folders/non_existent1/non_existent2").json()
 
     assert response.status_code == 201
-    assert folder1["folders"][0]["is_public"] == True
-    assert folder2["folders"][0]["is_public"] == True
+    assert folder1["folders"][0]["privacy"] == Privacy.PUBLIC
+    assert folder2["folders"][0]["privacy"] == Privacy.PUBLIC
 
 
 # DELETE METHODS
@@ -102,30 +103,30 @@ def test_delete_not_found(client):
 
 # PATCH METHODS
 def test_update_folder_visibility_success(client):
-    response = client.patch("/folders/folder1", json={"is_public": True, "recursive": False})
+    response = client.patch("/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": False})
     folder = response.json()
     folder_contents = client.get("/folders/folder1").json()
 
     assert response.status_code == 200
-    assert folder["is_public"] == True
+    assert folder["privacy"] == Privacy.PUBLIC
     assert response.status_code == 200
-    assert folder_contents["folders"][0]["is_public"] == False
+    assert folder_contents["folders"][0]["privacy"] == Privacy.PRIVATE
 
 
 def test_update_nested_folder_visibility_success(client):
-    response = client.patch("/folders/folder1/subfolder1", json={"is_public": True})
+    response = client.patch("/folders/folder1/subfolder1", json={"privacy": Privacy.PUBLIC})
     folder = response.json()
     assert response.status_code == 200
-    assert folder["is_public"] == True
+    assert folder["privacy"] == Privacy.PUBLIC
 
 
 def test_update_folder_visibility_invalid_folder(client):
-    response = client.patch("/folders/non_existent_folder", json={"is_public": True})
+    response = client.patch("/folders/non_existent_folder", json={"privacy": Privacy.PUBLIC})
     assert response.status_code == 404
 
 
 def test_update_folder_visibility_root_folder_path(client):
-    response = client.patch("/folders", json={"is_public": True})
+    response = client.patch("/folders", json={"privacy": Privacy.PUBLIC})
     assert response.status_code == 200
 
 
@@ -135,8 +136,8 @@ def test_update_folder_visibility_invalid_payload(client):
 
 
 def test_update_folder_visibility_recursive(client):
-    response = client.patch("/folders/folder1", json={"is_public": True, "recursive": True})
+    response = client.patch("/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": True})
     folder_contents = client.get("/folders/folder1").json()
 
     assert response.status_code == 200
-    assert folder_contents["folders"][0]["is_public"] == True
+    assert folder_contents["folders"][0]["privacy"] == Privacy.PUBLIC
