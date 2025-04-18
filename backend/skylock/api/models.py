@@ -19,7 +19,7 @@ class Folder(BaseModel):
     id: str
     name: str
     path: str
-    is_public: bool
+    privacy: Privacy
 
 
 class File(BaseModel):
@@ -62,18 +62,18 @@ class RegisterUserRequest(BaseModel):
 
 
 class UpdateFolderRequest(BaseModel):
-    is_public: bool
+    privacy: Privacy
     recursive: bool = False
 
 
 class UpdateFileRequest(BaseModel):
-    privacy: Literal["private", "protected", "public"]
+    privacy: Privacy
     shared: list[str] = []
 
 
 class UploadOptions(BaseModel):
     force: bool
-    public: bool
+    privacy: Privacy
 
 
 class ResourceLocationResponse(BaseModel):

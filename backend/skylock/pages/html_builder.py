@@ -25,12 +25,12 @@ class HtmlBuilder:
         public_folders = [
             {"name": folder.name, "url": self._url_generator.generate_url_for_folder(folder.id)}
             for folder in folder_contents.folders
-            if folder.is_public
+            if folder.privacy == Privacy.PUBLIC
         ]
         public_files = [
             {"name": file.name, "url": self._url_generator.generate_url_for_file(file.id)}
             for file in folder_contents.files
-            if file.is_public
+            if file.privacy == Privacy.PUBLIC
         ]
         return self._templates.TemplateResponse(
             request,

@@ -2,6 +2,7 @@ from typing import IO
 from skylock.api import models
 from skylock.database import models as db_models
 from skylock.utils.path import UserPath
+from skylock.database.models import Privacy
 
 
 class ResponseBuilder:
@@ -23,7 +24,7 @@ class ResponseBuilder:
             models.Folder(
                 id=folder.id,
                 name=folder.name,
-                is_public=folder.is_public,
+                privacy=folder.privacy,
                 path=f"{parent_path}/{folder.name}",
             )
             for folder in folder.subfolders
@@ -39,7 +40,7 @@ class ResponseBuilder:
         self, folder: db_models.FolderEntity, user_path: UserPath
     ) -> models.Folder:
         return models.Folder(
-            id=folder.id, name=folder.name, path=f"/{user_path.path}", is_public=folder.is_public
+            id=folder.id, name=folder.name, path=f"/{user_path.path}", privacy=folder.privacy
         )
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:

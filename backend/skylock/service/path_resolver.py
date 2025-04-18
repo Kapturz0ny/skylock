@@ -42,7 +42,7 @@ class PathResolver:
         return file
 
     def path_from_folder(self, folder: db_models.FolderEntity) -> UserPath:
-        path_parts = []
+        path_parts: list[str] = []
         current_folder = folder
         while current_folder.parent_folder is not None:
             path_parts.insert(0, current_folder.name)

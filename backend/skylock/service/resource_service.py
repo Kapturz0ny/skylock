@@ -48,12 +48,12 @@ class ResourceService:
     def get_public_folder(self, folder_id: str) -> db_models.FolderEntity:
         folder = self.get_folder_by_id(folder_id)
 
-        if not folder.is_public:
+        if not folder.privacy == Privacy.PUBLIC:
             raise ForbiddenActionException(f"Folder with id {folder_id} is not public")
 
         return folder
 
-    def create_folder(self, user_path: UserPath, public: bool = False) -> db_models.FolderEntity:
+    def create_folder(self, user_path: UserPath, privacy: Privacy = Privacy.PRIVATE) -> db_models.FolderEntity:
         if user_path.is_root_folder():
             raise ForbiddenActionException("Creation of root folder is forbidden")
 
@@ -64,29 +64,29 @@ class ResourceService:
         self._assert_no_children_matching_name(parent, folder_name)
 
         new_folder = db_models.FolderEntity(
-            name=folder_name, parent_folder=parent, owner=user_path.owner, is_public=public
+            name=folder_name, parent_folder=parent, owner=user_path.owner, privacy=privacy
         )
         return self._folder_repository.save(new_folder)
 
     def update_folder(
-        self, user_path: UserPath, is_public: bool, recursive: bool
+        self, user_path: UserPath, privacy: Privacy, recursive: bool
     ) -> db_models.FolderEntity:
         folder = self._path_resolver.folder_from_path(user_path)
-        self._update_folder(folder, is_public, recursive)
+        self._update_folder(folder, privacy, recursive)
         return folder
 
     def _update_folder(
-        self, folder: db_models.FolderEntity, is_public: bool, recursive: bool
+        self, folder: db_models.FolderEntity, privacy: Privacy, recursive: bool
     ) -> None:
 
-        folder.is_public = is_public
+        folder.privacy = privacy
 
         for file in folder.files:
-            self._update_file(file, is_public)
+            self._update_file(file, privacy)
 
         if recursive:
             for subfolder in folder.subfolders:
-                self._update_folder(subfolder, is_public, recursive)
+                self._update_folder(subfolder, privacy, recursive)
 
         self._folder_repository.save(folder)
 
@@ -95,16 +95,16 @@ class ResourceService:
         self._file_repository.save(file)
 
     def create_folder_with_parents(
-        self, user_path: UserPath, public: bool = False
+        self, user_path: UserPath, privacy: Privacy = Privacy.PRIVATE
     ) -> db_models.FolderEntity:
         if user_path.is_root_folder():
             raise ForbiddenActionException("Creation of root folder is forbidden")
 
         for parent in reversed(user_path.parents):
             if not parent.is_root_folder() and not self._folder_exists(parent):
-                self.create_folder(parent, public=public)
+                self.create_folder(parent, privacy=privacy)
 
-        return self.create_folder(user_path, public)
+        return self.create_folder(user_path, privacy)
 
     def _folder_exists(self, user_path: UserPath) -> bool:
         try:

@@ -18,7 +18,7 @@ from templates.mails import two_fa_code_mail
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None) -> str:
+    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None):
         self.user_repository = user_repository
         self.password_hasher = argon2.PasswordHasher()
 

@@ -30,7 +30,7 @@ class SkylockFacade:
         self._zip_service = zip_service
 
     # User Management Methods
-    def register_user(self, username: str, password: str, email: str):
+    def register_user(self, username: str, password: str, email: str) -> None:
         user = self._user_service.register_user(username, password, email)
         # self._resource_service.create_root_folder(UserPath.root_folder_of(user))
 
@@ -43,14 +43,14 @@ class SkylockFacade:
 
     # Folder Operations
     def create_folder(
-        self, user_path: UserPath, with_parents: bool = False, public: bool = False
+        self, user_path: UserPath, with_parents: bool = False, privacy: Privacy = Privacy.PRIVATE
     ) -> models.Folder:
         if with_parents:
             folder = self._resource_service.create_folder_with_parents(
-                user_path=user_path, public=public
+                user_path=user_path, privacy=privacy
             )
         else:
-            folder = self._resource_service.create_folder(user_path=user_path, public=public)
+            folder = self._resource_service.create_folder(user_path=user_path, privacy=privacy)
 
         return self._response_builder.get_folder_response(folder=folder, user_path=user_path)
 
@@ -70,8 +70,8 @@ class SkylockFacade:
         path = self._path_resolver.path_from_folder(folder)
         return self._response_builder.get_folder_contents_response(folder=folder, user_path=path)
 
-    def update_folder(self, user_path: UserPath, is_public: bool, recursive: bool) -> models.Folder:
-        folder = self._resource_service.update_folder(user_path, is_public, recursive)
+    def update_folder(self, user_path: UserPath, privacy: Privacy, recursive: bool) -> models.Folder:
+        folder = self._resource_service.update_folder(user_path, privacy, recursive)
         return self._response_builder.get_folder_response(folder=folder, user_path=user_path)
 
     def delete_folder(self, user_path: UserPath, is_recursively: bool = False):
@@ -80,7 +80,7 @@ class SkylockFacade:
     def get_folder_url(self, user_path: UserPath) -> str:
         folder = self._resource_service.get_folder(user_path)
 
-        if not folder.is_public:
+        if not folder.privacy == Privacy.PUBLIC:
             raise ForbiddenActionException(f"Folder {folder.name} is not public, cannot be shared")
 
         return self._url_generator.generate_url_for_folder(folder.id)

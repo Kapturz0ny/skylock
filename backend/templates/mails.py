@@ -1,4 +1,4 @@
-def two_fa_code_mail(username: str, token_code: int, token_life: int) -> str:
+def two_fa_code_mail(username: str, token_code: str, token_life: int) -> str:
 	"""
 	Generates an HTML email template for sending a 2FA code to the user.
 
