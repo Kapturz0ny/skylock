@@ -3,7 +3,7 @@ This module contains commands the user can run to interact with the SkyLock.
 """
 
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional
 from typing_extensions import Annotated
 import typer
 import re
@@ -18,11 +18,10 @@ from skylock_cli.core import (
     path_parser,
     url_manager,
 )
+from skylock_cli.model.privacy import Privacy
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 console = Console()
-
-PRIVACY_CHOICES = ["private", "protected", "public"]
 
 
 @app.command()
@@ -82,14 +81,16 @@ def mkdir(
         Optional[bool],
         typer.Option("--parent", help="Create parent directories as needed"),
     ] = False,
-    public: Annotated[
-        Optional[bool], typer.Option("--public", help="Make directory public")
-    ] = False,
+    privacy: Annotated[
+        Optional[Privacy], typer.Option(
+            "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
+        )
+    ] = Privacy.PRIVATE,
 ) -> None:
     """
     Create a new directory in the SkyLock
     """
-    new_dir = dir_operations.create_directory(directory_path, parent, public)
+    new_dir = dir_operations.create_directory(directory_path, parent, privacy)
     pwd()
     typer.secho(
         f"Directory {new_dir.path} created successfully",
@@ -218,14 +219,18 @@ def upload(
     force: Annotated[
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
-    public: Annotated[
-        Optional[bool], typer.Option("--public", help="Make uploaded file public")
-    ] = False,
+    # Commented out for now as we don't let user define privacy in upload
+    
+    # privacy: Annotated[
+    #     Privacy, typer.Option(
+    #         "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
+    #     )
+    # ] = Privacy.PRIVATE,
 ) -> None:
     """
     Upload a file to the SkyLock.
     """
-    privacy = "private"
+    privacy = Privacy.PRIVATE
     if not file_path.exists():
         typer.secho(f"File {file_path} does not exist.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
@@ -234,8 +239,6 @@ def upload(
         typer.secho(f"{file_path} is not a file.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    if public:
-        privacy = "public"
 
     new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
     pwd()
@@ -301,11 +304,11 @@ def share(
         ),
     ],
     mode: Annotated[
-        Optional[str],
+        Privacy,
         typer.Option(
             "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
         ),
-    ] = "private",
+    ] = Privacy.PRIVATE,
     users: Annotated[
         Optional[str],
         typer.Option(
@@ -317,17 +320,9 @@ def share(
     """
     Share a resource.
     """
-    mode = mode.lower()
     user_list = []
 
-    if mode not in PRIVACY_CHOICES:
-        typer.secho(
-            f"Error: Invalid visibility mode '{mode}'. Must be 'protected', 'public', or 'private'.",
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(code=1)
-
-    if mode == "protected":
+    if mode == Privacy.PROTECTED:
         if not users:
             typer.secho(
                 "Error: Usernames are required for 'protected' mode.",

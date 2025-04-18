@@ -11,12 +11,13 @@ from skylock_cli.core.context_manager import ContextManager
 from skylock_cli.exceptions import api_exceptions
 from skylock_cli.model.token import Token
 from skylock_cli.api import bearer_auth
+from skylock_cli.model.privacy import Privacy
 from skylock_cli.utils.cli_exception_handler import handle_standard_errors
 
 client = Client(base_url=ContextManager.get_context().base_url + API_URL)
 
 
-def send_mkdir_request(token: Token, path: Path, parent: bool, public: bool) -> dict:
+def send_mkdir_request(token: Token, path: Path, parent: bool, privacy: Privacy) -> dict:
     """
     Send a mkdir request to the SkyLock backend API.
 
@@ -27,7 +28,7 @@ def send_mkdir_request(token: Token, path: Path, parent: bool, public: bool) -> 
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    params = {"parent": parent, "is_public": public}
+    params = {"parent": parent, "privacy": privacy.value}
 
     response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)
 
@@ -99,7 +100,7 @@ def send_make_public_request(token: Token, path: Path, recursive: bool) -> dict:
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": True, "recursive": recursive}
+    body = {"privacy": Privacy.PUBLIC.value, "recursive": recursive}
 
     response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
 
@@ -128,7 +129,7 @@ def send_make_private_request(token: Token, path: Path, recursive: bool) -> dict
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": False, "recursive": recursive}
+    body = {"privacy": Privacy.PRIVATE.value, "recursive": recursive}
 
     response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
 

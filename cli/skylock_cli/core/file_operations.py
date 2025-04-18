@@ -5,13 +5,13 @@ Module to handle logic for file operations
 from pathlib import Path
 import os
 import tempfile
-from typing import Literal
 
 from pydantic import TypeAdapter
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.core import path_parser, context_manager
 from skylock_cli.model.file import File
 from skylock_cli.model.share_link import ShareLink
+from skylock_cli.model.privacy import Privacy
 from skylock_cli.api import file_requests
 from skylock_cli.exceptions.core_exceptions import NotAFileError
 from skylock_cli.config import DOWNLOADS_DIR
@@ -22,7 +22,7 @@ def upload_file(
     real_file_path: Path,
     destination_path: Path,
     force: bool = False,
-    privacy: Literal["private", "public"] = "private",
+    privacy: Privacy = Privacy.PRIVATE,
 ) -> File:
     """Upload a file"""
     current_context = context_manager.ContextManager.get_context()
@@ -85,7 +85,7 @@ def remove_file(file_path: str) -> Path:
     return joind_path
 
 
-def change_file_visibility(file_path: str, mode: str, shared_to: str) -> File:
+def change_file_visibility(file_path: str, mode: Privacy, shared_to: list[str]) -> File:
     """Change files visibitity to one of [protected, private, public]"""
     current_context = context_manager.ContextManager.get_context()
     with CLIExceptionHandler():
