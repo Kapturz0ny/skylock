@@ -29,8 +29,8 @@ class UserEntity(Base):
     files: orm.Mapped[List["FileEntity"]] = orm.relationship(
         "FileEntity", back_populates="owner", lazy="selectin"
     )
-    shared_files: orm.Mapped[List["FileEntity"]] = orm.relationship(
-        secondary="shared_files", back_populates="shared_with"
+    shared_files: orm.Mapped[List["SharedFileEntity"]] = orm.relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
     )
 
 
@@ -60,14 +60,6 @@ class FolderEntity(Base):
         return self.parent_folder_id is None
 
 
-shared_files = Table(
-    "shared_files",
-    Base.metadata,
-    Column("file_id", ForeignKey("files.id"), primary_key=True),
-    Column("user_id", ForeignKey("users.id"), primary_key=True),
-)
-
-
 class FileEntity(Base):
     __tablename__ = "files"
 
@@ -79,8 +71,8 @@ class FileEntity(Base):
 
     folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")
     owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="files")
-    shared_with: orm.Mapped[List["UserEntity"]] = orm.relationship(
-        secondary=shared_files, back_populates="shared_files"
+    shared_with: orm.Mapped[List["SharedFileEntity"]] = orm.relationship(
+        back_populates="file", lazy="selectin", cascade="all, delete-orphan"
     )
 
     def _set_shared_to(self, value: set[str]):
@@ -93,3 +85,13 @@ class FileEntity(Base):
 
     __shared_to: orm.Mapped[Optional[str]] = orm.mapped_column(TEXT, default=None, name="shared_to")
     shared_to = property(_get_shared_to, _set_shared_to)
+
+
+class SharedFileEntity(Base):
+    __tablename__ = "shared_files"
+
+    file_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("files.id"), primary_key=True)
+    user_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"), primary_key=True)
+
+    file: orm.Mapped[FileEntity] = orm.relationship("FileEntity", back_populates="shared_with")
+    user: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="shared_files")

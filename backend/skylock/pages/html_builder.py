@@ -48,11 +48,15 @@ class HtmlBuilder:
         download_url = self._url_generator.generate_download_url_for_file(file_id)
         privacy = file.privacy
 
-        if privacy == Privacy.PUBLIC:
+        import_file_id = request.cookies.get("import_file")
+        is_import = import_file_id == file_id
+        
+        if privacy == Privacy.PUBLIC and not is_import:
+            import_url = self._url_generator.generate_import_url_for_file(file_id)
             return self._templates.TemplateResponse(
                 request,
                 "file.html",
-                {"file": {"name": file.name, "path": file.path, "download_url": download_url}},
+                {"file": {"name": file.name, "path": file.path, "download_url": download_url, "import_url": import_url}},
             )
 
         token = request.cookies.get("access_token")

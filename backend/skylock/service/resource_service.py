@@ -1,7 +1,7 @@
 from typing import IO, Optional, Literal
 
 from skylock.database import models as db_models
-from skylock.database.repository import FileRepository, FolderRepository, UserRepository
+from skylock.database.repository import FileRepository, FolderRepository, UserRepository, SharedFileRepository
 from skylock.service.path_resolver import PathResolver
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -27,12 +27,14 @@ class ResourceService:
         path_resolver: PathResolver,
         file_storage_service: FileStorageService,
         user_repository: UserRepository,
+        shared_file_repository: SharedFileRepository
     ):
         self._file_repository = file_repository
         self._folder_repository = folder_repository
         self._path_resolver = path_resolver
         self._file_storage_service = file_storage_service
         self._user_repository = user_repository
+        self._shared_file_repository = shared_file_repository
 
     def get_folder(self, user_path: UserPath) -> db_models.FolderEntity:
         return self._path_resolver.folder_from_path(user_path)
@@ -240,6 +242,22 @@ class ResourceService:
     def get_shared_file_data(self, file_id: str) -> IO[bytes]:
         file = self.get_file_by_id(file_id)
         return self._get_file_data(file)
+    
+    def potential_file_import(self, user_id: str, file_id: str):
+        print(f"potential_file_import: {user_id=}, {file_id=}")
+        file = self.get_file_by_id(file_id)
+        if file.owner_id != user_id:
+            if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
+                self.add_to_shared_files(user_id, file_id)
+
+    def add_to_shared_files(self, user_id: str, file_id: str):
+        self._shared_file_repository.save(
+            db_models.SharedFileEntity(
+                user_id=user_id,
+                file_id=file_id
+            )
+        )
+        # add file to shared folder
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
         self._file_storage_service.save_file(data=data, file=file)
