@@ -8,11 +8,13 @@ from skylock.pages.html_builder import HtmlBuilder
 from skylock.utils.exceptions import (
     ForbiddenActionException,
     ResourceNotFoundException,
-    InvalidCredentialsException,
+    InvalidCredentialsException
 )
 
 from skylock.api.dependencies import get_user_service
 from skylock.service.user_service import UserService
+from skylock.api.dependencies import get_resource_service
+from skylock.service.resource_service import ResourceService
 
 html_handler = FastAPI(docs_url=None, redoc_url=None)
 
@@ -34,11 +36,15 @@ async def login_file_post(
     request: Request,
     file_id: str,
     user_service: Annotated[UserService, Depends(get_user_service)],
+    resource_service: Annotated[ResourceService, Depends(get_resource_service)],
     login: str = Form(...),
     password: str = Form(...),
 ):
     try:
         token = user_service.login_user(login, password)
+        user = user_service.user_repository.get_by_username(login)
+        # user_service.login_user already checks if the user exists
+        resource_service.potential_file_import(user.id, file_id)
         response = RedirectResponse(url=f"/files/{file_id}", status_code=302)
         response.set_cookie(
             key="access_token",
@@ -59,6 +65,19 @@ async def login_file_post(
 @html_handler.get("/files/{id}", response_class=HTMLResponse)
 def file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
     return html_builder.build_file_page(request, id)
+
+
+@html_handler.post("/files/{file_id}/import", response_class=HTMLResponse)
+def import_file(file_id: str):
+    response = RedirectResponse(url=f"/files/{file_id}", status_code=302)
+    response.set_cookie(
+        key="import_file",
+        value=file_id,
+        max_age=300,
+        httponly=True,
+        samesite="lax"
+    )
+    return response
 
 
 templates = get_templates()
