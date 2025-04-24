@@ -18,7 +18,7 @@ from skylock.utils.exceptions import (
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 
-from skylock.api.models import Privacy
+from skylock.api.models import Privacy, FolderType
 from skylock.utils.security import get_user_from_jwt
 
 from fastapi import HTTPException
@@ -64,6 +64,7 @@ class ResourceService:
         self,
         user_path: UserPath,
         privacy: Privacy = Privacy.PRIVATE,
+        folder_type: FolderType = FolderType.NORMAL,
     ) -> db_models.FolderEntity:
         if user_path.is_root_folder():
             raise ForbiddenActionException("Creation of root folder is forbidden")
@@ -79,6 +80,7 @@ class ResourceService:
             parent_folder=parent,
             owner=user_path.owner,
             privacy=privacy,
+            type=folder_type,
         )
         return self._folder_repository.save(new_folder)
 

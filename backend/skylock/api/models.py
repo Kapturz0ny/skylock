@@ -10,6 +10,11 @@ class Privacy(str, PyEnum):
     PUBLIC = "public"
 
 
+class FolderType(str, PyEnum):
+    NORMAL = "normal"
+    SHARED = "shared"
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

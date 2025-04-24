@@ -9,8 +9,6 @@ from skylock.utils.exceptions import (
     UserAlreadyExists,
     InvalidCredentialsException,
     Wrong2FAException,
-    EmailAuthenticationError,
-    EmailServiceUnavailable,
 )
 from skylock.config import ENV_TYPE
 from skylock.service.gmail import send_mail
