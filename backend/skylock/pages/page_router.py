@@ -20,9 +20,7 @@ html_handler = FastAPI(docs_url=None, redoc_url=None)
 
 
 @html_handler.get("/", response_class=HTMLResponse)
-def index(
-    request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]
-):
+def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
     return html_builder.build_main_page(request)
 
 
@@ -85,16 +83,12 @@ templates = get_templates()
 
 
 @html_handler.exception_handler(ForbiddenActionException)
-async def forbidden_action_exception_handler(
-    request: Request, exc: ForbiddenActionException
-):
+async def forbidden_action_exception_handler(request: Request, exc: ForbiddenActionException):
     return templates.TemplateResponse(
         request, "403.html", {"message": exc.message}, status_code=403
     )
 
 
 @html_handler.exception_handler(ResourceNotFoundException)
-async def resource_not_found_exception_handler(
-    request: Request, _exc: ResourceNotFoundException
-):
+async def resource_not_found_exception_handler(request: Request, _exc: ResourceNotFoundException):
     return templates.TemplateResponse(request, "404.html", status_code=404)

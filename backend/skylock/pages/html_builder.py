@@ -24,9 +24,7 @@ class HtmlBuilder:
     def build_main_page(self, request: Request) -> HTMLResponse:
         return self._templates.TemplateResponse(request, "index.html")
 
-    def build_folder_contents_page(
-        self, request: Request, folder_id: str
-    ) -> HTMLResponse:
+    def build_folder_contents_page(self, request: Request, folder_id: str) -> HTMLResponse:
         folder_contents = self._skylock.get_public_folder_contents(folder_id)
         public_folders = [
             {
@@ -114,9 +112,7 @@ class HtmlBuilder:
             },
         )
 
-    def build_login_page(
-        self, request: Request, file_id: str, error=""
-    ) -> HTMLResponse:
+    def build_login_page(self, request: Request, file_id: str, error="") -> HTMLResponse:
         return self._templates.TemplateResponse(
             request,
             "login_form.html",

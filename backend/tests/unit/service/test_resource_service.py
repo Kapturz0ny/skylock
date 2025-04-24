@@ -17,9 +17,7 @@ from fastapi import HTTPException
 def test_get_root_folder_success(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath.root_folder_of(user)
-    root_folder = FolderEntity(
-        id="folder-456", name=user_path.root_folder_name, owner=user
-    )
+    root_folder = FolderEntity(id="folder-456", name=user_path.root_folder_name, owner=user)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [root_folder]
 
@@ -33,9 +31,7 @@ def test_get_root_folder_success(resource_service, mock_folder_repository):
 def test_get_subfolder_success(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath(path="test_folder", owner=user)
-    root_folder = FolderEntity(
-        id="folder-456", name=user_path.root_folder_name, owner=user
-    )
+    root_folder = FolderEntity(id="folder-456", name=user_path.root_folder_name, owner=user)
     subfolder = FolderEntity(id="folder-789", name="test_folder", owner=user)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
@@ -61,9 +57,7 @@ def test_get_root_folder_nonexistent(resource_service, mock_folder_repository):
 def test_get_subfolder_nonexistent(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath(path="non-existent", owner=user)
-    root_folder = FolderEntity(
-        id="folder-456", name=user_path.root_folder_name, owner=user
-    )
+    root_folder = FolderEntity(id="folder-456", name=user_path.root_folder_name, owner=user)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [root_folder, None]
 
@@ -74,9 +68,7 @@ def test_get_subfolder_nonexistent(resource_service, mock_folder_repository):
 def test_create_folder_success(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [root_folder]
 
@@ -95,12 +87,8 @@ def test_create_folder_root_forbidden(resource_service):
 def test_create_folder_duplicate_name(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
-    existing_folder = FolderEntity(
-        id="folder-456", name="subfolder", parent_folder=root_folder
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
+    existing_folder = FolderEntity(id="folder-456", name="subfolder", parent_folder=root_folder)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [root_folder]
 
@@ -111,12 +99,8 @@ def test_create_folder_duplicate_name(resource_service, mock_folder_repository):
 def test_delete_folder_success(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
-    subfolder = FolderEntity(
-        id="folder-456", name="subfolder", parent_folder_id=root_folder.id
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
+    subfolder = FolderEntity(id="folder-456", name="subfolder", parent_folder_id=root_folder.id)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
         root_folder,
@@ -130,12 +114,8 @@ def test_delete_folder_success(resource_service, mock_folder_repository):
 def test_delete_folder_not_empty(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
-    subfolder = FolderEntity(
-        id="folder-456", name="subfolder", parent_folder_id=root_folder.id
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
+    subfolder = FolderEntity(id="folder-456", name="subfolder", parent_folder_id=root_folder.id)
     sub_subfolder = FolderEntity(
         id="folder-789", name="sub_subfolder", parent_folder_id=subfolder.id
     )
@@ -155,15 +135,11 @@ def test_delete_folder_recursive_calls_file_deletion(
 ):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("parent_folder", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
     parent_folder = FolderEntity(
         id="folder-123", name="parent_folder", parent_folder_id=root_folder.id
     )
-    subfolder = FolderEntity(
-        id="folder-456", name="subfolder", parent_folder_id=parent_folder.id
-    )
+    subfolder = FolderEntity(id="folder-456", name="subfolder", parent_folder_id=parent_folder.id)
     file_in_subfolder = MagicMock()
 
     parent_folder.subfolders.append(subfolder)
@@ -173,17 +149,13 @@ def test_delete_folder_recursive_calls_file_deletion(
         parent_folder,
     ]
 
-    with patch.object(
-        resource_service, "_delete_file_data"
-    ) as mock_delete_file_data, patch.object(
+    with patch.object(resource_service, "_delete_file_data") as mock_delete_file_data, patch.object(
         resource_service, "_delete_folder", wraps=resource_service._delete_folder
     ):
         resource_service.delete_folder(user_path, is_recursively=True)
 
         mock_delete_file_data.assert_called_once_with(file_in_subfolder)
-        resource_service._delete_folder.assert_called_with(
-            subfolder, is_recursively=True
-        )
+        resource_service._delete_folder.assert_called_with(subfolder, is_recursively=True)
         mock_file_repository.delete.assert_called_once_with(file_in_subfolder)
         mock_folder_repository.delete.assert_any_call(subfolder)
         mock_folder_repository.delete.assert_any_call(parent_folder)
@@ -197,17 +169,11 @@ def test_delete_folder_forbidden_root(resource_service):
         resource_service.delete_folder(user_path)
 
 
-def test_create_file_success(
-    resource_service, mock_folder_repository, mock_file_repository
-):
+def test_create_file_success(resource_service, mock_folder_repository, mock_file_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/file.txt", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
-    subfolder = FolderEntity(
-        id="folder-123", name="subfolder", parent_folder_id=root_folder.id
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
         root_folder,
@@ -223,12 +189,8 @@ def test_create_file_success(
 def test_create_file_with_duplicate_name(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/existing_file.txt", user)
-    root_folder = FolderEntity(
-        id="folder-root", name=user_path.root_folder_name, owner=user
-    )
-    subfolder = FolderEntity(
-        id="folder-123", name="subfolder", parent_folder_id=root_folder.id
-    )
+    root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
     existing_file = FileEntity(id="file-123", name="existing_file.txt", owner=user)
 
     subfolder.files.append(existing_file)
@@ -376,9 +338,7 @@ def test_get_verified_file_public(resource_service):
 
 def test_get_verified_file_private(resource_service):
     file_id = "file-123"
-    file = FileEntity(
-        id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123"
-    )
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123")
 
     resource_service._file_repository.get_by_id.return_value = file
 
@@ -396,9 +356,7 @@ def test_get_verified_file_private(resource_service):
 
 def test_get_verified_file_private_not_owner(resource_service):
     file_id = "file-123"
-    file = FileEntity(
-        id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123"
-    )
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123")
 
     resource_service._file_repository.get_by_id.return_value = file
 
@@ -415,9 +373,7 @@ def test_get_verified_file_private_not_owner(resource_service):
 
 def test_get_verified_file_protected(resource_service):
     file_id = "file-123"
-    file = FileEntity(
-        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123"
-    )
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
     file.shared_to = ["testuser"]
 
     resource_service._file_repository.get_by_id.return_value = file
@@ -436,9 +392,7 @@ def test_get_verified_file_protected(resource_service):
 
 def test_get_verified_file_protected_not_shared(resource_service):
     file_id = "file-123"
-    file = FileEntity(
-        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123"
-    )
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
     file.shared_to = ["someone"]
 
     resource_service._file_repository.get_by_id.return_value = file
@@ -456,9 +410,7 @@ def test_get_verified_file_protected_not_shared(resource_service):
 
 def test_get_verified_file_protected_owner(resource_service):
     file_id = "file-123"
-    file = FileEntity(
-        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123"
-    )
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123")
     file.shared_to = ["user-456"]
 
     resource_service._file_repository.get_by_id.return_value = file

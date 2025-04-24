@@ -53,20 +53,14 @@ class SkylockFacade:
                 user_path=user_path, privacy=privacy
             )
         else:
-            folder = self._resource_service.create_folder(
-                user_path=user_path, privacy=privacy
-            )
+            folder = self._resource_service.create_folder(user_path=user_path, privacy=privacy)
 
-        return self._response_builder.get_folder_response(
-            folder=folder, user_path=user_path
-        )
+        return self._response_builder.get_folder_response(folder=folder, user_path=user_path)
 
     def download_folder(self, user_path: UserPath) -> models.FolderData:
         folder = self._resource_service.get_folder(user_path)
         data = self._zip_service.create_zip_from_folder(folder)
-        return self._response_builder.get_folder_data_response(
-            folder=folder, folder_data=data
-        )
+        return self._response_builder.get_folder_data_response(folder=folder, folder_data=data)
 
     def get_folder_contents(self, user_path: UserPath) -> models.FolderContents:
         folder = self._resource_service.get_folder(user_path)
@@ -77,17 +71,13 @@ class SkylockFacade:
     def get_public_folder_contents(self, folder_id: str) -> models.FolderContents:
         folder = self._resource_service.get_public_folder(folder_id)
         path = self._path_resolver.path_from_folder(folder)
-        return self._response_builder.get_folder_contents_response(
-            folder=folder, user_path=path
-        )
+        return self._response_builder.get_folder_contents_response(folder=folder, user_path=path)
 
     def update_folder(
         self, user_path: UserPath, privacy: Privacy, recursive: bool
     ) -> models.Folder:
         folder = self._resource_service.update_folder(user_path, privacy, recursive)
-        return self._response_builder.get_folder_response(
-            folder=folder, user_path=user_path
-        )
+        return self._response_builder.get_folder_response(folder=folder, user_path=user_path)
 
     def delete_folder(self, user_path: UserPath, is_recursively: bool = False):
         self._resource_service.delete_folder(user_path, is_recursively=is_recursively)
@@ -96,9 +86,7 @@ class SkylockFacade:
         folder = self._resource_service.get_folder(user_path)
 
         if not folder.privacy == Privacy.PUBLIC:
-            raise ForbiddenActionException(
-                f"Folder {folder.name} is not public, cannot be shared"
-            )
+            raise ForbiddenActionException(f"Folder {folder.name} is not public, cannot be shared")
 
         return self._url_generator.generate_url_for_folder(folder.id)
 
@@ -137,12 +125,12 @@ class SkylockFacade:
         # PUBLIC, PROTECTED -> PRIVATE
         # delete shared_files connected to this file from all users
         if privacy == Privacy.PRIVATE:
-            current_shared_files = self._resource_service._shared_file_repository.get_shared_files_by_file_id(
-                current_file.id
+            current_shared_files = (
+                self._resource_service._shared_file_repository.get_shared_files_by_file_id(
+                    current_file.id
+                )
             )
-            current_shared_users = [
-                shared_file.user_id for shared_file in current_shared_files
-            ]
+            current_shared_users = [shared_file.user_id for shared_file in current_shared_files]
             self._resource_service._shared_file_repository.delete_shared_files_from_users(
                 current_file.id, current_shared_users
             )
@@ -158,15 +146,11 @@ class SkylockFacade:
             self._resource_service._shared_file_repository.delete_shared_files_from_users(
                 current_file.id, to_delete
             )
-            found = current_file.shared_to.union(
-                self._user_service.find_shared_to_users(shared_to)
-            )
+            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
 
         # don't change anything in shared_files table
         else:
-            found = current_file.shared_to.union(
-                self._user_service.find_shared_to_users(shared_to)
-            )
+            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
         file = self._resource_service.update_file(user_path, privacy, found)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 

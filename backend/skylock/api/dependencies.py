@@ -22,21 +22,15 @@ from skylock.utils.storage import FileStorageService
 from skylock.utils.url_generator import UrlGenerator
 
 
-def get_user_repository(
-    db: Annotated[Session, Depends(get_db_session)]
-) -> UserRepository:
+def get_user_repository(db: Annotated[Session, Depends(get_db_session)]) -> UserRepository:
     return UserRepository(db)
 
 
-def get_folder_repository(
-    db: Annotated[Session, Depends(get_db_session)]
-) -> FolderRepository:
+def get_folder_repository(db: Annotated[Session, Depends(get_db_session)]) -> FolderRepository:
     return FolderRepository(db)
 
 
-def get_file_repository(
-    db: Annotated[Session, Depends(get_db_session)]
-) -> FileRepository:
+def get_file_repository(db: Annotated[Session, Depends(get_db_session)]) -> FileRepository:
     return FileRepository(db)
 
 
@@ -74,9 +68,7 @@ def get_resource_service(
     path_resolver: Annotated[PathResolver, Depends(get_path_resolver)],
     storage_service: Annotated[FileStorageService, Depends(get_storage_service)],
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-    shared_file_repository: Annotated[
-        SharedFileRepository, Depends(get_shared_file_repository)
-    ],
+    shared_file_repository: Annotated[SharedFileRepository, Depends(get_shared_file_repository)],
 ) -> ResourceService:
     return ResourceService(
         file_repository=file_repository,

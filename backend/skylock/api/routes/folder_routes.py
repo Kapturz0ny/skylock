@@ -66,9 +66,7 @@ router = APIRouter(tags=["Resource"], prefix="/folders")
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         404: {
             "description": "Folder not found",
@@ -113,9 +111,7 @@ def get_folder_contents(
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         404: {
             "description": "Resource not found",
@@ -130,9 +126,7 @@ def get_folder_contents(
         },
         409: {
             "description": "Resource already exists",
-            "content": {
-                "application/json": {"example": {"detail": "Resource already exists"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Resource already exists"}}},
         },
     },
 )
@@ -170,9 +164,7 @@ def create_folder(
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         403: {
             "description": "Deleting the root folder is forbidden",
@@ -195,9 +187,7 @@ def create_folder(
         },
         409: {
             "description": "Folder not empty",
-            "content": {
-                "application/json": {"example": {"detail": "Folder not empty"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Folder not empty"}}},
         },
     },
 )
@@ -232,17 +222,13 @@ def delete_folder(
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         403: {
             "description": "Changing visability of the root folder is forbidden",
             "content": {
                 "application/json": {
-                    "example": {
-                        "detail": "Changing visability of your root folder is forbidden"
-                    }
+                    "example": {"detail": "Changing visability of your root folder is forbidden"}
                 }
             },
         },
