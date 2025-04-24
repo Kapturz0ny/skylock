@@ -167,10 +167,10 @@ def create_folder(
             "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         403: {
-            "description": "Deleting the root folder is forbidden",
+            "description": "Deleting the root or any special folder is forbidden",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Deleting your root folder is forbidden"}
+                    "example": {"detail": "Deleting the root or any special folder is forbidden"}
                 }
             },
         },
