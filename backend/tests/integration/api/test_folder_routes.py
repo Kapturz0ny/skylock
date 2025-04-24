@@ -103,7 +103,9 @@ def test_delete_not_found(client):
 
 # PATCH METHODS
 def test_update_folder_visibility_success(client):
-    response = client.patch("/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": False})
+    response = client.patch(
+        "/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": False}
+    )
     folder = response.json()
     folder_contents = client.get("/folders/folder1").json()
 
@@ -114,14 +116,18 @@ def test_update_folder_visibility_success(client):
 
 
 def test_update_nested_folder_visibility_success(client):
-    response = client.patch("/folders/folder1/subfolder1", json={"privacy": Privacy.PUBLIC})
+    response = client.patch(
+        "/folders/folder1/subfolder1", json={"privacy": Privacy.PUBLIC}
+    )
     folder = response.json()
     assert response.status_code == 200
     assert folder["privacy"] == Privacy.PUBLIC
 
 
 def test_update_folder_visibility_invalid_folder(client):
-    response = client.patch("/folders/non_existent_folder", json={"privacy": Privacy.PUBLIC})
+    response = client.patch(
+        "/folders/non_existent_folder", json={"privacy": Privacy.PUBLIC}
+    )
     assert response.status_code == 404
 
 
@@ -136,7 +142,9 @@ def test_update_folder_visibility_invalid_payload(client):
 
 
 def test_update_folder_visibility_recursive(client):
-    response = client.patch("/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": True})
+    response = client.patch(
+        "/folders/folder1", json={"privacy": Privacy.PUBLIC, "recursive": True}
+    )
     folder_contents = client.get("/folders/folder1").json()
 
     assert response.status_code == 200

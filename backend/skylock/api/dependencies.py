@@ -4,7 +4,12 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from skylock.database.models import UserEntity
-from skylock.database.repository import FileRepository, FolderRepository, UserRepository, SharedFileRepository
+from skylock.database.repository import (
+    FileRepository,
+    FolderRepository,
+    UserRepository,
+    SharedFileRepository,
+)
 from skylock.database.session import get_db_session
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
@@ -17,18 +22,27 @@ from skylock.utils.storage import FileStorageService
 from skylock.utils.url_generator import UrlGenerator
 
 
-def get_user_repository(db: Annotated[Session, Depends(get_db_session)]) -> UserRepository:
+def get_user_repository(
+    db: Annotated[Session, Depends(get_db_session)]
+) -> UserRepository:
     return UserRepository(db)
 
 
-def get_folder_repository(db: Annotated[Session, Depends(get_db_session)]) -> FolderRepository:
+def get_folder_repository(
+    db: Annotated[Session, Depends(get_db_session)]
+) -> FolderRepository:
     return FolderRepository(db)
 
 
-def get_file_repository(db: Annotated[Session, Depends(get_db_session)]) -> FileRepository:
+def get_file_repository(
+    db: Annotated[Session, Depends(get_db_session)]
+) -> FileRepository:
     return FileRepository(db)
 
-def get_shared_file_repository(db: Annotated[Session, Depends(get_db_session)]) -> SharedFileRepository:
+
+def get_shared_file_repository(
+    db: Annotated[Session, Depends(get_db_session)]
+) -> SharedFileRepository:
     return SharedFileRepository(db)
 
 
@@ -60,7 +74,9 @@ def get_resource_service(
     path_resolver: Annotated[PathResolver, Depends(get_path_resolver)],
     storage_service: Annotated[FileStorageService, Depends(get_storage_service)],
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-    shared_file_repository: Annotated[SharedFileRepository, Depends(get_shared_file_repository)],
+    shared_file_repository: Annotated[
+        SharedFileRepository, Depends(get_shared_file_repository)
+    ],
 ) -> ResourceService:
     return ResourceService(
         file_repository=file_repository,
@@ -68,7 +84,7 @@ def get_resource_service(
         path_resolver=path_resolver,
         file_storage_service=storage_service,
         user_repository=user_repository,
-        shared_file_repository=shared_file_repository
+        shared_file_repository=shared_file_repository,
     )
 
 

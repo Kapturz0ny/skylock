@@ -8,7 +8,7 @@ from skylock.pages.html_builder import HtmlBuilder
 from skylock.utils.exceptions import (
     ForbiddenActionException,
     ResourceNotFoundException,
-    InvalidCredentialsException
+    InvalidCredentialsException,
 )
 
 from skylock.api.dependencies import get_user_service
@@ -20,13 +20,17 @@ html_handler = FastAPI(docs_url=None, redoc_url=None)
 
 
 @html_handler.get("/", response_class=HTMLResponse)
-def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
+def index(
+    request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]
+):
     return html_builder.build_main_page(request)
 
 
 @html_handler.get("/folders/{id}", response_class=HTMLResponse)
 def folder_contents(
-    request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]
+    request: Request,
+    id: str,
+    html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)],
 ):
     return html_builder.build_folder_contents_page(request, id)
 
@@ -60,7 +64,11 @@ async def login_file_post(
 
 
 @html_handler.get("/files/{id}", response_class=HTMLResponse)
-def file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
+def file(
+    request: Request,
+    id: str,
+    html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)],
+):
     return html_builder.build_file_page(request, id)
 
 
@@ -68,11 +76,7 @@ def file(request: Request, id: str, html_builder: Annotated[HtmlBuilder, Depends
 def import_file(file_id: str):
     response = RedirectResponse(url=f"/files/{file_id}", status_code=302)
     response.set_cookie(
-        key="import_file",
-        value=file_id,
-        max_age=300,
-        httponly=True,
-        samesite="lax"
+        key="import_file", value=file_id, max_age=300, httponly=True, samesite="lax"
     )
     return response
 
@@ -81,12 +85,16 @@ templates = get_templates()
 
 
 @html_handler.exception_handler(ForbiddenActionException)
-async def forbidden_action_exception_handler(request: Request, exc: ForbiddenActionException):
+async def forbidden_action_exception_handler(
+    request: Request, exc: ForbiddenActionException
+):
     return templates.TemplateResponse(
         request, "403.html", {"message": exc.message}, status_code=403
     )
 
 
 @html_handler.exception_handler(ResourceNotFoundException)
-async def resource_not_found_exception_handler(request: Request, _exc: ResourceNotFoundException):
+async def resource_not_found_exception_handler(
+    request: Request, _exc: ResourceNotFoundException
+):
     return templates.TemplateResponse(request, "404.html", status_code=404)

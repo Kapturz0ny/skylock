@@ -74,7 +74,8 @@ class FileRepository(DatabaseRepository[models.FileEntity]):
         return self.filter_one_or_none(
             models.FileEntity.name == name, models.FileEntity.folder == parent
         )
-    
+
+
 class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
     def __init__(self, session: Session):
         super().__init__(models.SharedFileEntity, session)
@@ -83,23 +84,22 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
         self, user_id: str
     ) -> list[models.SharedFileEntity]:
         return self.filter(models.SharedFileEntity.user_id == user_id)
-    
+
     def get_shared_files_by_file_id(
         self, file_id: str
     ) -> list[models.SharedFileEntity]:
         return self.filter(models.SharedFileEntity.file_id == file_id)
-    
-    def is_file_shared_to_user(
-        self, file_id: str, user_id: str
-    ) -> bool:
-        return self.filter_one_or_none(
-            models.SharedFileEntity.file_id == file_id,
-            models.SharedFileEntity.user_id == user_id,
-        ) is not None
-    
-    def delete_shared_files_from_users(
-        self, file_id: str, user_ids: list[str]
-    ) -> None:
+
+    def is_file_shared_to_user(self, file_id: str, user_id: str) -> bool:
+        return (
+            self.filter_one_or_none(
+                models.SharedFileEntity.file_id == file_id,
+                models.SharedFileEntity.user_id == user_id,
+            )
+            is not None
+        )
+
+    def delete_shared_files_from_users(self, file_id: str, user_ids: list[str]) -> None:
         for user_id in user_ids:
             shared_file = self.filter_one_or_none(
                 models.SharedFileEntity.file_id == file_id,

@@ -24,7 +24,9 @@ router = APIRouter(tags=["Resource"], prefix="/shared")
         },
         401: {
             "description": "Unauthorized user",
-            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
+            "content": {
+                "application/json": {"example": {"detail": "Not authenticated"}}
+            },
         },
         404: {
             "description": "File not found",

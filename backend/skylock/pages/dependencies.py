@@ -18,4 +18,6 @@ def get_html_bulder(
     templates: Annotated[Jinja2Templates, Depends(get_templates)],
     url_generator: Annotated[UrlGenerator, Depends(get_url_generator)],
 ) -> HtmlBuilder:
-    return HtmlBuilder(skylock=skylock, templates=templates, url_generator=url_generator)
+    return HtmlBuilder(
+        skylock=skylock, templates=templates, url_generator=url_generator
+    )

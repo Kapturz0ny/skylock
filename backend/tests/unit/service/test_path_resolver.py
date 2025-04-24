@@ -41,7 +41,9 @@ def db_session():
 @pytest.fixture
 def mock_user_repository(db_session):
     ur = UserRepository(db_session)
-    new_user_entity = UserEntity(id="user-123", username="testuser", password="testuser123")
+    new_user_entity = UserEntity(
+        id="user-123", username="testuser", password="testuser123"
+    )
     ur.save(new_user_entity)
     return ur
 
@@ -58,7 +60,9 @@ def mock_folder_repository(db_session, mock_user_repository):
     assert user is not None
     user_path = UserPath.root_folder_of(user)
 
-    root_folder = FolderEntity(id="folder-123", name=user_path.root_folder_name, owner=user)
+    root_folder = FolderEntity(
+        id="folder-123", name=user_path.root_folder_name, owner=user
+    )
     fr.save(root_folder)
 
     folder = FolderEntity(

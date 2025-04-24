@@ -1,16 +1,16 @@
 def two_fa_code_mail(username: str, token_code: str, token_life: int) -> str:
-	"""
-	Generates an HTML email template for sending a 2FA code to the user.
+    """
+    Generates an HTML email template for sending a 2FA code to the user.
 
-	Args:
-		username (str): The username of the user.
-		token_code (int): The 2FA token code.
-		token_life (int): The lifetime of the token in seconds.
+    Args:
+            username (str): The username of the user.
+            token_code (int): The 2FA token code.
+            token_life (int): The lifetime of the token in seconds.
 
-	Returns:
-		str: The HTML email template as a string.
-	"""
-	return f"""
+    Returns:
+            str: The HTML email template as a string.
+    """
+    return f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h2>Hello {username}!</h2>

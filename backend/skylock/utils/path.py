@@ -43,7 +43,8 @@ class UserPath:
         if self.is_root_folder():
             raise ForbiddenActionException("You cannot access parent of root folder")
         return tuple(
-            UserPath(path=str(parent), owner=self._owner) for parent in self._parsed_path.parents
+            UserPath(path=str(parent), owner=self._owner)
+            for parent in self._parsed_path.parents
         )
 
     @property

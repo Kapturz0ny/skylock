@@ -47,7 +47,7 @@ class UserService:
             send_mail(email, subject, body)
         except Exception as e:
             raise e
-        
+
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
 

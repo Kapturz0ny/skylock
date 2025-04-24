@@ -11,7 +11,7 @@ from skylock.utils.exceptions import (
     ForbiddenActionException,
     Wrong2FAException,
     EmailAuthenticationError,
-    EmailServiceUnavailable
+    EmailServiceUnavailable,
 )
 
 
@@ -29,7 +29,9 @@ def invalid_credentials_handler(_request: Request, exc: InvalidCredentialsExcept
     )
 
 
-def resource_already_exists_handler(_request: Request, exc: ResourceAlreadyExistsException):
+def resource_already_exists_handler(
+    _request: Request, exc: ResourceAlreadyExistsException
+):
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
@@ -70,7 +72,10 @@ def wrong_code_handler(_request: Request, exc: Wrong2FAException):
         content={"detail": str(exc)},
     )
 
-def email_authentication_error_handler(_request: Request, exc: EmailAuthenticationError):
+
+def email_authentication_error_handler(
+    _request: Request, exc: EmailAuthenticationError
+):
     return JSONResponse(
         status_code=503,
         content={

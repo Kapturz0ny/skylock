@@ -31,7 +31,7 @@ def send_register_request(_user: user_with_email.UserWithEmail) -> None:
     standard_error_dict = {
         HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError(),
         HTTPStatus.SERVICE_UNAVAILABLE: gmail_exceptions.EmailServiceUnavailableError(),
-        }
+    }
 
     handle_standard_errors(standard_error_dict, response.status_code)
 

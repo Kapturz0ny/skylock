@@ -38,9 +38,13 @@ class FolderEntity(Base):
     __tablename__ = "folders"
 
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
-    parent_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(ForeignKey("folders.id"))
+    parent_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(
+        ForeignKey("folders.id")
+    )
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
-    privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
+    privacy: orm.Mapped[str] = orm.mapped_column(
+        nullable=False, default=Privacy.PRIVATE
+    )
 
     parent_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
         "FolderEntity", remote_side="FolderEntity.id", back_populates="subfolders"
@@ -54,7 +58,9 @@ class FolderEntity(Base):
         "FolderEntity", back_populates="parent_folder", lazy="selectin"
     )
 
-    owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="folders")
+    owner: orm.Mapped[UserEntity] = orm.relationship(
+        "UserEntity", back_populates="folders"
+    )
 
     def is_root(self) -> bool:
         return self.parent_folder_id is None
@@ -66,11 +72,17 @@ class FileEntity(Base):
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
     folder_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("folders.id"))
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
-    privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
+    privacy: orm.Mapped[str] = orm.mapped_column(
+        nullable=False, default=Privacy.PRIVATE
+    )
     shared_to: orm.Mapped[List[str]] = orm.mapped_column(TEXT, default=set)
 
-    folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")
-    owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="files")
+    folder: orm.Mapped[FolderEntity] = orm.relationship(
+        "FolderEntity", back_populates="files"
+    )
+    owner: orm.Mapped[UserEntity] = orm.relationship(
+        "UserEntity", back_populates="files"
+    )
     shared_with: orm.Mapped[List["SharedFileEntity"]] = orm.relationship(
         back_populates="file", lazy="selectin", cascade="all, delete-orphan"
     )
@@ -83,15 +95,25 @@ class FileEntity(Base):
             return set(json.loads(self.__shared_to))
         return set()
 
-    __shared_to: orm.Mapped[Optional[str]] = orm.mapped_column(TEXT, default=None, name="shared_to")
+    __shared_to: orm.Mapped[Optional[str]] = orm.mapped_column(
+        TEXT, default=None, name="shared_to"
+    )
     shared_to = property(_get_shared_to, _set_shared_to)
 
 
 class SharedFileEntity(Base):
     __tablename__ = "shared_files"
 
-    file_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("files.id"), primary_key=True)
-    user_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"), primary_key=True)
+    file_id: orm.Mapped[str] = orm.mapped_column(
+        ForeignKey("files.id"), primary_key=True
+    )
+    user_id: orm.Mapped[str] = orm.mapped_column(
+        ForeignKey("users.id"), primary_key=True
+    )
 
-    file: orm.Mapped[FileEntity] = orm.relationship("FileEntity", back_populates="shared_with")
-    user: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="shared_files")
+    file: orm.Mapped[FileEntity] = orm.relationship(
+        "FileEntity", back_populates="shared_with"
+    )
+    user: orm.Mapped[UserEntity] = orm.relationship(
+        "UserEntity", back_populates="shared_files"
+    )
