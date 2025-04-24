@@ -2,6 +2,7 @@
 Module for exceptions raised by the Gmail service.
 """
 
+
 class GmailError(Exception):
     """Base exception for Gmail service errors.
 
@@ -20,4 +21,3 @@ class EmailServiceUnavailableError(GmailError):
     def __init__(self) -> None:
         message = "Email service is unavailable. Please try to register again later."
         super().__init__(message)
-        

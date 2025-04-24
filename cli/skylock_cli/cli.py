@@ -82,9 +82,10 @@ def mkdir(
         typer.Option("--parent", help="Create parent directories as needed"),
     ] = False,
     privacy: Annotated[
-        Optional[Privacy], typer.Option(
+        Optional[Privacy],
+        typer.Option(
             "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
-        )
+        ),
     ] = Privacy.PRIVATE,
 ) -> None:
     """
@@ -220,7 +221,6 @@ def upload(
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
     # Commented out for now as we don't let user define privacy in upload
-    
     # privacy: Annotated[
     #     Privacy, typer.Option(
     #         "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
@@ -238,7 +238,6 @@ def upload(
     if not file_path.is_file():
         typer.secho(f"{file_path} is not a file.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
-
 
     new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
     pwd()

@@ -25,7 +25,8 @@ def upgrade() -> None:
 
     # Add 'privacy' column to 'files' table
     op.add_column(
-        "files", sa.Column("privacy", sa.Enum("private", "protected", "public"), nullable=True)
+        "files",
+        sa.Column("privacy", sa.Enum("private", "protected", "public"), nullable=True),
     )
 
     # Add 'shared_to' column to 'files' table (as TEXT for JSON storage in SQLite)
@@ -34,8 +35,12 @@ def upgrade() -> None:
     # Create 'shared_files' table
     op.create_table(
         "shared_files",
-        sa.Column("file_id", sa.String(length=36), sa.ForeignKey("files.id"), primary_key=True),
-        sa.Column("user_id", sa.String(length=36), sa.ForeignKey("users.id"), primary_key=True),
+        sa.Column(
+            "file_id", sa.String(length=36), sa.ForeignKey("files.id"), primary_key=True
+        ),
+        sa.Column(
+            "user_id", sa.String(length=36), sa.ForeignKey("users.id"), primary_key=True
+        ),
     )
 
 
@@ -50,4 +55,6 @@ def downgrade() -> None:
     op.drop_column("files", "privacy")
 
     # bring back the 'is_public' column
-    op.add_column("files", sa.Column("is_public", sa.BOOLEAN(), nullable=False, default=False))
+    op.add_column(
+        "files", sa.Column("is_public", sa.BOOLEAN(), nullable=False, default=False)
+    )

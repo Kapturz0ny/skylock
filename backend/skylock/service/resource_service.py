@@ -1,7 +1,12 @@
 from typing import IO, Optional, Literal
 
 from skylock.database import models as db_models
-from skylock.database.repository import FileRepository, FolderRepository, UserRepository, SharedFileRepository
+from skylock.database.repository import (
+    FileRepository,
+    FolderRepository,
+    UserRepository,
+    SharedFileRepository,
+)
 from skylock.service.path_resolver import PathResolver
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -27,7 +32,7 @@ class ResourceService:
         path_resolver: PathResolver,
         file_storage_service: FileStorageService,
         user_repository: UserRepository,
-        shared_file_repository: SharedFileRepository
+        shared_file_repository: SharedFileRepository,
     ):
         self._file_repository = file_repository
         self._folder_repository = folder_repository
@@ -55,7 +60,9 @@ class ResourceService:
 
         return folder
 
-    def create_folder(self, user_path: UserPath, privacy: Privacy = Privacy.PRIVATE) -> db_models.FolderEntity:
+    def create_folder(
+        self, user_path: UserPath, privacy: Privacy = Privacy.PRIVATE
+    ) -> db_models.FolderEntity:
         if user_path.is_root_folder():
             raise ForbiddenActionException("Creation of root folder is forbidden")
 
@@ -66,7 +73,10 @@ class ResourceService:
         self._assert_no_children_matching_name(parent, folder_name)
 
         new_folder = db_models.FolderEntity(
-            name=folder_name, parent_folder=parent, owner=user_path.owner, privacy=privacy
+            name=folder_name,
+            parent_folder=parent,
+            owner=user_path.owner,
+            privacy=privacy,
         )
         return self._folder_repository.save(new_folder)
 
@@ -119,7 +129,9 @@ class ResourceService:
         folder = self._path_resolver.folder_from_path(user_path)
         self._delete_folder(folder, is_recursively=is_recursively)
 
-    def _delete_folder(self, folder: db_models.FolderEntity, is_recursively: bool = False):
+    def _delete_folder(
+        self, folder: db_models.FolderEntity, is_recursively: bool = False
+    ):
         if folder.is_root():
             raise ForbiddenActionException("Deletion of root folder is forbidden")
 
@@ -242,19 +254,18 @@ class ResourceService:
     def get_shared_file_data(self, file_id: str) -> IO[bytes]:
         file = self.get_file_by_id(file_id)
         return self._get_file_data(file)
-    
+
     def potential_file_import(self, user_id: str, file_id: str):
         file = self.get_file_by_id(file_id)
         if file.owner_id != user_id:
-            if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
+            if not self._shared_file_repository.is_file_shared_to_user(
+                file_id, user_id
+            ):
                 self.add_to_shared_files(user_id, file_id)
 
     def add_to_shared_files(self, user_id: str, file_id: str):
         self._shared_file_repository.save(
-            db_models.SharedFileEntity(
-                user_id=user_id,
-                file_id=file_id
-            )
+            db_models.SharedFileEntity(user_id=user_id, file_id=file_id)
         )
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
@@ -272,13 +283,17 @@ class ResourceService:
         if self._get_root_folder_by_name(user_path.root_folder_name):
             raise RootFolderAlreadyExistsException("This root folder already exists")
         self._folder_repository.save(
-            db_models.FolderEntity(name=user_path.root_folder_name, owner=user_path.owner)
+            db_models.FolderEntity(
+                name=user_path.root_folder_name, owner=user_path.owner
+            )
         )
 
     def _get_root_folder_by_name(self, name: str) -> Optional[db_models.FolderEntity]:
         return self._folder_repository.get_by_name_and_parent_id(name, None)
 
-    def _assert_no_children_matching_name(self, folder: db_models.FolderEntity, name: str):
+    def _assert_no_children_matching_name(
+        self, folder: db_models.FolderEntity, name: str
+    ):
         exists_file_of_name = name in [file.name for file in folder.files]
         exists_folder_of_name = name in [folder.name for folder in folder.subfolders]
         if exists_file_of_name or exists_folder_of_name:

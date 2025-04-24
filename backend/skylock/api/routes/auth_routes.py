@@ -22,14 +22,18 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
         201: {
             "description": "User successfully registered",
             "content": {
-                "application/json": {"example": {"message": "User successfully registered"}}
+                "application/json": {
+                    "example": {"message": "User successfully registered"}
+                }
             },
         },
         409: {
             "description": "User with the provided username already exists",
             "content": {
                 "application/json": {
-                    "example": {"detail": "User with username {username} already exists"}
+                    "example": {
+                        "detail": "User with username {username} already exists"
+                    }
                 }
             },
         },
@@ -49,7 +53,9 @@ def register_user(
     request: models.RegisterUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    skylock.register_user(username=request.username, password=request.password, email=request.email)
+    skylock.register_user(
+        username=request.username, password=request.password, email=request.email
+    )
     return {"message": "User is not in the database"}
 
 
@@ -68,13 +74,17 @@ def register_user(
         201: {
             "description": "User successfully registered",
             "content": {
-                "application/json": {"example": {"message": "User successfully registered"}}
+                "application/json": {
+                    "example": {"message": "User successfully registered"}
+                }
             },
         },
         401: {
             "description": "2FA code is wrong",
             "content": {
-                "application/json": {"example": {"detail": "2FA code is wrong/has expired"}}
+                "application/json": {
+                    "example": {"detail": "2FA code is wrong/has expired"}
+                }
             },
         },
     },
@@ -84,7 +94,10 @@ def authenticate_user(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> dict:
     skylock.verify_2FA(
-        username=request.username, password=request.password, code=request.code, email=request.email
+        username=request.username,
+        password=request.password,
+        code=request.code,
+        email=request.email,
     )
     return {"message": "User successfully registered"}
 
@@ -110,7 +123,9 @@ def authenticate_user(
         },
         401: {
             "description": "Invalid credentials provided",
-            "content": {"application/json": {"example": {"detail": "Invalid credentials"}}},
+            "content": {
+                "application/json": {"example": {"detail": "Invalid credentials"}}
+            },
         },
     },
 )

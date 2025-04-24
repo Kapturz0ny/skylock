@@ -17,7 +17,9 @@ from skylock_cli.utils.cli_exception_handler import handle_standard_errors
 client = Client(base_url=ContextManager.get_context().base_url + API_URL)
 
 
-def send_mkdir_request(token: Token, path: Path, parent: bool, privacy: Privacy) -> dict:
+def send_mkdir_request(
+    token: Token, path: Path, parent: bool, privacy: Privacy
+) -> dict:
     """
     Send a mkdir request to the SkyLock backend API.
 

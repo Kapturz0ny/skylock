@@ -19,7 +19,9 @@ class PathResolver:
         current_folder = self._get_root_folder(user_path.root_folder_name)
 
         if current_folder is None:
-            raise LookupError(f"Root folder: {user_path.root_folder_name} does not exist")
+            raise LookupError(
+                f"Root folder: {user_path.root_folder_name} does not exist"
+            )
 
         for folder_name in user_path.parts:
             current_folder = self._folder_repository.get_by_name_and_parent_id(
@@ -50,7 +52,9 @@ class PathResolver:
         owner = self._user_repository.get_by_id(current_folder.name)
 
         if owner is None:
-            raise LookupError(f"User for root folder not found, id: {current_folder.name}")
+            raise LookupError(
+                f"User for root folder not found, id: {current_folder.name}"
+            )
 
         path = "/".join(path_parts)
 
@@ -62,4 +66,6 @@ class PathResolver:
         return parent_path / file.name
 
     def _get_root_folder(self, name: str) -> db_models.FolderEntity | None:
-        return self._folder_repository.get_by_name_and_parent_id(name=name, parent_id=None)
+        return self._folder_repository.get_by_name_and_parent_id(
+            name=name, parent_id=None
+        )

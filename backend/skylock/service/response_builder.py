@@ -40,10 +40,15 @@ class ResponseBuilder:
         self, folder: db_models.FolderEntity, user_path: UserPath
     ) -> models.Folder:
         return models.Folder(
-            id=folder.id, name=folder.name, path=f"/{user_path.path}", privacy=folder.privacy
+            id=folder.id,
+            name=folder.name,
+            path=f"/{user_path.path}",
+            privacy=folder.privacy,
         )
 
-    def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
+    def get_file_response(
+        self, file: db_models.FileEntity, user_path: UserPath
+    ) -> models.File:
         return models.File(
             id=file.id,
             name=file.name,

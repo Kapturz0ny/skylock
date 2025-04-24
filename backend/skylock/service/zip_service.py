@@ -19,7 +19,10 @@ class ZipService:
         return zip_buffer
 
     def _add_folder_to_zip(
-        self, zip_file: zipfile.ZipFile, folder: db_models.FolderEntity, current_path: str
+        self,
+        zip_file: zipfile.ZipFile,
+        folder: db_models.FolderEntity,
+        current_path: str,
     ):
         folder_path = f"{current_path}{folder.name}/"
 
@@ -28,6 +31,8 @@ class ZipService:
 
         for file in folder.files:
             file_path = f"{folder_path}{file.name}"
-            zip_file.writestr(file_path, self._file_storage_service.get_file(file).read())
+            zip_file.writestr(
+                file_path, self._file_storage_service.get_file(file).read()
+            )
         for subfolder in folder.subfolders:
             self._add_folder_to_zip(zip_file, subfolder, folder_path)

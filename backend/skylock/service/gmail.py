@@ -22,7 +22,11 @@ SCOPES = ["https://mail.google.com/"]
 def get_access_token() -> Credentials:
 
     creds = Credentials.from_authorized_user_info(
-        {"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, "refresh_token": REFRESH_TOKEN},
+        {
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "refresh_token": REFRESH_TOKEN,
+        },
         SCOPES,
     )
     if creds and creds.expired and creds.refresh_token:
@@ -46,7 +50,10 @@ def send_mail(to_email: str, subject: str, body: str) -> None:
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
         send_message = (
-            service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
+            service.users()
+            .messages()
+            .send(userId="me", body={"raw": raw_message})
+            .execute()
         )
         print(f"Message sent successfully, message ID: {send_message['id']}")
 
@@ -55,5 +62,6 @@ def send_mail(to_email: str, subject: str, body: str) -> None:
         raise EmailAuthenticationError("Authentication with Gmail API failed.") from e
     except Exception as error:
         logger.error("Failed to send email.")
-        raise EmailServiceUnavailable("Failed to send email due to an unexpected error.") from error
-
+        raise EmailServiceUnavailable(
+            "Failed to send email due to an unexpected error."
+        ) from error
