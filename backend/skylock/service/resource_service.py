@@ -22,6 +22,7 @@ from skylock.api.models import Privacy, FolderType
 from skylock.utils.security import get_user_from_jwt
 
 from fastapi import HTTPException
+from skylock.utils.logger import logger
 
 
 class ResourceService:
@@ -136,6 +137,10 @@ class ResourceService:
     def _delete_folder(self, folder: db_models.FolderEntity, is_recursively: bool = False):
         if folder.is_root():
             raise ForbiddenActionException("Deletion of root folder is forbidden")
+
+        if folder.type != FolderType.NORMAL:
+            logger.warning(f"Attempted to delete a special folder: {folder.name}")
+            raise ForbiddenActionException("You cannot delete special folders")
 
         has_folder_children = bool(folder.subfolders or folder.files)
         if not is_recursively and has_folder_children:
