@@ -46,9 +46,7 @@ class ResponseBuilder:
             privacy=folder.privacy,
         )
 
-    def get_file_response(
-        self, file: db_models.FileEntity, user_path: UserPath
-    ) -> models.File:
+    def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
         return models.File(
             id=file.id,
             name=file.name,

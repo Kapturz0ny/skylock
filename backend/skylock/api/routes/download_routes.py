@@ -24,15 +24,11 @@ router = APIRouter(tags=["Resource", "Download"], prefix="/download")
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         404: {
             "description": "Folder not found",
-            "content": {
-                "application/json": {"example": {"detail": "Folder not found"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Folder not found"}}},
         },
     },
 )
@@ -64,9 +60,7 @@ def download_folder(
         },
         401: {
             "description": "Unauthorized user",
-            "content": {
-                "application/json": {"example": {"detail": "Not authenticated"}}
-            },
+            "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         404: {
             "description": "File not found",

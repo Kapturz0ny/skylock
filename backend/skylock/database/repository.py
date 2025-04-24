@@ -80,14 +80,10 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
     def __init__(self, session: Session):
         super().__init__(models.SharedFileEntity, session)
 
-    def get_shared_files_by_user_id(
-        self, user_id: str
-    ) -> list[models.SharedFileEntity]:
+    def get_shared_files_by_user_id(self, user_id: str) -> list[models.SharedFileEntity]:
         return self.filter(models.SharedFileEntity.user_id == user_id)
 
-    def get_shared_files_by_file_id(
-        self, file_id: str
-    ) -> list[models.SharedFileEntity]:
+    def get_shared_files_by_file_id(self, file_id: str) -> list[models.SharedFileEntity]:
         return self.filter(models.SharedFileEntity.file_id == file_id)
 
     def is_file_shared_to_user(self, file_id: str, user_id: str) -> bool:

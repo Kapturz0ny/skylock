@@ -61,7 +61,9 @@ class ResourceService:
         return folder
 
     def create_folder(
-        self, user_path: UserPath, privacy: Privacy = Privacy.PRIVATE
+        self,
+        user_path: UserPath,
+        privacy: Privacy = Privacy.PRIVATE,
     ) -> db_models.FolderEntity:
         if user_path.is_root_folder():
             raise ForbiddenActionException("Creation of root folder is forbidden")
@@ -129,9 +131,7 @@ class ResourceService:
         folder = self._path_resolver.folder_from_path(user_path)
         self._delete_folder(folder, is_recursively=is_recursively)
 
-    def _delete_folder(
-        self, folder: db_models.FolderEntity, is_recursively: bool = False
-    ):
+    def _delete_folder(self, folder: db_models.FolderEntity, is_recursively: bool = False):
         if folder.is_root():
             raise ForbiddenActionException("Deletion of root folder is forbidden")
 
@@ -258,9 +258,7 @@ class ResourceService:
     def potential_file_import(self, user_id: str, file_id: str):
         file = self.get_file_by_id(file_id)
         if file.owner_id != user_id:
-            if not self._shared_file_repository.is_file_shared_to_user(
-                file_id, user_id
-            ):
+            if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
                 self.add_to_shared_files(user_id, file_id)
 
     def add_to_shared_files(self, user_id: str, file_id: str):
@@ -283,17 +281,13 @@ class ResourceService:
         if self._get_root_folder_by_name(user_path.root_folder_name):
             raise RootFolderAlreadyExistsException("This root folder already exists")
         self._folder_repository.save(
-            db_models.FolderEntity(
-                name=user_path.root_folder_name, owner=user_path.owner
-            )
+            db_models.FolderEntity(name=user_path.root_folder_name, owner=user_path.owner)
         )
 
     def _get_root_folder_by_name(self, name: str) -> Optional[db_models.FolderEntity]:
         return self._folder_repository.get_by_name_and_parent_id(name, None)
 
-    def _assert_no_children_matching_name(
-        self, folder: db_models.FolderEntity, name: str
-    ):
+    def _assert_no_children_matching_name(self, folder: db_models.FolderEntity, name: str):
         exists_file_of_name = name in [file.name for file in folder.files]
         exists_folder_of_name = name in [folder.name for folder in folder.subfolders]
         if exists_file_of_name or exists_folder_of_name:

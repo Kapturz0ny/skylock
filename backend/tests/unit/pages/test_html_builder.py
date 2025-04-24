@@ -18,9 +18,7 @@ def test_build_file_page_public_file(html_builder):
     download_url = "http://example.com/download"
 
     html_builder._skylock.get_file_for_login.return_value = file
-    html_builder._url_generator.generate_download_url_for_file.return_value = (
-        download_url
-    )
+    html_builder._url_generator.generate_download_url_for_file.return_value = download_url
 
     request = MagicMock()
 
@@ -88,9 +86,7 @@ def test_build_file_page_invalid_token(html_builder):
         side_effect=HTTPException(status_code=401, detail="Invalid Token"),
     ):
         assert html_builder.build_file_page(request, "file_id") == "login_page"
-        html_builder.build_login_page.assert_called_once_with(
-            request, "file_id", "Invalid Token"
-        )
+        html_builder.build_login_page.assert_called_once_with(request, "file_id", "Invalid Token")
 
 
 def test_build_file_page_not_shared(html_builder):

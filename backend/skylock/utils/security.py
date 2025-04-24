@@ -14,9 +14,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-def get_user_from_jwt(
-    token: str, user_repository: UserRepository
-) -> db_models.UserEntity:
+def get_user_from_jwt(token: str, user_repository: UserRepository) -> db_models.UserEntity:
     try:
         user_data = decode_jwt(token)
     except JWTError as e:

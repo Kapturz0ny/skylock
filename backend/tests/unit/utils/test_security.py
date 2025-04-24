@@ -29,8 +29,7 @@ def test_decode_jwt():
     payload = {
         "id": 1,
         "sub": "testuser",
-        "exp": datetime.now(timezone.utc)
-        + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
     decoded_token = decode_jwt(token)
