@@ -114,7 +114,30 @@ class SkylockFacade:
     def update_file(
         self, user_path: UserPath, privacy: Privacy, shared_to: list[str]
     ) -> models.File:
-        found = self._user_service.find_shared_to_users(shared_to)
+        # current file state (before modification)
+        current_file = self._resource_service.get_file(user_path)
+        
+        # PUBLIC, PROTECTED -> PRIVATE
+        # delete shared_files connected to this file from all users
+        if privacy == Privacy.PRIVATE:
+            current_shared_files = self._resource_service._shared_file_repository.get_shared_files_by_file_id(current_file.id)
+            current_shared_users = [shared_file.user_id for shared_file in current_shared_files]
+            self._resource_service._shared_file_repository.delete_shared_files_from_users(current_file.id, current_shared_users)
+            found = []
+        
+        # PUBLIC -> PROTECTED
+        # delete shared_files from users that are not on shared_to list
+        elif privacy == Privacy.PROTECTED and current_file.privacy == Privacy.PUBLIC:
+            to_delete = []
+            for sharing in current_file.shared_with:
+                if sharing.user.username not in current_file.shared_to.union(shared_to):
+                    to_delete.append(sharing.user_id)
+            self._resource_service._shared_file_repository.delete_shared_files_from_users(current_file.id, to_delete)
+            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
+
+        # don't change anything in shared_files table
+        else:
+            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
         file = self._resource_service.update_file(user_path, privacy, found)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 

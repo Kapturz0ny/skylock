@@ -244,7 +244,6 @@ class ResourceService:
         return self._get_file_data(file)
     
     def potential_file_import(self, user_id: str, file_id: str):
-        print(f"potential_file_import: {user_id=}, {file_id=}")
         file = self.get_file_by_id(file_id)
         if file.owner_id != user_id:
             if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
@@ -257,7 +256,6 @@ class ResourceService:
                 file_id=file_id
             )
         )
-        # add file to shared folder
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
         self._file_storage_service.save_file(data=data, file=file)
