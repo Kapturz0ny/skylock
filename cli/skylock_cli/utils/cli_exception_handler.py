@@ -6,7 +6,7 @@ import typer
 from rich.console import Console
 from rich.traceback import Traceback
 from httpx import ConnectError
-from skylock_cli.exceptions import api_exceptions, core_exceptions
+from skylock_cli.exceptions import api_exceptions, core_exceptions, gmail_exceptions 
 
 err_console = Console(stderr=True)
 
@@ -36,7 +36,9 @@ class CLIExceptionHandler:
         """
         if isinstance(
             exc_value,
-            (api_exceptions.SkyLockAPIError, core_exceptions.SkyLockCoreError),
+            (api_exceptions.SkyLockAPIError,
+             core_exceptions.SkyLockCoreError,
+             gmail_exceptions.GmailError),
         ):
             err_console.print(f"[red]{exc_value}[/red]")
             raise typer.Exit(code=1)

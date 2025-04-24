@@ -69,3 +69,19 @@ class Wrong2FAException(Exception):
     def __init__(self, message="Wrong 2FA code"):
         self.message = message
         super().__init__(self.message)
+
+
+class EmailAuthenticationError(Exception):
+    """Exception raised when email authentication fails"""
+
+    def __init__(self, message="Email authentication failed"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class EmailServiceUnavailable(Exception):
+    """Exception raised when email service is unavailable"""
+
+    def __init__(self, message="Email service is unavailable"):
+        self.message = message
+        super().__init__(self.message)

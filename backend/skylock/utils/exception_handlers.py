@@ -10,6 +10,8 @@ from skylock.utils.exceptions import (
     ResourceNotFoundException,
     ForbiddenActionException,
     Wrong2FAException,
+    EmailAuthenticationError,
+    EmailServiceUnavailable
 )
 
 
@@ -66,4 +68,21 @@ def wrong_code_handler(_request: Request, exc: Wrong2FAException):
     return JSONResponse(
         status_code=401,
         content={"detail": str(exc)},
+    )
+
+def email_authentication_error_handler(_request: Request, exc: EmailAuthenticationError):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavailable):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": str(exc),
+        },
     )
