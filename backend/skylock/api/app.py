@@ -17,6 +17,9 @@ from skylock.utils.exception_handlers import (
     resource_not_found_handler,
     user_already_exists_handler,
     wrong_code_handler,
+	invalid_path_handler,
+    email_authentication_error_handler,
+    email_service_unavailable_handler
 )
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -26,10 +29,12 @@ from skylock.utils.exceptions import (
     ResourceNotFoundException,
     UserAlreadyExists,
     Wrong2FAException,
+    InvalidPathException,
+    EmailAuthenticationError,
+    EmailServiceUnavailable
 )
 
 api = FastAPI(title="File Sharing API", version="1.0.0")
-
 
 api.add_exception_handler(UserAlreadyExists, user_already_exists_handler)
 api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler)
@@ -38,6 +43,9 @@ api.add_exception_handler(ResourceNotFoundException, resource_not_found_handler)
 api.add_exception_handler(FolderNotEmptyException, folder_not_empty_handler)
 api.add_exception_handler(ForbiddenActionException, forbidden_action_handler)
 api.add_exception_handler(Wrong2FAException, wrong_code_handler)
+api.add_exception_handler(InvalidPathException, invalid_path_handler)
+api.add_exception_handler(EmailAuthenticationError, email_authentication_error_handler)
+api.add_exception_handler(EmailServiceUnavailable, email_service_unavailable_handler)
 
 
 api.include_router(auth_routes.router)

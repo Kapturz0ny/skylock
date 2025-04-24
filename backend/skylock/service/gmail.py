@@ -8,6 +8,11 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 from skylock.config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN
+from skylock.utils.exceptions import (
+    EmailAuthenticationError,
+    EmailServiceUnavailable,
+)
+from skylock.utils.logger import logger
 
 load_dotenv()
 
@@ -30,7 +35,7 @@ def send_mail(to_email: str, subject: str, body: str) -> None:
     try:
         creds = get_access_token()
 
-        service = build("gmail", "v1", credentials=creds)
+        service = build("gmail", "v1", credentials=creds, cache_discovery=False)
 
         message = MIMEMultipart()
         message["To"] = to_email
@@ -45,7 +50,10 @@ def send_mail(to_email: str, subject: str, body: str) -> None:
         )
         print(f"Message sent successfully, message ID: {send_message['id']}")
 
-    except exceptions.RefreshError:
-        print("Token has expired or is invalid, need to re-authenticate.")
+    except exceptions.RefreshError as e:
+        logger.error("Authentication with Gmail API failed.")
+        raise EmailAuthenticationError("Authentication with Gmail API failed.") from e
     except Exception as error:
-        print(f"An error occurred: {error}")
+        logger.error("Failed to send email.")
+        raise EmailServiceUnavailable("Failed to send email due to an unexpected error.") from error
+

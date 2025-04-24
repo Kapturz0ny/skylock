@@ -36,15 +36,12 @@ async def login_file_post(
     request: Request,
     file_id: str,
     user_service: Annotated[UserService, Depends(get_user_service)],
-    resource_service: Annotated[ResourceService, Depends(get_resource_service)],
     login: str = Form(...),
     password: str = Form(...),
 ):
     try:
         token = user_service.login_user(login, password)
         user = user_service.user_repository.get_by_username(login)
-        # user_service.login_user already checks if the user exists
-        # resource_service.potential_file_import(user.id, file_id)
         response = RedirectResponse(url=f"/files/{file_id}", status_code=302)
         response.set_cookie(
             key="access_token",

@@ -9,6 +9,8 @@ from skylock.utils.exceptions import (
     UserAlreadyExists,
     InvalidCredentialsException,
     Wrong2FAException,
+    EmailAuthenticationError,
+    EmailServiceUnavailable,
 )
 from skylock.config import ENV_TYPE
 from skylock.service.gmail import send_mail
@@ -41,8 +43,11 @@ class UserService:
         subject = "Complete you registration to Skylock!"
         body = two_fa_code_mail(username, totp.now(), self.TOKEN_LIFE)
 
-        send_mail(email, subject, body)
-        # TODO handle potential send_mail error
+        try:
+            send_mail(email, subject, body)
+        except Exception as e:
+            raise e
+        
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
 
