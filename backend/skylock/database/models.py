@@ -76,7 +76,7 @@ class FileEntity(Base):
     )
 
     def _set_shared_to(self, value: set[str]):
-        self.__shared_to = json.dumps(value)
+        self.__shared_to = json.dumps(list(value))
 
     def _get_shared_to(self) -> set[str]:
         if self.__shared_to:

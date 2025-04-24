@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.url_generator import UrlGenerator
+from skylock.service.resource_service import ResourceService
 
 from skylock.utils.security import get_user_from_jwt
 from skylock.api.models import Privacy
@@ -79,6 +80,9 @@ class HtmlBuilder:
 
         if privacy == Privacy.PRIVATE and user.id != file.owner_id:
             return self.build_login_page(request, file_id, "File not shared with you")
+        
+        if privacy != Privacy.PRIVATE:
+            self._skylock._resource_service.potential_file_import(user.id, file_id)
 
         return self._templates.TemplateResponse(
             request,

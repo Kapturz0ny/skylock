@@ -96,3 +96,14 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
             models.SharedFileEntity.file_id == file_id,
             models.SharedFileEntity.user_id == user_id,
         ) is not None
+    
+    def delete_shared_files_from_users(
+        self, file_id: str, user_ids: list[str]
+    ) -> None:
+        for user_id in user_ids:
+            shared_file = self.filter_one_or_none(
+                models.SharedFileEntity.file_id == file_id,
+                models.SharedFileEntity.user_id == user_id,
+            )
+            if shared_file:
+                self.delete(shared_file)
