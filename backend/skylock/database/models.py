@@ -2,7 +2,7 @@ import uuid
 from typing import Optional, List, Set
 from sqlalchemy import orm, ForeignKey, Enum, Table, Column, Text
 from sqlalchemy.dialects.sqlite import TEXT  # Use TEXT from sqlite dialect
-from skylock.api.models import Privacy
+from skylock.api.models import Privacy, FolderType
 import json
 
 
@@ -55,6 +55,8 @@ class FolderEntity(Base):
     )
 
     owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="folders")
+
+    type: orm.Mapped[str] = orm.mapped_column(nullable=False, default=FolderType.NORMAL)
 
     def is_root(self) -> bool:
         return self.parent_folder_id is None

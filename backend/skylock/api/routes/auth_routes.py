@@ -83,12 +83,13 @@ def authenticate_user(
     request: models.FAWithCode,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> dict:
-    skylock.verify_2FA(
+    user = skylock.verify_2FA(
         username=request.username,
         password=request.password,
         code=request.code,
         email=request.email,
     )
+    skylock.configure_user(user)
     return {"message": "User successfully registered"}
 
 

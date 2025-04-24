@@ -26,6 +26,7 @@ class ResponseBuilder:
                 name=folder.name,
                 privacy=folder.privacy,
                 path=f"{parent_path}/{folder.name}",
+                type=folder.type,
             )
             for folder in folder.subfolders
         ]
@@ -65,3 +66,25 @@ class ResponseBuilder:
         self, folder: db_models.FolderEntity, folder_data: IO[bytes]
     ) -> models.FolderData:
         return models.FolderData(name=f"{folder.name}.zip", data=folder_data)
+
+    def get_shared_folder_contents_response(
+        self, folder: db_models.FolderEntity, user_path: UserPath, files: list[db_models.FileEntity]
+    ) -> models.FolderContents:
+        parent_path = f"/{user_path.path}" if user_path.path else ""
+        children_files = [
+            models.File(
+                id=file.id,
+                name=file.name,
+                privacy=file.privacy,
+                path=f"{parent_path}/{file.name}",
+                owner_id=file.owner_id,
+            )
+            for file in files
+        ]
+        children_folders = []
+        return models.FolderContents(
+            folder_name=folder.name,
+            folder_path=f"/{user_path.path}",
+            files=children_files,
+            folders=children_folders,
+        )

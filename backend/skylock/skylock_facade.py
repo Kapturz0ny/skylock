@@ -4,11 +4,11 @@ from skylock.service.response_builder import ResponseBuilder
 from skylock.service.user_service import UserService
 from skylock.service.zip_service import ZipService
 from skylock.api import models
-from skylock.api.models import Privacy
+from skylock.api.models import Privacy, FolderType
 from skylock.utils.exceptions import ForbiddenActionException
 from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
-from typing import Literal
+from skylock.database import models as db_models
 
 
 class SkylockFacade:
@@ -34,9 +34,10 @@ class SkylockFacade:
         user = self._user_service.register_user(username, password, email)
         # self._resource_service.create_root_folder(UserPath.root_folder_of(user))
 
-    def verify_2FA(self, username: str, password: str, code: str, email: str):
-        user = self._user_service.verify_2FA(username, password, code, email)
-        self._resource_service.create_root_folder(UserPath.root_folder_of(user))
+    def verify_2FA(
+        self, username: str, password: str, code: str, email: str
+    ) -> db_models.UserEntity:
+        return self._user_service.verify_2FA(username, password, code, email)
 
     def login_user(self, username: str, password: str) -> models.Token:
         return self._user_service.login_user(username, password)
@@ -47,13 +48,16 @@ class SkylockFacade:
         user_path: UserPath,
         with_parents: bool = False,
         privacy: Privacy = Privacy.PRIVATE,
+        folder_type: FolderType = FolderType.NORMAL,
     ) -> models.Folder:
         if with_parents:
             folder = self._resource_service.create_folder_with_parents(
                 user_path=user_path, privacy=privacy
             )
         else:
-            folder = self._resource_service.create_folder(user_path=user_path, privacy=privacy)
+            folder = self._resource_service.create_folder(
+                user_path=user_path, privacy=privacy, folder_type=folder_type
+            )
 
         return self._response_builder.get_folder_response(folder=folder, user_path=user_path)
 
@@ -64,9 +68,19 @@ class SkylockFacade:
 
     def get_folder_contents(self, user_path: UserPath) -> models.FolderContents:
         folder = self._resource_service.get_folder(user_path)
-        return self._response_builder.get_folder_contents_response(
-            folder=folder, user_path=user_path
-        )
+        if folder.type == FolderType.SHARED:
+            shared_files = (
+                self._resource_service._shared_file_repository.get_shared_files_by_user_id(
+                    user_path.owner.id
+                )
+            )
+            return self._response_builder.get_shared_folder_contents_response(
+                folder=folder, user_path=user_path, files=[sf.file for sf in shared_files]
+            )
+        else:
+            return self._response_builder.get_folder_contents_response(
+                folder=folder, user_path=user_path
+            )
 
     def get_public_folder_contents(self, folder_id: str) -> models.FolderContents:
         folder = self._resource_service.get_public_folder(folder_id)
@@ -173,3 +187,11 @@ class SkylockFacade:
         file = self._resource_service.get_file_by_id(file_id)
         path = self._path_resolver.path_from_file(file)
         return self._response_builder.get_file_response(file=file, user_path=path)
+
+    def configure_user(self, user: db_models.UserEntity) -> None:
+        self._resource_service.create_root_folder(UserPath.root_folder_of(user))
+        self._resource_service.create_folder(
+            user_path=UserPath.root_folder_of(user) / "shared",
+            privacy=Privacy.PRIVATE,
+            folder_type=FolderType.SHARED,
+        )
