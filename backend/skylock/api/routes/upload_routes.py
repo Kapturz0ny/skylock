@@ -39,6 +39,12 @@ router = APIRouter(tags=["Resource", "Upload"], prefix="/upload")
             "description": "Unauthorized user",
             "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
+        403: {
+            "description": "Forbidden action",
+            "content": {
+                "application/json": {"example": {"detail": "Cannot upload files to system folders"}}
+            },
+        },
         409: {
             "description": "Resource already exists",
             "content": {"application/json": {"example": {"detail": "File already exists"}}},
