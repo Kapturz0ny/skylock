@@ -9,6 +9,7 @@ from skylock.database.repository import (
     FolderRepository,
     UserRepository,
     SharedFileRepository,
+    LinkRepository,
 )
 from skylock.database.session import get_db_session
 from skylock.service.path_resolver import PathResolver
@@ -40,6 +41,10 @@ def get_shared_file_repository(
     return SharedFileRepository(db)
 
 
+def get_link_repository(db: Annotated[Session, Depends(get_db_session)]) -> LinkRepository:
+    return LinkRepository(db)
+
+
 def get_user_service(
     user_repository: Annotated[UserRepository, Depends(get_user_repository)]
 ) -> UserService:
@@ -69,6 +74,7 @@ def get_resource_service(
     storage_service: Annotated[FileStorageService, Depends(get_storage_service)],
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     shared_file_repository: Annotated[SharedFileRepository, Depends(get_shared_file_repository)],
+    link_repository: Annotated[LinkRepository, Depends(get_link_repository)],
 ) -> ResourceService:
     return ResourceService(
         file_repository=file_repository,
@@ -77,6 +83,7 @@ def get_resource_service(
         file_storage_service=storage_service,
         user_repository=user_repository,
         shared_file_repository=shared_file_repository,
+        link_repository=link_repository,
     )
 
 

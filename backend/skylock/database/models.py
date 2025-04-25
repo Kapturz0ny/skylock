@@ -54,6 +54,13 @@ class FolderEntity(Base):
         "FolderEntity", back_populates="parent_folder", lazy="selectin"
     )
 
+    links: orm.Mapped[List["LinkEntity"]] = orm.relationship(
+        "LinkEntity",
+        back_populates="folder",
+        lazy="selectin",
+        foreign_keys="LinkEntity.folder_id",
+    )
+
     owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="folders")
 
     type: orm.Mapped[str] = orm.mapped_column(nullable=False, default=FolderType.NORMAL)
@@ -97,3 +104,29 @@ class SharedFileEntity(Base):
 
     file: orm.Mapped[FileEntity] = orm.relationship("FileEntity", back_populates="shared_with")
     user: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="shared_files")
+
+
+class LinkEntity(Base):
+    __tablename__ = "links"
+
+    name: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    folder_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("folders.id"), nullable=False)
+    owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"), nullable=False)
+    resource_type: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    target_file_id: orm.Mapped[Optional[str]] = orm.mapped_column(
+        ForeignKey("files.id"), nullable=True
+    )
+    target_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(
+        ForeignKey("folders.id"), nullable=True
+    )
+
+    target_file: orm.Mapped[Optional["FileEntity"]] = orm.relationship(
+        foreign_keys=[target_file_id]
+    )
+    target_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
+        foreign_keys=[target_folder_id]
+    )
+    folder: orm.Mapped["FolderEntity"] = orm.relationship(
+        "FolderEntity", back_populates="links", foreign_keys=[folder_id]
+    )
+    owner: orm.Mapped["UserEntity"] = orm.relationship()

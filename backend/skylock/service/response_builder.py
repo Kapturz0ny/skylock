@@ -2,7 +2,7 @@ from typing import IO
 from skylock.api import models
 from skylock.database import models as db_models
 from skylock.utils.path import UserPath
-from skylock.database.models import Privacy
+from skylock.database.models import FolderType
 
 
 class ResponseBuilder:
@@ -30,11 +30,20 @@ class ResponseBuilder:
             )
             for folder in folder.subfolders
         ]
+        children_links = [
+            models.Link(
+                id=link.id,
+                name=link.name,
+                path=f"{parent_path}/{link.name}",
+            )
+            for link in folder.links
+        ]
         return models.FolderContents(
             folder_name=folder.name,
             folder_path=f"/{user_path.path}",
             files=children_files,
             folders=children_folders,
+            links=children_links,
         )
 
     def get_folder_response(
@@ -66,25 +75,3 @@ class ResponseBuilder:
         self, folder: db_models.FolderEntity, folder_data: IO[bytes]
     ) -> models.FolderData:
         return models.FolderData(name=f"{folder.name}.zip", data=folder_data)
-
-    def get_shared_folder_contents_response(
-        self, folder: db_models.FolderEntity, user_path: UserPath, files: list[db_models.FileEntity]
-    ) -> models.FolderContents:
-        parent_path = f"/{user_path.path}" if user_path.path else ""
-        children_files = [
-            models.File(
-                id=file.id,
-                name=file.name,
-                privacy=file.privacy,
-                path=f"{parent_path}/{file.name}",
-                owner_id=file.owner_id,
-            )
-            for file in files
-        ]
-        children_folders = []
-        return models.FolderContents(
-            folder_name=folder.name,
-            folder_path=f"/{user_path.path}",
-            files=children_files,
-            folders=children_folders,
-        )

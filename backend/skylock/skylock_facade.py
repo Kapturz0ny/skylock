@@ -68,19 +68,9 @@ class SkylockFacade:
 
     def get_folder_contents(self, user_path: UserPath) -> models.FolderContents:
         folder = self._resource_service.get_folder(user_path)
-        if folder.type == FolderType.SHARED:
-            shared_files = (
-                self._resource_service._shared_file_repository.get_shared_files_by_user_id(
-                    user_path.owner.id
-                )
-            )
-            return self._response_builder.get_shared_folder_contents_response(
-                folder=folder, user_path=user_path, files=[sf.file for sf in shared_files]
-            )
-        else:
-            return self._response_builder.get_folder_contents_response(
-                folder=folder, user_path=user_path
-            )
+        return self._response_builder.get_folder_contents_response(
+            folder=folder, user_path=user_path
+        )
 
     def get_public_folder_contents(self, folder_id: str) -> models.FolderContents:
         folder = self._resource_service.get_public_folder(folder_id)
@@ -191,7 +181,7 @@ class SkylockFacade:
     def configure_user(self, user: db_models.UserEntity) -> None:
         self._resource_service.create_root_folder(UserPath.root_folder_of(user))
         self._resource_service.create_folder(
-            user_path=UserPath.root_folder_of(user) / "shared",
+            user_path=UserPath.root_folder_of(user) / "Shared",
             privacy=Privacy.PRIVATE,
             folder_type=FolderType.SHARED,
         )
