@@ -243,10 +243,16 @@ class ResourceService:
 
     def delete_file(self, user_path: UserPath):
         folder = self.get_folder(user_path.parent)
-        filename = user_path.name
-        print(f"{filename=}")
         if folder.type == FolderType.SHARING_USER:
-            ...
+            # delte link to file and delete instace from shared files table
+            link = self._link_repository.get_by_name_and_owner_id(
+                user_path.name, user_path.owner.id)
+            if link:
+                self._shared_file_repository.delete_shared_files_from_users(
+                    link.target_file_id, [user_path.owner.id]
+                )
+                self._link_repository.delete(link)
+                
         else:
             # FolderType.NORMAL
             file = self.get_file(user_path)

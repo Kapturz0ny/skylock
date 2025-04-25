@@ -189,3 +189,15 @@ class WrongVerificationCodeError(SkyLockAPIError):
     def __init__(self, code: str) -> None:
         message = f"The 2FA verification code {code} is not correct"
         super().__init__(message)
+
+
+class SpecialDirectoryError(SkyLockAPIError):
+    """Exception raised when attempting to delete a special directory.
+
+    Args:
+        directory_path (str): The path of the special directory.
+    """
+
+    def __init__(self, directory_path: Path) -> None:
+        message = f"Cannot delete special directory `{directory_path}`!"
+        super().__init__(message)
