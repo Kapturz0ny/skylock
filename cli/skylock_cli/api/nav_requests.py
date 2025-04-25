@@ -39,6 +39,7 @@ def send_ls_request(token: Token, path: Path):
         not response.json()
         or "files" not in response.json()
         or "folders" not in response.json()
+        or "links" not in response.json()
     ):
         raise api_exceptions.InvalidResponseFormatError()
 
