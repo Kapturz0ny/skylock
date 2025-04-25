@@ -73,7 +73,7 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-        HTTPStatus.FORBIDDEN: api_exceptions.SpecialDirectoryError(path)
+        HTTPStatus.FORBIDDEN: api_exceptions.SpecialDirectoryDeletionError(path)
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)

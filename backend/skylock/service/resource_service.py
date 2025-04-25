@@ -214,6 +214,8 @@ class ResourceService:
         file_name = user_path.name
         parent_path = user_path.parent
         parent = self._path_resolver.folder_from_path(parent_path)
+        if parent.type != FolderType.NORMAL:
+            raise ForbiddenActionException("You cannot create file in special folders")
 
         if force:
             try:
@@ -246,13 +248,13 @@ class ResourceService:
         if folder.type == FolderType.SHARING_USER:
             # delte link to file and delete instace from shared files table
             link = self._link_repository.get_by_name_and_owner_id(
-                user_path.name, user_path.owner.id)
+                user_path.name, user_path.owner.id
+            )
             if link:
                 self._shared_file_repository.delete_shared_files_from_users(
                     link.target_file_id, [user_path.owner.id]
                 )
                 self._link_repository.delete(link)
-                
         else:
             # FolderType.NORMAL
             file = self.get_file(user_path)
