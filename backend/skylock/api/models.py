@@ -13,6 +13,13 @@ class Privacy(str, PyEnum):
 class FolderType(str, PyEnum):
     NORMAL = "normal"
     SHARED = "shared"
+    SHARING_USER = "sharing_user"
+
+
+class ResourceType(str, PyEnum):
+    FILE = "file"
+    FOLDER = "folder"
+    # LINK = "link"  # Not used in the current implementation TODO in the future
 
 
 class Token(BaseModel):
@@ -36,11 +43,18 @@ class File(BaseModel):
     shared_to: list[str] = []
 
 
+class Link(BaseModel):
+    id: str
+    name: str
+    path: str
+
+
 class FolderContents(BaseModel):
     folder_name: str
     folder_path: str
     files: list[File]
     folders: list[Folder]
+    links: list[Link]
 
 
 @dataclass

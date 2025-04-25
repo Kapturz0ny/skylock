@@ -6,6 +6,7 @@ from skylock.database.repository import (
     FolderRepository,
     UserRepository,
     SharedFileRepository,
+    LinkRepository,
 )
 from skylock.service.path_resolver import PathResolver
 from skylock.utils.exceptions import (
@@ -18,7 +19,7 @@ from skylock.utils.exceptions import (
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 
-from skylock.api.models import Privacy, FolderType
+from skylock.api.models import Privacy, FolderType, ResourceType
 from skylock.utils.security import get_user_from_jwt
 
 from fastapi import HTTPException
@@ -34,6 +35,7 @@ class ResourceService:
         file_storage_service: FileStorageService,
         user_repository: UserRepository,
         shared_file_repository: SharedFileRepository,
+        link_repository: LinkRepository,
     ):
         self._file_repository = file_repository
         self._folder_repository = folder_repository
@@ -41,6 +43,7 @@ class ResourceService:
         self._file_storage_service = file_storage_service
         self._user_repository = user_repository
         self._shared_file_repository = shared_file_repository
+        self._link_repository = link_repository
 
     def get_folder(self, user_path: UserPath) -> db_models.FolderEntity:
         return self._path_resolver.folder_from_path(user_path)
@@ -239,8 +242,15 @@ class ResourceService:
         return self._file_repository.save(file)
 
     def delete_file(self, user_path: UserPath):
-        file = self.get_file(user_path)
-        self._delete_file(file)
+        folder = self.get_folder(user_path.parent)
+        filename = user_path.name
+        print(f"{filename=}")
+        if folder.type == FolderType.SHARING_USER:
+            ...
+        else:
+            # FolderType.NORMAL
+            file = self.get_file(user_path)
+            self._delete_file(file)
 
     def _delete_file(self, file: db_models.FileEntity):
         self._file_repository.delete(file)
@@ -267,11 +277,38 @@ class ResourceService:
         if file.owner_id != user_id:
             if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
                 self.add_to_shared_files(user_id, file_id)
+                user = self._user_repository.get_by_id(user_id)
+                importing_user_folder = (
+                    UserPath.root_folder_of(user) / "Shared" / file.owner.username
+                )
+                try:
+                    folder = self.get_folder(importing_user_folder)
+                except ResourceNotFoundException:
+                    folder = self.create_folder(
+                        importing_user_folder, Privacy.PRIVATE, FolderType.SHARING_USER
+                    )
+
+                link_path = importing_user_folder / file.name
+                link = self.create_link_to_file(link_path, file)
 
     def add_to_shared_files(self, user_id: str, file_id: str):
         self._shared_file_repository.save(
             db_models.SharedFileEntity(user_id=user_id, file_id=file_id)
         )
+
+    def create_link_to_file(self, user_path: UserPath, file: db_models.FileEntity):
+        link_name = user_path.name
+        parent_path = user_path.parent
+        parent = self._path_resolver.folder_from_path(parent_path)
+
+        new_file = db_models.LinkEntity(
+            name=link_name,
+            folder=parent,
+            owner=user_path.owner,
+            resource_type=ResourceType.FILE.value,
+            target_file=file,
+        )
+        return self._file_repository.save(new_file)
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
         self._file_storage_service.save_file(data=data, file=file)
