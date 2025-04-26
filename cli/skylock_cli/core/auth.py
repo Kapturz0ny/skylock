@@ -69,8 +69,9 @@ def login_user(login: str, password: str) -> context.Context:
 
     new_context = context.Context(
         token=new_token,
-        cwd=old_context.cwd if old_context.cwd else directory.Directory(path=ROOT_PATH),
+        cwd=old_context.cwd if old_context.cwd and old_context.username == login else directory.Directory(path=ROOT_PATH),
         base_url=old_context.base_url,
+        username=login,
     )
     ContextManager.save_context(new_context)
     return new_context

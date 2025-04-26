@@ -18,3 +18,6 @@ class Context(BaseModel):
     base_url: Annotated[str, Field(description="Base URL of the SkyLock server")] = (
         "http://localhost:8000"
     )
+    username: Annotated[
+        Optional[str], Field(description="Username of the logged-in user")
+    ] = None
