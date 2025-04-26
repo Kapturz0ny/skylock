@@ -116,9 +116,9 @@ class LinkRepository(DatabaseRepository[models.LinkEntity]):
     def __init__(self, session: Session):
         super().__init__(models.LinkEntity, session)
 
-    def get_by_name_and_owner_id(self, name: str, owner_id: str) -> Optional[models.LinkEntity]:
+    def get_by_name_and_parent(self, name: str, parent: models.FolderEntity) -> Optional[models.LinkEntity]:
         return self.filter_one_or_none(
-            models.LinkEntity.name == name, models.LinkEntity.owner_id == owner_id
+            models.LinkEntity.name == name, models.LinkEntity.folder == parent
         )
 
     def get_by_file_id_and_owner_id(
@@ -126,4 +126,9 @@ class LinkRepository(DatabaseRepository[models.LinkEntity]):
     ) -> Optional[models.LinkEntity]:
         return self.filter_one_or_none(
             models.LinkEntity.target_file_id == file_id, models.LinkEntity.owner_id == owner_id
+        )
+    
+    def get_by_file_id(self, file_id: str) -> list[models.LinkEntity]:
+        return self.filter(
+            models.LinkEntity.target_file_id == file_id
         )
