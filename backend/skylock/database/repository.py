@@ -95,14 +95,13 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
             is not None
         )
 
-    def delete_shared_files_from_users(self, file_id: str, user_ids: list[str]) -> None:
-        for user_id in user_ids:
-            shared_file = self.filter_one_or_none(
-                models.SharedFileEntity.file_id == file_id,
-                models.SharedFileEntity.user_id == user_id,
-            )
-            if shared_file:
-                self.delete(shared_file)
+    def delete_shared_files_from_users(self, file_id: str, user_id: str) -> None:
+        shared_file = self.filter_one_or_none(
+            models.SharedFileEntity.file_id == file_id,
+            models.SharedFileEntity.user_id == user_id,
+        )
+        if shared_file:
+            self.delete(shared_file)
 
     def get_shared_file_by_filename(
         self, filename: str, user_id: str
@@ -120,4 +119,11 @@ class LinkRepository(DatabaseRepository[models.LinkEntity]):
     def get_by_name_and_owner_id(self, name: str, owner_id: str) -> Optional[models.LinkEntity]:
         return self.filter_one_or_none(
             models.LinkEntity.name == name, models.LinkEntity.owner_id == owner_id
+        )
+
+    def get_by_file_id_and_owner_id(
+        self, file_id: str, owner_id: str
+    ) -> Optional[models.LinkEntity]:
+        return self.filter_one_or_none(
+            models.LinkEntity.target_file_id == file_id, models.LinkEntity.owner_id == owner_id
         )
