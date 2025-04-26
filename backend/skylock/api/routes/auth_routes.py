@@ -89,7 +89,7 @@ def authenticate_user(
         code=request.code,
         email=request.email,
     )
-    skylock.configure_user(user)
+    skylock.configure_new_user(user)
     return {"message": "User successfully registered"}
 
 

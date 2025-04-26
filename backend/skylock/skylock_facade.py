@@ -190,7 +190,7 @@ class SkylockFacade:
         path = self._path_resolver.path_from_file(file)
         return self._response_builder.get_file_response(file=file, user_path=path)
 
-    def configure_user(self, user: db_models.UserEntity) -> None:
+    def configure_new_user(self, user: db_models.UserEntity) -> None:
         self._resource_service.create_root_folder(UserPath.root_folder_of(user))
         self._resource_service.create_folder(
             user_path=UserPath.root_folder_of(user) / "Shared",
