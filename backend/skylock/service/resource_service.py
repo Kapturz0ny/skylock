@@ -141,11 +141,11 @@ class ResourceService:
         if folder.is_root():
             raise ForbiddenActionException("Deletion of root folder is forbidden")
 
-        if folder.type != FolderType.NORMAL:
+        if folder.type == FolderType.SHARED:
             logger.warning(f"Attempted to delete a special folder: {folder.name}")
             raise ForbiddenActionException("You cannot delete special folders")
 
-        has_folder_children = bool(folder.subfolders or folder.files)
+        has_folder_children = bool(folder.subfolders or folder.files or folder.links)
         if not is_recursively and has_folder_children:
             raise FolderNotEmptyException
 
@@ -154,6 +154,16 @@ class ResourceService:
 
         for subfolder in folder.subfolders:
             self._delete_folder(subfolder, is_recursively=True)
+
+        if folder.type == FolderType.SHARING_USER:
+            for link in folder.links:
+                self._shared_file_repository.delete_shared_files_from_users(
+                    link.target_file_id, folder.owner.id
+                )
+                self._link_repository.delete(link)
+        else:
+            for link in folder.links:
+                self._link_repository.delete(link)
 
         self._folder_repository.delete(folder)
 
@@ -264,17 +274,15 @@ class ResourceService:
             return ResourceType.LINK
         except ResourceNotFoundException:
             pass
-        
+
         try:
             self.get_folder(user_path)
             return ResourceType.FOLDER
         except ResourceNotFoundException:
             pass
 
-        raise ResourceNotFoundException(
-            missing_resource_name=f"Resource {user_path} not found"
-        )
-    
+        raise ResourceNotFoundException(missing_resource_name=f"Resource {user_path} not found")
+
     def _delete_file(self, file: db_models.FileEntity):
         self._file_repository.delete(file)
         self._delete_file_data(file)
@@ -342,12 +350,10 @@ class ResourceService:
             target_file=file,
         )
         return self._file_repository.save(new_file)
-    
+
     def get_link(self, user_path: UserPath) -> db_models.LinkEntity:
         folder = self.get_folder(user_path.parent)
-        link = self._link_repository.get_by_name_and_parent(
-            user_path.name, folder
-        )
+        link = self._link_repository.get_by_name_and_parent(user_path.name, folder)
         if link is None:
             raise ResourceNotFoundException(
                 missing_resource_name=f"Link {user_path.name} not found"
@@ -357,7 +363,7 @@ class ResourceService:
     def delete_link(self, user_path: UserPath):
         link = self.get_link(user_path)
         folder = self.get_folder(user_path.parent)
-        if folder.type == FolderType.SHARING_USER:                
+        if folder.type == FolderType.SHARING_USER:
             self._shared_file_repository.delete_shared_files_from_users(
                 link.target_file_id, user_path.owner.id
             )
