@@ -252,9 +252,11 @@ class ResourceService:
             )
             if link:
                 self._shared_file_repository.delete_shared_files_from_users(
-                    link.target_file_id, [user_path.owner.id]
+                    link.target_file_id, user_path.owner.id
                 )
                 self._link_repository.delete(link)
+            if len(folder.links) == 0:
+                self._folder_repository.delete(folder)
         else:
             # FolderType.NORMAL
             file = self.get_file(user_path)
@@ -297,7 +299,10 @@ class ResourceService:
                     )
 
                 link_path = importing_user_folder / file.name
-                link = self.create_link_to_file(link_path, file)
+                try:
+                    link = self.create_link_to_file(link_path, file)
+                except ResourceAlreadyExistsException:
+                    ...  # Link already exists, do nothing
 
     def add_to_shared_files(self, user_id: str, file_id: str):
         self._shared_file_repository.save(
@@ -305,6 +310,13 @@ class ResourceService:
         )
 
     def create_link_to_file(self, user_path: UserPath, file: db_models.FileEntity):
+        if self._link_repository.get_by_file_id_and_owner_id(
+            file_id=file.id, owner_id=user_path.owner.id
+        ):
+            print(f"Link to file {file.name} already exists in {user_path}")
+            raise ResourceAlreadyExistsException(
+                f"Link to file {file.name} already exists in {user_path}"
+            )
         link_name = user_path.name
         parent_path = user_path.parent
         parent = self._path_resolver.folder_from_path(parent_path)

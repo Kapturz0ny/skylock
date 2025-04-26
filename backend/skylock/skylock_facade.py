@@ -134,22 +134,34 @@ class SkylockFacade:
                     current_file.id
                 )
             )
-            current_shared_users = [shared_file.user_id for shared_file in current_shared_files]
-            self._resource_service._shared_file_repository.delete_shared_files_from_users(
-                current_file.id, current_shared_users
-            )
+            for shared_file in current_shared_files:
+                linked_file = self._resource_service._link_repository.get_by_file_id_and_owner_id(
+                    current_file.id, shared_file.user_id
+                )
+                if linked_file:
+                    folder_path = self._path_resolver.path_from_folder(linked_file.folder)
+                    self.delete_file(folder_path / linked_file.name)
+                self._resource_service._shared_file_repository.delete_shared_files_from_users(
+                    current_file.id, shared_file.user_id
+                )
             found = []
 
         # PUBLIC -> PROTECTED
         # delete shared_files from users that are not on shared_to list
         elif privacy == Privacy.PROTECTED and current_file.privacy == Privacy.PUBLIC:
-            to_delete = []
             for sharing in current_file.shared_with:
                 if sharing.user.username not in current_file.shared_to.union(shared_to):
-                    to_delete.append(sharing.user_id)
-            self._resource_service._shared_file_repository.delete_shared_files_from_users(
-                current_file.id, to_delete
-            )
+                    linked_file = (
+                        self._resource_service._link_repository.get_by_file_id_and_owner_id(
+                            current_file.id, sharing.user_id
+                        )
+                    )
+                    if linked_file:
+                        folder_path = self._path_resolver.path_from_folder(linked_file.folder)
+                        self.delete_file(folder_path / linked_file.name)
+                    self._resource_service._shared_file_repository.delete_shared_files_from_users(
+                        current_file.id, sharing.user_id
+                    )
             found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
 
         # don't change anything in shared_files table
