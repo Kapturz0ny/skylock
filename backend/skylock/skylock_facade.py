@@ -171,7 +171,13 @@ class SkylockFacade:
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 
     def delete_file(self, user_path: UserPath):
-        self._resource_service.delete_file(user_path)
+        resource_type = self._resource_service.check_resource_type(user_path)
+        if resource_type == models.ResourceType.FILE:
+            self._resource_service.delete_file(user_path)
+        elif resource_type == models.ResourceType.LINK:
+            self._resource_service.delete_link(user_path)
+        else:
+            raise ForbiddenActionException(f"Resource {user_path} is not a file or link")
 
     def get_file_url(self, user_path: UserPath) -> str:
         file = self._resource_service.get_file(user_path)

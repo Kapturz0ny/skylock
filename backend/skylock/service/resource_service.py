@@ -244,24 +244,37 @@ class ResourceService:
         return self._file_repository.save(file)
 
     def delete_file(self, user_path: UserPath):
-        folder = self.get_folder(user_path.parent)
-        if folder.type == FolderType.SHARING_USER:
-            # delte link to file and delete instace from shared files table
-            link = self._link_repository.get_by_name_and_owner_id(
-                user_path.name, user_path.owner.id
-            )
-            if link:
-                self._shared_file_repository.delete_shared_files_from_users(
-                    link.target_file_id, user_path.owner.id
-                )
-                self._link_repository.delete(link)
-            if len(folder.links) == 0:
-                self._folder_repository.delete(folder)
-        else:
-            # FolderType.NORMAL
-            file = self.get_file(user_path)
-            self._delete_file(file)
+        # deletes all links to this file
+        file = self.get_file(user_path)
+        links = self._link_repository.get_by_file_id(file.id)
+        for link in links:
+            link_path = self._path_resolver.path_from_link(link)
+            self.delete_link(link_path)
+        self._delete_file(file)
 
+    def check_resource_type(self, user_path: UserPath) -> ResourceType:
+        try:
+            self.get_file(user_path)
+            return ResourceType.FILE
+        except ResourceNotFoundException:
+            pass
+
+        try:
+            self.get_link(user_path)
+            return ResourceType.LINK
+        except ResourceNotFoundException:
+            pass
+        
+        try:
+            self.get_folder(user_path)
+            return ResourceType.FOLDER
+        except ResourceNotFoundException:
+            pass
+
+        raise ResourceNotFoundException(
+            missing_resource_name=f"Resource {user_path} not found"
+        )
+    
     def _delete_file(self, file: db_models.FileEntity):
         self._file_repository.delete(file)
         self._delete_file_data(file)
@@ -292,15 +305,15 @@ class ResourceService:
                     UserPath.root_folder_of(user) / "Shared" / file.owner.username
                 )
                 try:
-                    folder = self.get_folder(importing_user_folder)
+                    self.get_folder(importing_user_folder)
                 except ResourceNotFoundException:
-                    folder = self.create_folder(
+                    self.create_folder(
                         importing_user_folder, Privacy.PRIVATE, FolderType.SHARING_USER
                     )
 
                 link_path = importing_user_folder / file.name
                 try:
-                    link = self.create_link_to_file(link_path, file)
+                    self.create_link_to_file(link_path, file)
                 except ResourceAlreadyExistsException:
                     ...  # Link already exists, do nothing
 
@@ -329,6 +342,30 @@ class ResourceService:
             target_file=file,
         )
         return self._file_repository.save(new_file)
+    
+    def get_link(self, user_path: UserPath) -> db_models.LinkEntity:
+        folder = self.get_folder(user_path.parent)
+        link = self._link_repository.get_by_name_and_parent(
+            user_path.name, folder
+        )
+        if link is None:
+            raise ResourceNotFoundException(
+                missing_resource_name=f"Link {user_path.name} not found"
+            )
+        return link
+
+    def delete_link(self, user_path: UserPath):
+        link = self.get_link(user_path)
+        folder = self.get_folder(user_path.parent)
+        if folder.type == FolderType.SHARING_USER:                
+            self._shared_file_repository.delete_shared_files_from_users(
+                link.target_file_id, user_path.owner.id
+            )
+            self._link_repository.delete(link)
+            if len(folder.links) == 0:
+                self._folder_repository.delete(folder)
+        else:
+            self._link_repository.delete(link)
 
     def _save_file_data(self, file: db_models.FileEntity, data: bytes):
         self._file_storage_service.save_file(data=data, file=file)

@@ -19,7 +19,7 @@ class FolderType(str, PyEnum):
 class ResourceType(str, PyEnum):
     FILE = "file"
     FOLDER = "folder"
-    # LINK = "link"  # Not used in the current implementation TODO in the future
+    LINK = "link"
 
 
 class Token(BaseModel):
