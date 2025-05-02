@@ -19,7 +19,10 @@ class ZipService:
         return zip_buffer
 
     def _add_folder_to_zip(
-        self, zip_file: zipfile.ZipFile, folder: db_models.FolderEntity, current_path: str
+        self,
+        zip_file: zipfile.ZipFile,
+        folder: db_models.FolderEntity,
+        current_path: str,
     ):
         folder_path = f"{current_path}{folder.name}/"
 

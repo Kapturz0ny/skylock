@@ -30,8 +30,7 @@ class InvalidURLError(SkyLockAPIError):
 
 
 class UserAlreadyExistsError(SkyLockAPIError):
-    """Exception raised when attempting to register a user that already exists.
-    """
+    """Exception raised when attempting to register a user that already exists."""
 
     def __init__(self) -> None:
         message = f"User with given username/email already exists."
@@ -189,4 +188,26 @@ class WrongVerificationCodeError(SkyLockAPIError):
 
     def __init__(self, code: str) -> None:
         message = f"The 2FA verification code {code} is not correct"
+        super().__init__(message)
+
+class SpecialDirectoryDeletionError(SkyLockAPIError):
+    """Exception raised when attempting to delete a special directory.
+
+    Args:
+        directory_path (str): The path of the special directory.
+    """
+
+    def __init__(self, directory_path: Path) -> None:
+        message = f"Cannot delete special directory `{directory_path}`!"
+        super().__init__(message)
+
+class ForbiddenUploadError(SkyLockAPIError):
+    """Exception raised when attempting to upload a file to a system folder.
+
+    Args:
+        path (str): The path of the system folder.
+    """
+
+    def __init__(self, path: Path) -> None:
+        message = f"Cannot upload files to system folders `{path}`!"
         super().__init__(message)

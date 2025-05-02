@@ -14,10 +14,11 @@ from skylock.config import ENV_TYPE
 from skylock.service.gmail import send_mail
 from skylock.utils.logger import logger as s_logger
 from skylock.utils.reddis_mem import redis_mem as s_redis_mem
+from templates.mails import two_fa_code_mail
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None) -> str:
+    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None):
         self.user_repository = user_repository
         self.password_hasher = argon2.PasswordHasher()
 
@@ -33,36 +34,18 @@ class UserService:
             raise UserAlreadyExists()
         user_secret = pyotp.random_base32()
 
-        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE+5, user_secret)
+        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE + 5, user_secret)
 
         totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
 
         subject = "Complete you registration to Skylock!"
+        body = two_fa_code_mail(username, totp.now(), self.TOKEN_LIFE)
 
-        html_body = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2>Hello {username}!</h2>
-            <p>
-            Thank you for registering with Skylock.
-            Please use the following <strong>2FA token</strong> to complete your registration:
-            </p>
-            <p style="font-size: 1.2em; font-weight: bold; color: #2E86C1;">
-            {totp.now()}
-            </p>
-            <p>
-            Please note that the code will expire in {self.TOKEN_LIFE / 60} minutes
-            If you did not initiate this request, please disregard this email.
-            </p>
-            <p>
-            Best regards,<br>
-            The Skylock Team
-            </p>
-        </body>
-        </html>
-        """
-        send_mail(email, subject, html_body)
-        # TODO handle potential send_mail error
+        try:
+            send_mail(email, subject, body)
+        except Exception as e:
+            raise e
+
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
 
@@ -102,3 +85,11 @@ class UserService:
             return True
         except argon2.exceptions.VerifyMismatchError:
             return False
+
+    def find_shared_to_users(self, usernames: list[str]) -> list[str]:
+        found_users = []
+        for user in usernames:
+            user_entity = self.user_repository.get_by_username(user)
+            if user_entity:
+                found_users.append(user_entity.username)
+        return found_users

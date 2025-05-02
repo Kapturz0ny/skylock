@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 from skylock_cli.core import context_manager, path_parser
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.api.nav_requests import send_ls_request, send_cd_request
-from skylock_cli.model import directory, file, resource
+from skylock_cli.model import directory, file, resource, link
 from skylock_cli.exceptions.core_exceptions import (
     UserTokenExpiredError,
     InvalidUserTokenError,
@@ -28,7 +28,8 @@ def list_directory(
         directories = TypeAdapter(list[directory.Directory]).validate_python(
             response["folders"]
         )
-    return (sorted(files + directories, key=lambda x: x.name), joind_path)
+        links = TypeAdapter(list[link.Link]).validate_python(response["links"])
+    return (sorted(files + directories + links, key=lambda x: x.name), joind_path)
 
 
 def change_directory(directory_path: Path) -> Path:

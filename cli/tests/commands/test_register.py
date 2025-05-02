@@ -27,7 +27,9 @@ class TestRegisterCommand(unittest.TestCase):
         """Test the register command"""
 
         result = self.runner.invoke(
-            app, ["register", "testuser1"], input="email@example.com\ntestpass1\ntestpass1\ncode"
+            app,
+            ["register", "testuser1"],
+            input="email@example.com\ntestpass1\ntestpass1\ncode",
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -44,7 +46,6 @@ class TestRegisterCommand(unittest.TestCase):
         self.assertEqual(result.exit_code, 1)
         self.assertIn("User with given username/email already exists.", result.output)
 
-
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_skylock_api_error(self, mock_send):
         """Test the register command when a SkyLockAPIError occurs"""
@@ -53,7 +54,9 @@ class TestRegisterCommand(unittest.TestCase):
         )
 
         result = self.runner.invoke(
-            app, ["register", "testuser2"], input="email@example.com\ntestpass2\ntestpass2"
+            app,
+            ["register", "testuser2"],
+            input="email@example.com\ntestpass2\ntestpass2",
         )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("An unexpected API error occurred", result.output)
@@ -64,14 +67,18 @@ class TestRegisterCommand(unittest.TestCase):
             app, ["register", "testuser"], input="bad_email\ntestpass\ntestpass"
         )
         self.assertEqual(result.exit_code, 1)
-        self.assertIn("Invalid email address. Please enter a valid email.", result.output)
+        self.assertIn(
+            "Invalid email address. Please enter a valid email.", result.output
+        )
 
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_connection_error(self, mock_send):
         """Test the register command when a ConnectError occurs (backend is offline)"""
         mock_send.side_effect = ConnectError("Failed to connect to the server")
         result = self.runner.invoke(
-            app, ["register", "testuser3"], input="email@example.com\ntestpass3\ntestpass3"
+            app,
+            ["register", "testuser3"],
+            input="email@example.com\ntestpass3\ntestpass3",
         )
         assert_connect_error(result)
 
@@ -79,7 +86,9 @@ class TestRegisterCommand(unittest.TestCase):
     def test_register_password_mismatch(self, _mock_send):
         """Test the register command when the passwords do not match"""
         result = self.runner.invoke(
-            app, ["register", "testuser4"], input="email@example.com\ntestpass4\ntestpass5"
+            app,
+            ["register", "testuser4"],
+            input="email@example.com\ntestpass4\ntestpass5",
         )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("Passwords do not match. Please try again.", result.output)

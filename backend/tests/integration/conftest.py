@@ -81,12 +81,15 @@ def storage_service(tmp_path):
 
 
 @pytest.fixture
-def resource_service(file_repository, folder_repository, path_resolver, storage_service):
+def resource_service(
+    file_repository, folder_repository, path_resolver, storage_service, user_repository
+):
     return ResourceService(
         file_repository=file_repository,
         folder_repository=folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
+        user_repository=user_repository,
     )
 
 
@@ -109,11 +112,7 @@ def skylock(user_service, resource_service, path_resolver, zip_service):
 
 @pytest.fixture
 def mock_user(db_session, resource_service):
-    user = UserEntity(
-        username=MOCK_USERNAME,
-        password=MOCK_PASSWORD,
-        email=MOCK_EMAIL
-    )
+    user = UserEntity(username=MOCK_USERNAME, password=MOCK_PASSWORD, email=MOCK_EMAIL)
     db_session.add(user)
     db_session.commit()
 

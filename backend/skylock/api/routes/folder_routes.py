@@ -9,6 +9,7 @@ from skylock.api.validation import validate_path_not_empty
 from skylock.database import models as db_models
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
+from skylock.api.models import Privacy
 
 router = APIRouter(tags=["Resource"], prefix="/folders")
 
@@ -134,10 +135,10 @@ def create_folder(
     user: Annotated[db_models.UserEntity, Depends(get_current_user)],
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     parent: bool = False,
-    is_public: bool = False,
+    privacy: Privacy = Privacy.PRIVATE,
 ) -> models.Folder:
     return skylock.create_folder(
-        UserPath(path=path, owner=user), with_parents=parent, public=is_public
+        UserPath(path=path, owner=user), with_parents=parent, privacy=privacy
     )
 
 
@@ -166,10 +167,10 @@ def create_folder(
             "content": {"application/json": {"example": {"detail": "Not authenticated"}}},
         },
         403: {
-            "description": "Deleting the root folder is forbidden",
+            "description": "Deleting the root or any special folder is forbidden",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Deleting your root folder is forbidden"}
+                    "example": {"detail": "Deleting the root or any special folder is forbidden"}
                 }
             },
         },
@@ -252,6 +253,6 @@ def update_folder(
 ) -> models.Folder:
     return skylock.update_folder(
         user_path=UserPath(path=path, owner=user),
-        is_public=options.is_public,
+        privacy=options.privacy,
         recursive=options.recursive,
     )
