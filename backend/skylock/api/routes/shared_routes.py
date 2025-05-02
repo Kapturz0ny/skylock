@@ -1,18 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
 from skylock.api.dependencies import get_skylock_facade
 from skylock.skylock_facade import SkylockFacade
 
-router = APIRouter(tags=["Resource"], prefix="/public")
+router = APIRouter(tags=["Resource"], prefix="/shared")
 
 
 @router.get(
     "/files/download/{file_id}",
-    summary="Download a public file",
-    description="This endpoint allows users to download a shared (public) file by id.",
+    summary="Download = file",
+    description="This endpoint allows users to download a shared file by id.",
     responses={
         200: {
             "description": "File downloaded successfully",
@@ -32,11 +32,14 @@ router = APIRouter(tags=["Resource"], prefix="/public")
         },
     },
 )
-def download_public_file(
+def download_shared_file(
+    request: Request,
     file_id: str,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    file_data = skylock.download_public_file(file_id)
+    token = request.cookies.get("access_token")
+    file_data = skylock.download_shared_file(file_id, token)
+
     return StreamingResponse(
         content=file_data.data,
         media_type="application/octet-stream",

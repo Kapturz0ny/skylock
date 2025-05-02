@@ -4,7 +4,13 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from skylock.database.models import UserEntity
-from skylock.database.repository import FileRepository, FolderRepository, UserRepository
+from skylock.database.repository import (
+    FileRepository,
+    FolderRepository,
+    UserRepository,
+    SharedFileRepository,
+    LinkRepository,
+)
 from skylock.database.session import get_db_session
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
@@ -27,6 +33,16 @@ def get_folder_repository(db: Annotated[Session, Depends(get_db_session)]) -> Fo
 
 def get_file_repository(db: Annotated[Session, Depends(get_db_session)]) -> FileRepository:
     return FileRepository(db)
+
+
+def get_shared_file_repository(
+    db: Annotated[Session, Depends(get_db_session)]
+) -> SharedFileRepository:
+    return SharedFileRepository(db)
+
+
+def get_link_repository(db: Annotated[Session, Depends(get_db_session)]) -> LinkRepository:
+    return LinkRepository(db)
 
 
 def get_user_service(
@@ -56,12 +72,18 @@ def get_resource_service(
     folder_repository: Annotated[FolderRepository, Depends(get_folder_repository)],
     path_resolver: Annotated[PathResolver, Depends(get_path_resolver)],
     storage_service: Annotated[FileStorageService, Depends(get_storage_service)],
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+    shared_file_repository: Annotated[SharedFileRepository, Depends(get_shared_file_repository)],
+    link_repository: Annotated[LinkRepository, Depends(get_link_repository)],
 ) -> ResourceService:
     return ResourceService(
         file_repository=file_repository,
         folder_repository=folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
+        user_repository=user_repository,
+        shared_file_repository=shared_file_repository,
+        link_repository=link_repository,
     )
 
 

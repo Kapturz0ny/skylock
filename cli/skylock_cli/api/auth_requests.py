@@ -7,7 +7,7 @@ from httpx import Client
 from skylock_cli.core.context_manager import ContextManager
 from skylock_cli.config import API_HEADERS, API_URL
 from skylock_cli.model import user, token, user_with_code, user_with_email
-from skylock_cli.exceptions import api_exceptions
+from skylock_cli.exceptions import api_exceptions, gmail_exceptions
 from skylock_cli.utils.cli_exception_handler import handle_standard_errors
 
 client = Client(base_url=ContextManager.get_context().base_url + API_URL)
@@ -29,7 +29,8 @@ def send_register_request(_user: user_with_email.UserWithEmail) -> None:
     response = client.post(url, json=_user.model_dump(), headers=API_HEADERS)
 
     standard_error_dict = {
-        HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError()
+        HTTPStatus.CONFLICT: api_exceptions.UserAlreadyExistsError(),
+        HTTPStatus.SERVICE_UNAVAILABLE: gmail_exceptions.EmailServiceUnavailableError(),
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)

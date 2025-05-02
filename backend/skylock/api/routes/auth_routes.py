@@ -33,6 +33,16 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
                 }
             },
         },
+        503: {
+            "description": "Email service temporarily unavailable",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Email service is temporarily unavailable. Please try again later."
+                    }
+                }
+            },
+        },
     },
 )
 def register_user(
@@ -69,13 +79,17 @@ def register_user(
         },
     },
 )
-def register_user(
+def authenticate_user(
     request: models.FAWithCode,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> dict:
-    skylock.verify_2FA(
-        username=request.username, password=request.password, code=request.code, email=request.email
+    user = skylock.verify_2FA(
+        username=request.username,
+        password=request.password,
+        code=request.code,
+        email=request.email,
     )
+    skylock.configure_new_user(user)
     return {"message": "User successfully registered"}
 
 
