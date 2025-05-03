@@ -64,5 +64,5 @@ def zip_folder(
     logger.warning(f"Reaching: ")
 
     return skylock.create_zip(
-        UserPath(path=path, owner=user), UserPath(path=path+"1", owner=user)
+        UserPath(path=path, owner=user), UserPath(path=path+".zip", owner=user)
     )

@@ -18,6 +18,16 @@ class ZipService:
         zip_buffer.seek(0)
         return zip_buffer
 
+    def create_zip_from_folder_to_bytes(self, folder: db_models.FolderEntity) -> bytes:
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            self._add_folder_to_zip(zip_file, folder, "")
+
+        zip_buffer.seek(0)
+        return zip_buffer.getvalue()
+
+
     def _add_folder_to_zip(
         self,
         zip_file: zipfile.ZipFile,

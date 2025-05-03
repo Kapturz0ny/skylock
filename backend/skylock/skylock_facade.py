@@ -98,8 +98,8 @@ class SkylockFacade:
     def create_zip(self, user_path: UserPath, new_path: UserPath):
         logger.info(f"new_path: {new_path.path}")
         folder = self._resource_service.get_folder(user_path)
-        data = self._zip_service.create_zip_from_folder(folder)
-        file = self._resource_service.create_file(new_path, data, force=False, privacy=Privacy.PRIVATE)
+        zip_buffer = self._zip_service.create_zip_from_folder_to_bytes(folder)
+        file = self._resource_service.create_file(new_path, zip_buffer, force=False, privacy=Privacy.PRIVATE)
         return self._response_builder.get_file_response(file, new_path)
     
     # File Operations
