@@ -10,6 +10,7 @@ from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
 from skylock.database import models as db_models
 
+from skylock.utils.logger import logger
 
 class SkylockFacade:
     def __init__(
@@ -94,6 +95,13 @@ class SkylockFacade:
 
         return self._url_generator.generate_url_for_folder(folder.id)
 
+    def create_zip(self, user_path: UserPath, new_path: UserPath):
+        logger.info(f"new_path: {new_path.path}")
+        folder = self._resource_service.get_folder(user_path)
+        data = self._zip_service.create_zip_from_folder(folder)
+        file = self._resource_service.create_file(new_path, data, force=False, privacy=Privacy.PRIVATE)
+        return self._response_builder.get_file_response(file, new_path)
+    
     # File Operations
     def upload_file(
         self,

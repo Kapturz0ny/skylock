@@ -347,6 +347,20 @@ def share(
         fg=typer.colors.GREEN,
     )
 
+@app.command()
+def zip(
+    dir_path: Annotated[
+        str,
+        typer.Argument(
+            help="The path of the directory to zip. Must not end with /."
+        ),
+    ],
+) -> None:
+    created_file = dir_operations.zip_directory(directory_path=dir_path)
+    typer.secho(
+        f"Created file: {typer.style(created_file.name, fg=created_file.color)}",
+        fg=typer.colors.GREEN,
+    )
 
 if __name__ == "__main__":
     app()
