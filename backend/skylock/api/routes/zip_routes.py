@@ -60,9 +60,10 @@ def zip_folder(
     path: Annotated[str, Depends(validate_path_not_empty)],
     user: Annotated[db_models.UserEntity, Depends(get_current_user)],
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
+    force: bool,
 ) -> models.Folder:
     logger.warning(f"Reaching: ")
 
     return skylock.create_zip(
-        UserPath(path=path, owner=user), UserPath(path=path+".zip", owner=user)
+        UserPath(path=path, owner=user), UserPath(path=path+".zip", owner=user), force  
     )
