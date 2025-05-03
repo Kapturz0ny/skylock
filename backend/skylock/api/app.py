@@ -8,6 +8,7 @@ from skylock.api.routes import (
     shared_routes,
     share_routes,
     upload_routes,
+    zip_routes,
 )
 from skylock.utils.exception_handlers import (
     folder_not_empty_handler,
@@ -55,3 +56,4 @@ api.include_router(shared_routes.router)
 api.include_router(share_routes.router)
 api.include_router(download_routes.router)
 api.include_router(upload_routes.router)
+api.include_router(zip_routes.router)

@@ -9,6 +9,7 @@ from skylock_cli.core.nav import change_directory
 from skylock_cli.model.directory import Directory
 from skylock_cli.model.share_link import ShareLink
 from skylock_cli.model.privacy import Privacy
+from skylock_cli.model.file import File
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.core import path_parser, context_manager
 from skylock_cli.exceptions.core_exceptions import (
@@ -89,3 +90,13 @@ def share_directory(directory_path: str) -> ShareLink:
         )
         response = dir_requests.send_share_request(current_context.token, joind_path)
     return ShareLink(base_url=current_context.base_url, location=response["location"])
+
+def zip_directory(directory_path: str) -> File:
+    """Make a zip file out of directory"""
+    current_context = context_manager.ContextManager.get_context()
+    with CLIExceptionHandler():
+        joind_path = path_parser.parse_path(
+            current_context.cwd.path, Path(directory_path)
+        )
+        response = dir_requests.send_zip_request(current_context.token, joind_path)
+    return File(response["name"], response["path"])
