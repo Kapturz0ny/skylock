@@ -61,7 +61,7 @@ def zip_folder(
     user: Annotated[db_models.UserEntity, Depends(get_current_user)],
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     force: bool,
-) -> models.Folder:
+) -> dict:
     logger.warning(f"Reaching: ")
 
     return skylock.create_zip(
