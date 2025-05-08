@@ -1,8 +1,10 @@
+import dramatiq
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
 from skylock.service.response_builder import ResponseBuilder
 from skylock.service.user_service import UserService
 from skylock.service.zip_service import ZipService
+from skylock.service.dramatiq_tasks import create_zip_task
 from skylock.api import models
 from skylock.api.models import Privacy, FolderType
 from skylock.utils.exceptions import ForbiddenActionException
@@ -95,11 +97,9 @@ class SkylockFacade:
 
         return self._url_generator.generate_url_for_folder(folder.id)
 
-    def create_zip(self, user_path: UserPath, new_path: UserPath, force: bool):
-        folder = self._resource_service.get_folder(user_path)
-        zip_buffer = self._zip_service.create_zip_from_folder_to_bytes(folder)
-        file = self._resource_service.create_file(new_path, zip_buffer, force=force, privacy=Privacy.PRIVATE)
-        return self._response_builder.get_file_response(file, new_path)
+    def create_zip(self, user_path: UserPath, new_path: UserPath, force: bool) -> dict:
+        create_zip_task.send(user_path.owner.id, user_path.path, force)
+        return {"message": "Zip generation started."}
     
     # File Operations
     def upload_file(

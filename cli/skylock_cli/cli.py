@@ -360,9 +360,9 @@ def zip(
     ] = False,
 ) -> None:
     
-    created_file = dir_operations.zip_directory(directory_path=dir_path, force=force)
+    message = dir_operations.zip_directory(directory_path=dir_path, force=force)
     typer.secho(
-        f"Created file: {created_file}",
+        f"Response: {message}",
         fg=typer.colors.GREEN,
     )
 
