@@ -97,10 +97,16 @@ class SkylockFacade:
 
         return self._url_generator.generate_url_for_folder(folder.id)
 
-    def create_zip(self, user_path: UserPath, new_path: UserPath, force: bool) -> dict:
-        create_zip_task.send(user_path.owner.id, user_path.path, force)
+    def create_zip(self, user_path: UserPath, force: bool) -> dict:
+        task_key = self._zip_service.acquire_zip_lock(user_path.owner.id, user_path.path)
+        create_zip_task.send(
+            user_path.owner.id,
+            user_path.path,
+            force,
+            task_name=task_key,
+        )
         return {"message": "Zip generation started."}
-    
+
     # File Operations
     def upload_file(
         self,

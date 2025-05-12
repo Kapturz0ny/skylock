@@ -45,9 +45,7 @@ def send_upload_request(
             virtual_path.parent
         ),
         HTTPStatus.BAD_REQUEST: api_exceptions.InvalidPathError(virtual_path),
-        HTTPStatus.FORBIDDEN: api_exceptions.ForbiddenUploadError(
-            virtual_path.parent
-        )
+        HTTPStatus.FORBIDDEN: api_exceptions.ForbiddenUploadError(virtual_path.parent),
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)
