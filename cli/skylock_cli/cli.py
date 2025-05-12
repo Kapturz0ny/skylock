@@ -347,24 +347,24 @@ def share(
         fg=typer.colors.GREEN,
     )
 
+
 @app.command()
 def zip(
     dir_path: Annotated[
         str,
-        typer.Argument(
-            help="The path of the directory to zip. Must not end with /."
-        ),
+        typer.Argument(help="The path of the directory to zip. Must not end with /."),
     ],
     force: Annotated[
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
 ) -> None:
-    
+
     message = dir_operations.zip_directory(directory_path=dir_path, force=force)
     typer.secho(
         f"Response: {message}",
         fg=typer.colors.GREEN,
     )
+
 
 if __name__ == "__main__":
     app()

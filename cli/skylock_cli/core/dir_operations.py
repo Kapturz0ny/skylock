@@ -91,6 +91,7 @@ def share_directory(directory_path: str) -> ShareLink:
         response = dir_requests.send_share_request(current_context.token, joind_path)
     return ShareLink(base_url=current_context.base_url, location=response["location"])
 
+
 def zip_directory(directory_path: str, force: bool) -> str:
     """Make a zip file out of directory"""
     current_context = context_manager.ContextManager.get_context()
@@ -98,5 +99,7 @@ def zip_directory(directory_path: str, force: bool) -> str:
         joind_path = path_parser.parse_path(
             current_context.cwd.path, Path(directory_path)
         )
-        response = dir_requests.send_zip_request(current_context.token, joind_path, force)
+        response = dir_requests.send_zip_request(
+            current_context.token, joind_path, force
+        )
     return response["message"]

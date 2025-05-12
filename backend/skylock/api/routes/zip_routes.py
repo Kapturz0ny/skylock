@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import StreamingResponse
 
 from skylock.api import models
@@ -9,7 +9,7 @@ from skylock.api.validation import validate_path_not_empty
 from skylock.database import models as db_models
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
-from skylock.api.models import Privacy
+from skylock.utils.exceptions import ResourceAlreadyExistsException
 
 
 from skylock.utils.logger import logger
@@ -62,8 +62,10 @@ def zip_folder(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
     force: bool,
 ) -> dict:
-    logger.warning(f"Reaching: ")
-
-    return skylock.create_zip(
-        UserPath(path=path, owner=user), UserPath(path=path+".zip", owner=user), force  
+    try:
+        task_id = skylock.create_zip(
+        UserPath(path=path, owner=user), force
     )
+    except ResourceAlreadyExistsException as exc:
+        raise HTTPException(status_code=409, message=str(exc))
+    return {"task_id": task_id, "message": "queued"}
