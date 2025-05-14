@@ -42,7 +42,6 @@ def send_ls_request(token: Token, path: Path):
         or "links" not in response.json()
     ):
         raise api_exceptions.InvalidResponseFormatError()
-
     return response.json()
 
 
