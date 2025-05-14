@@ -59,9 +59,11 @@ def upload_file(
     force: bool = False,
     privacy: Privacy = Privacy.PRIVATE,
 ) -> models.File:
+    size = file.size
     return skylock.upload_file(
         user_path=UserPath(path=path, owner=user),
         file_data=file.file.read(),
+        size=size,
         force=force,
         privacy=privacy,
     )
