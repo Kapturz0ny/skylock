@@ -19,6 +19,8 @@ from skylock_cli.core import (
     url_manager,
 )
 from skylock_cli.model.privacy import Privacy
+from skylock_cli.model.file import File
+from skylock_cli.utils.util_funcs import stringify_size
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 console = Console()
@@ -167,13 +169,16 @@ def ls(
         table.add_column("Name", justify="left", no_wrap=True)
         table.add_column("Path", justify="left")
         table.add_column("Visibility", justify="left")
+        table.add_column("Size", justify="left")
 
         for item in contents:
+            size = f"[{item.color}]{stringify_size(item.size)}[/{item.color}]" if isinstance(item, File) else ""
             table.add_row(
                 f"[{item.color}]{item.type_label}[/{item.color}]",
                 f"[{item.color}]{item.name}[/{item.color}]",
                 f"[{item.color}]{item.path}[/{item.color}]",
                 f"[{item.visibility_color}]{item.visibility_label}[/{item.visibility_color}]",
+                size
             )
 
         console.print(table)
