@@ -99,10 +99,11 @@ class SkylockFacade:
         self,
         user_path: UserPath,
         file_data: bytes,
+        size: int,
         force: bool = False,
         privacy: Privacy = Privacy.PRIVATE,
     ) -> models.File:
-        file = self._resource_service.create_file(user_path, file_data, force, privacy)
+        file = self._resource_service.create_file(user_path, file_data, size, force, privacy)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 
     def download_file(self, user_path: UserPath) -> models.FileData:

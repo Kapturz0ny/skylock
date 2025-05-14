@@ -77,6 +77,7 @@ class FileEntity(Base):
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
     privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
     shared_to: orm.Mapped[List[str]] = orm.mapped_column(TEXT, default=set)
+    size: orm.Mapped[int] = orm.mapped_column(nullable=False)
 
     folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")
     owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="files")
