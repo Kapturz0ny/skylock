@@ -21,6 +21,16 @@ def mock_user_repository():
 
 
 @pytest.fixture
+def mock_shared_file_repository():
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_link_repository():
+    return MagicMock()
+
+
+@pytest.fixture
 def path_resolver(mock_file_repository, mock_folder_repository, mock_user_repository):
     return PathResolver(
         file_repository=mock_file_repository,
@@ -41,6 +51,8 @@ def resource_service(
     path_resolver,
     storage_service,
     mock_user_repository,
+    mock_shared_file_repository,
+    mock_link_repository
 ):
     return ResourceService(
         file_repository=mock_file_repository,
@@ -48,4 +60,6 @@ def resource_service(
         path_resolver=path_resolver,
         file_storage_service=storage_service,
         user_repository=mock_user_repository,
+        shared_file_repository=mock_shared_file_repository,
+        link_repository=mock_link_repository
     )
