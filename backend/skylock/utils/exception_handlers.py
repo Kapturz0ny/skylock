@@ -12,6 +12,7 @@ from skylock.utils.exceptions import (
     Wrong2FAException,
     EmailAuthenticationError,
     EmailServiceUnavailable,
+    ZipQueueError
 )
 
 
@@ -86,4 +87,13 @@ def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavai
         content={
             "detail": str(exc),
         },
+    )
+
+
+def zip_queue_error_handler(_request: Request, exc: ZipQueueError):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        }
     )
