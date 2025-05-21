@@ -86,12 +86,12 @@ def mock_file_repository(db_session, mock_folder_repository):
     fr = FileRepository(db_session)
 
     root_level_file = FileEntity(
-        id="file-123", name="test_file", folder_id="folder-123", owner_id="user-123"
+        id="file-123", name="test_file", folder_id="folder-123", owner_id="user-123", size=10
     )
     fr.save(root_level_file)
 
     test_subfile = FileEntity(
-        id="file-456", name="test_subfile", folder_id="folder-456", owner_id="user-123"
+        id="file-456", name="test_subfile", folder_id="folder-456", owner_id="user-123", size=20
     )
     fr.save(test_subfile)
 
@@ -168,6 +168,7 @@ def test_file_from_path_success(path_resolver):
     result = path_resolver.file_from_path(user_path)
     assert result.id == "file-123"
     assert result.name == "test_file"
+    assert result.size == 10
 
 
 def test_file_from_path_deep_path_success(path_resolver):
@@ -177,6 +178,7 @@ def test_file_from_path_deep_path_success(path_resolver):
     result = path_resolver.file_from_path(user_path)
     assert result.id == "file-456"
     assert result.name == "test_subfile"
+    assert result.size == 20
 
 
 def test_file_from_path_ResourceNotFound(path_resolver):

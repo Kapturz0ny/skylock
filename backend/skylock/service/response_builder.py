@@ -15,6 +15,7 @@ class ResponseBuilder:
                 id=file.id,
                 name=file.name,
                 privacy=file.privacy,
+                size=file.size,
                 path=f"{parent_path}/{file.name}",
                 owner_id=file.owner_id,
             )
@@ -61,6 +62,7 @@ class ResponseBuilder:
             id=file.id,
             name=file.name,
             path=f"/{user_path.path}",
+            size=file.size,
             privacy=file.privacy,
             owner_id=file.owner_id,
             shared_to=file.shared_to,
