@@ -10,7 +10,7 @@ from skylock.utils.exceptions import (
 from skylock.database.models import FileEntity, FolderEntity, UserEntity
 from skylock.utils.path import UserPath
 
-from skylock.api.models import Privacy
+from skylock.api.models import Privacy, FolderType
 from fastapi import HTTPException
 
 
@@ -173,7 +173,7 @@ def test_create_file_success(resource_service, mock_folder_repository, mock_file
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
         root_folder,

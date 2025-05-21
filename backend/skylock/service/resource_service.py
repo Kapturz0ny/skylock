@@ -178,16 +178,20 @@ class ResourceService:
 
         return file
 
-    def get_verified_file(self, file_id: str, token) -> db_models.FileEntity:
+    def get_verified_file(self, file_id: str, token: Optional[str]) -> db_models.FileEntity:
         file = self.get_file_by_id(file_id)
         privacy = file.privacy
-        token = token.replace("Bearer ", "")
 
         if privacy == Privacy.PUBLIC:
             return file
 
+        if token is None:
+            raise ForbiddenActionException("Authentication token is required for this resource.")
+        
+        processed_token = token.replace("Bearer ", "")
+
         try:
-            user = get_user_from_jwt(token, self._user_repository)
+            user = get_user_from_jwt(processed_token, self._user_repository)
         except HTTPException:
             raise ForbiddenActionException("Invalid token")
 

@@ -85,3 +85,11 @@ class EmailServiceUnavailable(Exception):
     def __init__(self, message="Email service is unavailable"):
         self.message = message
         super().__init__(self.message)
+
+
+class ZipQueueError(Exception):
+    """Exception raised when zip task is already in progress"""
+
+    def __init__(self, message="Zip task already in progress"):
+        self.message = message
+        super().__init__(self.message)
