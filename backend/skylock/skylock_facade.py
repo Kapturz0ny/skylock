@@ -1,8 +1,10 @@
+import dramatiq
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
 from skylock.service.response_builder import ResponseBuilder
 from skylock.service.user_service import UserService
 from skylock.service.zip_service import ZipService
+from skylock.service.dramatiq_tasks import create_zip_task
 from skylock.api import models
 from skylock.api.models import Privacy, FolderType
 from skylock.utils.exceptions import ForbiddenActionException
@@ -10,6 +12,7 @@ from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
 from skylock.database import models as db_models
 
+from skylock.utils.logger import logger
 
 class SkylockFacade:
     def __init__(
@@ -93,6 +96,16 @@ class SkylockFacade:
             raise ForbiddenActionException(f"Folder {folder.name} is not public, cannot be shared")
 
         return self._url_generator.generate_url_for_folder(folder.id)
+
+    def create_zip(self, user_path: UserPath, force: bool) -> dict:
+        task_key = self._zip_service.acquire_zip_lock(user_path.owner.id, user_path.path)
+        create_zip_task.send(
+            user_path.owner.id,
+            user_path.path,
+            force,
+            task_name=task_key,
+        )
+        return {"message": "Zip generation started."}
 
     # File Operations
     def upload_file(

@@ -11,6 +11,9 @@ from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.api.models import Privacy
 
+
+from skylock.utils.logger import logger
+
 router = APIRouter(tags=["Resource"], prefix="/folders")
 
 

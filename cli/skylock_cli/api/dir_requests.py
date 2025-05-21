@@ -73,7 +73,7 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-        HTTPStatus.FORBIDDEN: api_exceptions.SpecialDirectoryDeletionError(path)
+        HTTPStatus.FORBIDDEN: api_exceptions.SpecialDirectoryDeletionError(path),
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)
@@ -181,6 +181,30 @@ def send_share_request(token: Token, path: Path) -> dict:
     if response.status_code != HTTPStatus.OK:
         raise api_exceptions.SkyLockAPIError(
             f"Failed to share directory (Error Code: {response.status_code})"
+        )
+
+    return response.json()
+
+
+def send_zip_request(token: Token, path: Path, force: bool) -> dict:
+    url = "/zip" + quote(str(path))
+    auth = bearer_auth.BearerAuth(token)
+    params = {"force": force}
+
+    standard_error_dict = {
+        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
+        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
+        HTTPStatus.FORBIDDEN: api_exceptions.DirectoryNotPublicError(path),
+        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(path),
+    }
+
+    response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)
+
+    handle_standard_errors(standard_error_dict, response.status_code)
+
+    if response.status_code != HTTPStatus.CREATED:
+        raise api_exceptions.SkyLockAPIError(
+            f"Failed to zip directory (Error Code: {response.status_code})"
         )
 
     return response.json()
