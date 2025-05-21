@@ -40,6 +40,7 @@ class File(BaseModel):
     path: str
     owner_id: str
     privacy: Privacy
+    size: int
     shared_to: list[str] = []
 
 

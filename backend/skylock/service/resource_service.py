@@ -219,6 +219,7 @@ class ResourceService:
         self,
         user_path: UserPath,
         data: bytes,
+        size: int,
         force: bool = False,
         privacy: Privacy = Privacy.PRIVATE,
     ) -> db_models.FileEntity:
@@ -241,7 +242,7 @@ class ResourceService:
 
         new_file = self._file_repository.save(
             db_models.FileEntity(
-                name=file_name, folder=parent, owner=user_path.owner, privacy=privacy
+                name=file_name, folder=parent, owner=user_path.owner, privacy=privacy, size=size
             )
         )
 

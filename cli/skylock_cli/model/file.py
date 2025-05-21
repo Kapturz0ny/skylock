@@ -13,6 +13,7 @@ class File(Resource):
     """Stores file metadata"""
 
     name: Annotated[str, Field(description="File name")]
+    size: Annotated[int, Field(description="File size (in bytes)")]
     path: Annotated[Path, Field(description="File path")]
     color: Annotated[
         Optional[str], Field(description="File color used to pretty print in CLI")
