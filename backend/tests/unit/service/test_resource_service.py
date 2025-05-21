@@ -190,7 +190,7 @@ def test_create_file_with_duplicate_name(resource_service, mock_folder_repositor
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/existing_file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
     existing_file = FileEntity(id="file-123", name="existing_file.txt", owner=user, size=10)
 
     subfolder.files.append(existing_file)
