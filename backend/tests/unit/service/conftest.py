@@ -38,6 +38,16 @@ def mock_link_repository():
 
 
 @pytest.fixture
+def mock_shared_file_repository():
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_link_repository():
+    return MagicMock()
+
+
+@pytest.fixture
 def path_resolver(mock_file_repository, mock_folder_repository, mock_user_repository):
     return PathResolver(
         file_repository=mock_file_repository,

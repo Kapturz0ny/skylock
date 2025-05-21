@@ -71,6 +71,15 @@ def folder_repository(db_session):
 def file_repository(db_session):
     return FileRepository(db_session)
 
+@pytest.fixture
+def shared_file_repository(db_session):
+    return SharedFileRepository(db_session)
+
+
+@pytest.fixture
+def link_repository(db_session):
+    return LinkRepository(db_session)
+
 
 @pytest.fixture
 def path_resolver(file_repository, folder_repository, user_repository):
