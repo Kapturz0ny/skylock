@@ -7,7 +7,13 @@ from skylock.api.dependencies import get_current_user, get_skylock_facade
 from skylock.app import app
 from skylock.api.app import api
 from skylock.database.models import Base, UserEntity
-from skylock.database.repository import FileRepository, FolderRepository, UserRepository
+from skylock.database.repository import (
+    FileRepository,
+    FolderRepository,
+    UserRepository,
+    SharedFileRepository,
+    LinkRepository,
+)
 from skylock.database.session import get_db_session
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
@@ -23,6 +29,7 @@ TEST_DATABASE_URL = "sqlite://"
 
 MOCK_USERNAME = "mockuser"
 MOCK_PASSWORD = "mockpasswd"
+MOCK_EMAIL = "mock@example.com"
 
 
 @pytest.fixture
@@ -64,6 +71,15 @@ def folder_repository(db_session):
 def file_repository(db_session):
     return FileRepository(db_session)
 
+@pytest.fixture
+def shared_file_repository(db_session):
+    return SharedFileRepository(db_session)
+
+
+@pytest.fixture
+def link_repository(db_session):
+    return LinkRepository(db_session)
+
 
 @pytest.fixture
 def path_resolver(file_repository, folder_repository, user_repository):
@@ -80,12 +96,33 @@ def storage_service(tmp_path):
 
 
 @pytest.fixture
-def resource_service(file_repository, folder_repository, path_resolver, storage_service):
+def shared_file_repository(db_session):
+    return SharedFileRepository(db_session)
+
+
+@pytest.fixture
+def link_repository(db_session):
+    return LinkRepository(db_session)
+
+
+@pytest.fixture
+def resource_service(
+    file_repository,
+    folder_repository,
+    path_resolver,
+    storage_service,
+    user_repository,
+    shared_file_repository,
+    link_repository,
+):
     return ResourceService(
         file_repository=file_repository,
         folder_repository=folder_repository,
         path_resolver=path_resolver,
         file_storage_service=storage_service,
+        user_repository=user_repository,
+        shared_file_repository=shared_file_repository,
+        link_repository=link_repository,
     )
 
 
@@ -108,10 +145,7 @@ def skylock(user_service, resource_service, path_resolver, zip_service):
 
 @pytest.fixture
 def mock_user(db_session, resource_service):
-    user = UserEntity(
-        username=MOCK_USERNAME,
-        password=MOCK_PASSWORD,
-    )
+    user = UserEntity(username=MOCK_USERNAME, password=MOCK_PASSWORD, email=MOCK_EMAIL)
     db_session.add(user)
     db_session.commit()
 

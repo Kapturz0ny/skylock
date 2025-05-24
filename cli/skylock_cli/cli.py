@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 from typing_extensions import Annotated
 import typer
+import re
 from rich.console import Console
 from rich.table import Table
 from art import text2art
@@ -17,6 +18,9 @@ from skylock_cli.core import (
     path_parser,
     url_manager,
 )
+from skylock_cli.model.privacy import Privacy
+from skylock_cli.model.file import File
+from skylock_cli.utils.util_funcs import stringify_size
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 console = Console()
@@ -24,24 +28,35 @@ console = Console()
 
 @app.command()
 def register(
-    username: Annotated[str, typer.Argument(help="The username of the new user")]
+    username: Annotated[str, typer.Argument(help="The username of the new user")],
 ) -> None:
     """
     Register a new user in the SkyLock
     """
+    email = typer.prompt("Email")
+
+    email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not re.fullmatch(email_regex, email):
+        typer.secho(
+            "Invalid email address. Please enter a valid email.", fg=typer.colors.RED
+        )
+        raise typer.Exit(code=1)
     password = typer.prompt("Password", hide_input=True)
     confirm_password = typer.prompt("Confirm password", hide_input=True)
     if password != confirm_password:
         typer.secho("Passwords do not match. Please try again.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    auth.register_user(username, password)
+    auth.register_user(username, password, email)
+    typer.secho("Check you mailbox for the 2FA code")
+    code = typer.prompt("Enter 2FA code")
+    auth.verify_code(username, password, code, email)
     typer.secho("User registered successfully", fg=typer.colors.GREEN)
 
 
 @app.command()
 def login(
-    username: Annotated[str, typer.Argument(help="The username of the user")]
+    username: Annotated[str, typer.Argument(help="The username of the user")],
 ) -> None:
     """
     Login to the SkyLock as a user
@@ -68,14 +83,17 @@ def mkdir(
         Optional[bool],
         typer.Option("--parent", help="Create parent directories as needed"),
     ] = False,
-    public: Annotated[
-        Optional[bool], typer.Option("--public", help="Make directory public")
-    ] = False,
+    privacy: Annotated[
+        Optional[Privacy],
+        typer.Option(
+            "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
+        ),
+    ] = Privacy.PRIVATE,
 ) -> None:
     """
     Create a new directory in the SkyLock
     """
-    new_dir = dir_operations.create_directory(directory_path, parent, public)
+    new_dir = dir_operations.create_directory(directory_path, parent, privacy)
     pwd()
     typer.secho(
         f"Directory {new_dir.path} created successfully",
@@ -119,7 +137,7 @@ def rm(
         typer.Argument(
             help="The path of the file to remove. Must not end with / as this command removes files, not directories."
         ),
-    ]
+    ],
 ) -> None:
     """
     Remove a file from the SkyLock.
@@ -151,13 +169,16 @@ def ls(
         table.add_column("Name", justify="left", no_wrap=True)
         table.add_column("Path", justify="left")
         table.add_column("Visibility", justify="left")
+        table.add_column("Size", justify="left")
 
         for item in contents:
+            size = f"[{item.color}]{stringify_size(item.size)}[/{item.color}]" if isinstance(item, File) else ""
             table.add_row(
                 f"[{item.color}]{item.type_label}[/{item.color}]",
                 f"[{item.color}]{item.name}[/{item.color}]",
                 f"[{item.color}]{item.path}[/{item.color}]",
                 f"[{item.visibility_color}]{item.visibility_label}[/{item.visibility_color}]",
+                size
             )
 
         console.print(table)
@@ -174,7 +195,7 @@ def ls(
 
 @app.command()
 def cd(
-    directory_path: Annotated[Path, typer.Argument(help="The directory to change to")]
+    directory_path: Annotated[Path, typer.Argument(help="The directory to change to")],
 ) -> None:
     """
     Change the current working directory.
@@ -204,14 +225,17 @@ def upload(
     force: Annotated[
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
-    public: Annotated[
-        Optional[bool], typer.Option("--public", help="Make uploaded file public")
-    ] = False,
+    # Commented out for now as we don't let user define privacy in upload
+    # privacy: Annotated[
+    #     Privacy, typer.Option(
+    #         "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
+    #     )
+    # ] = Privacy.PRIVATE,
 ) -> None:
     """
     Upload a file to the SkyLock.
     """
-
+    privacy = Privacy.PRIVATE
     if not file_path.exists():
         typer.secho(f"File {file_path} does not exist.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
@@ -220,7 +244,7 @@ def upload(
         typer.secho(f"{file_path} is not a file.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    new_file = file_operations.upload_file(file_path, destination_path, force, public)
+    new_file = file_operations.upload_file(file_path, destination_path, force, privacy)
     pwd()
     typer.secho(
         f"File {new_file.name} uploaded to {new_file.path} successfully",
@@ -234,7 +258,7 @@ def upload(
 
 @app.command()
 def download(
-    file_path: Annotated[Path, typer.Argument(help="The path of the file to download")]
+    file_path: Annotated[Path, typer.Argument(help="The path of the file to download")],
 ) -> None:
     """
     Download a file from the SkyLock.
@@ -248,74 +272,10 @@ def download(
 
 
 @app.command()
-def make_public(
-    resource_path: Annotated[
-        str,
-        typer.Argument(
-            help="The path of the resource to set as public. If you want to set a directory as public, the path must end with /"
-        ),
-    ],
-    recursive: Annotated[
-        Optional[bool],
-        typer.Option(
-            "-r",
-            "--recursive",
-            help="Make sub-directories and their contents public recursively",
-        ),
-    ] = False,
-) -> None:
-    """
-    Set a resource as public.
-    """
-    resource = (
-        dir_operations.make_directory_public(resource_path, recursive)
-        if path_parser.is_directory(resource_path)
-        else file_operations.make_file_public(resource_path)
-    )
-    pwd()
-    typer.secho(
-        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-        fg=resource.visibility_color,
-    )
-
-
-@app.command()
-def make_private(
-    resource_path: Annotated[
-        str,
-        typer.Argument(
-            help="The path of the resource to set as private. If you want to set a directory as private, the path must end with /"
-        ),
-    ],
-    recursive: Annotated[
-        Optional[bool],
-        typer.Option(
-            "-r",
-            "--recursive",
-            help="Make sub-directories and their contents public recursively",
-        ),
-    ] = False,
-) -> None:
-    """
-    Set a resource as private.
-    """
-    resource = (
-        dir_operations.make_directory_private(resource_path, recursive)
-        if path_parser.is_directory(resource_path)
-        else file_operations.make_file_private(resource_path)
-    )
-    pwd()
-    typer.secho(
-        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
-        fg=resource.visibility_color,
-    )
-
-
-@app.command()
 def set_url(
     base_url: Annotated[
         Optional[str], typer.Argument(help="The URL of the SkyLock server")
-    ] = None
+    ] = None,
 ) -> None:
     """
     Set the URL of the SkyLock server.
@@ -346,19 +306,67 @@ def share(
         typer.Argument(
             help="The path of the resource to share. If you want to share a directory, the path must end with /"
         ),
-    ]
+    ],
+    mode: Annotated[
+        Privacy,
+        typer.Option(
+            "--mode", help="Visibility mode: 'protected', 'public', or 'private'"
+        ),
+    ] = Privacy.PRIVATE,
+    users: Annotated[
+        Optional[str],
+        typer.Option(
+            "--to",
+            help="Space-separated list of usernames to share with (for 'protected' mode)",
+        ),
+    ] = None,
 ) -> None:
     """
     Share a resource.
     """
+    user_list = []
+
+    if mode == Privacy.PROTECTED:
+        if not users:
+            typer.secho(
+                "Error: Usernames are required for 'protected' mode.",
+                fg=typer.colors.RED,
+            )
+            raise typer.Exit(code=1)
+
+        user_list = [u.strip() for u in users.split(",")]
+    resource = file_operations.change_file_visibility(resource_path, mode, user_list)
+
     share_link = (
         dir_operations.share_directory(resource_path)
         if path_parser.is_directory(resource_path)
         else file_operations.share_file(resource_path)
     )
+    typer.secho(
+        f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
+        fg=resource.visibility_color,
+    )
     pwd()
     typer.secho(
         f"URL to shared resource: {typer.style(share_link.url, fg=typer.colors.CYAN, underline=True)}",
+        fg=typer.colors.GREEN,
+    )
+
+
+@app.command()
+def zip(
+    dir_path: Annotated[
+        str,
+        typer.Argument(help="The path of the directory to zip. Must not end with /."),
+    ],
+    force: Annotated[
+        Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
+    ] = False,
+) -> None:
+
+    message = dir_operations.zip_directory(directory_path=dir_path, force=force)
+    typer.secho(
+        f"Response: {message}",
         fg=typer.colors.GREEN,
     )
 

@@ -1,4 +1,9 @@
 services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
   backend:
     container_name: backend
     build:
@@ -10,5 +15,20 @@ services:
       - path: .env
         required: false
 
+    volumes:
+      - ./data:/app/data
+
+  dramatiq_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "PYTHONPATH=/app:$PYTHONPATH dramatiq skylock.service.dramatiq_tasks --processes 1 --threads 4 --watch ."
+
+    depends_on:
+      - redis
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./data:/app/data

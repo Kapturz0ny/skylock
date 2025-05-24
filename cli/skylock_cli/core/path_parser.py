@@ -1,4 +1,4 @@
-""" This module contains the function to parse the user input path """
+"""This module contains the function to parse the user input path"""
 
 from pathlib import Path
 
