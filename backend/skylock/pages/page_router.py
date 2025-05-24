@@ -3,6 +3,10 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from skylock.utils.ratelimit_config import limiter as global_limiter, DEFAULT_RATE_LIMIT
+
 from skylock.pages.dependencies import get_html_bulder, get_templates
 from skylock.pages.html_builder import HtmlBuilder
 from skylock.utils.exceptions import (
@@ -16,8 +20,10 @@ from skylock.service.user_service import UserService
 from skylock.api.dependencies import get_resource_service
 from skylock.service.resource_service import ResourceService
 
-html_handler = FastAPI(docs_url=None, redoc_url=None)
+html_handler = FastAPI(docs_url=None, redoc_url=None) #, dependencies=[Depends(global_limiter.limit(DEFAULT_RATE_LIMIT))]) 
 
+html_handler.state.limiter = global_limiter # Użyj globalnego limitera
+html_handler.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @html_handler.get("/", response_class=HTMLResponse)
 def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):

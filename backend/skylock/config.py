@@ -10,6 +10,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/db.sqlite")
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+REDIS_DB_RATELIMIT: int = int(os.getenv("REDIS_DB_RATELIMIT", 0))
+REDIS_URL_RATELIMIT: str = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_RATELIMIT}"
 
 ENV_TYPE = os.getenv("ENV", "dev")
 

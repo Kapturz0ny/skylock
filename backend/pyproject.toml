@@ -32,6 +32,7 @@ google-auth-httplib2 = "^0.2.0"
 google-api-python-client = "^2.166.0"
 mypy = "^1.15.0"
 dramatiq = {extras = ["watch"], version = "^1.14"}
+slowapi = "^0.1.9"
 
 
 [build-system]

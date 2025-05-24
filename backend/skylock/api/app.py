@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from slowapi import _rate_limit_exceeded_handler # Handler dla wyjątków
+from slowapi.errors import RateLimitExceeded # Sam wyjątek
+from skylock.utils.ratelimit_config import limiter as global_limiter, DEFAULT_RATE_LIMIT
 
 from skylock.api.routes import (
     auth_routes,
@@ -35,7 +38,9 @@ from skylock.utils.exceptions import (
     EmailServiceUnavailable,
 )
 
-api = FastAPI(title="File Sharing API", version="1.0.0")
+api = FastAPI(title="File Sharing API", version="1.0.0")#, dependencies=[Depends(global_limiter.limit(DEFAULT_RATE_LIMIT))])
+api.state.limiter = global_limiter # Użyj globalnego limitera
+api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 api.add_exception_handler(UserAlreadyExists, user_already_exists_handler)
 api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler)
