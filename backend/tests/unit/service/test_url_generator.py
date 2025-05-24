@@ -21,5 +21,5 @@ def test_generate_url_for_folder(url_generator):
 
 def test_generate_download_url_for_file(url_generator):
     file_id = "abcde"
-    expected_url = "/api/v1/public/files/download/abcde"
+    expected_url = "/api/v1/shared/files/download/abcde"
     assert url_generator.generate_download_url_for_file(file_id) == expected_url

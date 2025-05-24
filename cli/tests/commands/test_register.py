@@ -3,6 +3,7 @@ Tests for the register command
 """
 
 import unittest
+import typer
 from unittest.mock import patch
 from typer.testing import CliRunner
 from httpx import ConnectError
@@ -18,12 +19,17 @@ class TestRegisterCommand(unittest.TestCase):
         self.runner = CliRunner()
 
     @patch("skylock_cli.core.auth.send_register_request")
-    def test_register_success(self, mock_send):
+    @patch("skylock_cli.core.auth.send_verify_code_request")
+    def test_register_success(self, mock_send_req, mock_verify_code_req):
+        mock_send_req.return_value = None
+        mock_verify_code_req.return_value = None
+
         """Test the register command"""
-        mock_send.return_value = None
 
         result = self.runner.invoke(
-            app, ["register", "testuser1"], input="testpass1\ntestpass1"
+            app,
+            ["register", "testuser1"],
+            input="email@example.com\ntestpass1\ntestpass1\ncode",
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -32,13 +38,13 @@ class TestRegisterCommand(unittest.TestCase):
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_user_already_exists(self, mock_send):
         """Test the register command when the user already exists"""
-        mock_send.side_effect = api_exceptions.UserAlreadyExistsError("testuser")
+        mock_send.side_effect = api_exceptions.UserAlreadyExistsError()
 
         result = self.runner.invoke(
-            app, ["register", "testuser"], input="testpass\ntestpass"
+            app, ["register", "testuser"], input="email@example.com\ntestpass\ntestpass"
         )
         self.assertEqual(result.exit_code, 1)
-        self.assertIn("User with username `testuser` already exists!", result.output)
+        self.assertIn("User with given username/email already exists.", result.output)
 
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_skylock_api_error(self, mock_send):
@@ -48,17 +54,31 @@ class TestRegisterCommand(unittest.TestCase):
         )
 
         result = self.runner.invoke(
-            app, ["register", "testuser2"], input="testpass2\ntestpass2"
+            app,
+            ["register", "testuser2"],
+            input="email@example.com\ntestpass2\ntestpass2",
         )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("An unexpected API error occurred", result.output)
+
+    def test_register_invalid_email(self):
+        """Test the register command with an invalid email format"""
+        result = self.runner.invoke(
+            app, ["register", "testuser"], input="bad_email\ntestpass\ntestpass"
+        )
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn(
+            "Invalid email address. Please enter a valid email.", result.output
+        )
 
     @patch("skylock_cli.core.auth.send_register_request")
     def test_register_connection_error(self, mock_send):
         """Test the register command when a ConnectError occurs (backend is offline)"""
         mock_send.side_effect = ConnectError("Failed to connect to the server")
         result = self.runner.invoke(
-            app, ["register", "testuser3"], input="testpass3\ntestpass3"
+            app,
+            ["register", "testuser3"],
+            input="email@example.com\ntestpass3\ntestpass3",
         )
         assert_connect_error(result)
 
@@ -66,7 +86,9 @@ class TestRegisterCommand(unittest.TestCase):
     def test_register_password_mismatch(self, _mock_send):
         """Test the register command when the passwords do not match"""
         result = self.runner.invoke(
-            app, ["register", "testuser4"], input="testpass4\ntestpass5"
+            app,
+            ["register", "testuser4"],
+            input="email@example.com\ntestpass4\ntestpass5",
         )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("Passwords do not match. Please try again.", result.output)

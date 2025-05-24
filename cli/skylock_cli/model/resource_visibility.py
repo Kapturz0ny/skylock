@@ -12,6 +12,7 @@ class ResourceVisibility(str, Enum):
 
     PRIVATE = "private 🔐,red"
     PUBLIC = "public 🔓,green"
+    PROTECTED = "protected 🔐/🔒,yellow"
 
     @property
     def label(self):

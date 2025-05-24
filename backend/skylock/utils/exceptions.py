@@ -1,7 +1,7 @@
 class UserAlreadyExists(Exception):
     """Exception raised when trying to register a user that already exists."""
 
-    def __init__(self, message="User already exists"):
+    def __init__(self, message="User with given username/email already exists"):
         self.message = message
         super().__init__(self.message)
 
@@ -59,5 +59,37 @@ class RootFolderAlreadyExistsException(Exception):
     """Exception raised when trying to create an already existing root folder"""
 
     def __init__(self, message="Root folder already exists"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class Wrong2FAException(Exception):
+    """Exception raised when given 2FA code if wrong"""
+
+    def __init__(self, message="Wrong 2FA code"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class EmailAuthenticationError(Exception):
+    """Exception raised when email authentication fails"""
+
+    def __init__(self, message="Email authentication failed"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class EmailServiceUnavailable(Exception):
+    """Exception raised when email service is unavailable"""
+
+    def __init__(self, message="Email service is unavailable"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ZipQueueError(Exception):
+    """Exception raised when zip task is already in progress"""
+
+    def __init__(self, message="Zip task already in progress"):
         self.message = message
         super().__init__(self.message)

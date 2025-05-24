@@ -1,4 +1,5 @@
 import argon2
+import pyotp
 
 from skylock.api import models
 from skylock.database.repository import UserRepository
@@ -7,23 +8,63 @@ from skylock.utils.security import create_jwt_for_user
 from skylock.utils.exceptions import (
     UserAlreadyExists,
     InvalidCredentialsException,
+    Wrong2FAException,
 )
+from skylock.config import ENV_TYPE
+from skylock.service.gmail import send_mail
+from skylock.utils.logger import logger as s_logger
+from skylock.utils.reddis_mem import redis_mem as s_redis_mem
+from templates.mails import two_fa_code_mail
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, redis_mem=None, logger=None):
         self.user_repository = user_repository
         self.password_hasher = argon2.PasswordHasher()
 
-    def register_user(self, username: str, password: str) -> db_models.UserEntity:
+        self.logger = logger or s_logger
+        self.redis_mem = redis_mem or s_redis_mem
+        self.token_life = 600
+
+    def register_user(self, username: str, email: str) -> None:
         existing_user_entity = self.user_repository.get_by_username(username)
-        if existing_user_entity:
-            raise UserAlreadyExists(f"User with username {username} already exists")
+        existing_mail_entity = self.user_repository.get_by_email(email)
 
-        hashed_password = self.password_hasher.hash(password)
-        new_user_entity = db_models.UserEntity(username=username, password=hashed_password)
+        if existing_user_entity or existing_mail_entity:
+            raise UserAlreadyExists()
+        user_secret = pyotp.random_base32()
 
-        return self.user_repository.save(new_user_entity)
+        self.redis_mem.setex(f"2fa:{username}", self.token_life + 5, user_secret)
+
+        totp = pyotp.TOTP(user_secret, interval=self.token_life)
+
+        subject = "Complete you registration to Skylock!"
+        body = two_fa_code_mail(username, totp.now(), self.token_life)
+
+        try:
+            send_mail(email, subject, body)
+        except Exception as e:
+            raise e
+
+        if ENV_TYPE == "dev":
+            self.logger.info(f"TOTP for user: {totp.now()}")
+
+    def verify_2fa(
+        self, username: str, password: str, code: str, email: str
+    ) -> db_models.UserEntity:
+        user_secret = self.redis_mem.get(f"2fa:{username}")
+        if not user_secret:
+            raise Wrong2FAException(message="Code has expired")
+
+        totp = pyotp.TOTP(user_secret, interval=self.token_life)
+        if totp.verify(code):
+            hashed_password = self.password_hasher.hash(password)
+            new_user_entity = db_models.UserEntity(
+                username=username, password=hashed_password, email=email
+            )
+            return self.user_repository.save(new_user_entity)
+
+        raise Wrong2FAException
 
     def login_user(self, username: str, password: str) -> models.Token:
         user_entity = self.user_repository.get_by_username(username)
@@ -44,3 +85,11 @@ class UserService:
             return True
         except argon2.exceptions.VerifyMismatchError:
             return False
+
+    def find_shared_to_users(self, usernames: list[str]) -> list[str]:
+        found_users = []
+        for user in usernames:
+            user_entity = self.user_repository.get_by_username(user)
+            if user_entity:
+                found_users.append(user_entity.username)
+        return found_users

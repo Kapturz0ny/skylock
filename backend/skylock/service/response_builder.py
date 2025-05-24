@@ -13,8 +13,10 @@ class ResponseBuilder:
             models.File(
                 id=file.id,
                 name=file.name,
-                is_public=file.is_public,
+                privacy=file.privacy,
+                size=file.size,
                 path=f"{parent_path}/{file.name}",
+                owner_id=file.owner_id,
             )
             for file in folder.files
         ]
@@ -22,28 +24,47 @@ class ResponseBuilder:
             models.Folder(
                 id=folder.id,
                 name=folder.name,
-                is_public=folder.is_public,
+                privacy=folder.privacy,
                 path=f"{parent_path}/{folder.name}",
+                type=folder.type,
             )
             for folder in folder.subfolders
+        ]
+        children_links = [
+            models.Link(
+                id=link.id,
+                name=link.name,
+                path=f"{parent_path}/{link.name}",
+            )
+            for link in folder.links
         ]
         return models.FolderContents(
             folder_name=folder.name,
             folder_path=f"/{user_path.path}",
             files=children_files,
             folders=children_folders,
+            links=children_links,
         )
 
     def get_folder_response(
         self, folder: db_models.FolderEntity, user_path: UserPath
     ) -> models.Folder:
         return models.Folder(
-            id=folder.id, name=folder.name, path=f"/{user_path.path}", is_public=folder.is_public
+            id=folder.id,
+            name=folder.name,
+            path=f"/{user_path.path}",
+            privacy=folder.privacy,
         )
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
         return models.File(
-            id=file.id, name=file.name, path=f"/{user_path.path}", is_public=file.is_public
+            id=file.id,
+            name=file.name,
+            path=f"/{user_path.path}",
+            size=file.size,
+            privacy=file.privacy,
+            owner_id=file.owner_id,
+            shared_to=file.shared_to,
         )
 
     def get_file_data_response(

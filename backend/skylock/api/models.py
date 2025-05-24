@@ -1,6 +1,25 @@
+from enum import Enum as PyEnum
 from dataclasses import dataclass
 from typing import IO
 from pydantic import BaseModel
+
+
+class Privacy(str, PyEnum):
+    PRIVATE = "private"
+    PROTECTED = "protected"
+    PUBLIC = "public"
+
+
+class FolderType(str, PyEnum):
+    NORMAL = "normal"
+    SHARED = "shared"
+    SHARING_USER = "sharing_user"
+
+
+class ResourceType(str, PyEnum):
+    FILE = "file"
+    FOLDER = "folder"
+    LINK = "link"
 
 
 class Token(BaseModel):
@@ -12,14 +31,23 @@ class Folder(BaseModel):
     id: str
     name: str
     path: str
-    is_public: bool
+    privacy: Privacy
 
 
 class File(BaseModel):
     id: str
     name: str
     path: str
-    is_public: bool
+    owner_id: str
+    privacy: Privacy
+    size: int
+    shared_to: list[str] = []
+
+
+class Link(BaseModel):
+    id: str
+    name: str
+    path: str
 
 
 class FolderContents(BaseModel):
@@ -27,6 +55,7 @@ class FolderContents(BaseModel):
     folder_path: str
     files: list[File]
     folders: list[Folder]
+    links: list[Link]
 
 
 @dataclass
@@ -49,21 +78,30 @@ class LoginUserRequest(BaseModel):
 class RegisterUserRequest(BaseModel):
     username: str
     password: str
+    email: str
 
 
 class UpdateFolderRequest(BaseModel):
-    is_public: bool
+    privacy: Privacy
     recursive: bool = False
 
 
 class UpdateFileRequest(BaseModel):
-    is_public: bool
+    privacy: Privacy
+    shared: list[str] = []
 
 
 class UploadOptions(BaseModel):
     force: bool
-    public: bool
+    privacy: Privacy
 
 
 class ResourceLocationResponse(BaseModel):
     location: str
+
+
+class FAWithCode(BaseModel):
+    code: str
+    username: str
+    password: str
+    email: str

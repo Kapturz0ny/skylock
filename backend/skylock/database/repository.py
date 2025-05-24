@@ -47,6 +47,9 @@ class UserRepository(DatabaseRepository[models.UserEntity]):
     def get_by_username(self, username: str) -> Optional[models.UserEntity]:
         return self.filter_one_or_none(models.UserEntity.username == username)
 
+    def get_by_email(self, email: str) -> Optional[models.UserEntity]:
+        return self.filter_one_or_none(models.UserEntity.email == email)
+
 
 class FolderRepository(DatabaseRepository[models.FolderEntity]):
     def __init__(self, session: Session):
@@ -71,3 +74,61 @@ class FileRepository(DatabaseRepository[models.FileEntity]):
         return self.filter_one_or_none(
             models.FileEntity.name == name, models.FileEntity.folder == parent
         )
+
+
+class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
+    def __init__(self, session: Session):
+        super().__init__(models.SharedFileEntity, session)
+
+    def get_shared_files_by_user_id(self, user_id: str) -> list[models.SharedFileEntity]:
+        return self.filter(models.SharedFileEntity.user_id == user_id)
+
+    def get_shared_files_by_file_id(self, file_id: str) -> list[models.SharedFileEntity]:
+        return self.filter(models.SharedFileEntity.file_id == file_id)
+
+    def is_file_shared_to_user(self, file_id: str, user_id: str) -> bool:
+        return (
+            self.filter_one_or_none(
+                models.SharedFileEntity.file_id == file_id,
+                models.SharedFileEntity.user_id == user_id,
+            )
+            is not None
+        )
+
+    def delete_shared_files_from_users(self, file_id: str, user_id: str) -> None:
+        shared_file = self.filter_one_or_none(
+            models.SharedFileEntity.file_id == file_id,
+            models.SharedFileEntity.user_id == user_id,
+        )
+        if shared_file:
+            self.delete(shared_file)
+
+    def get_shared_file_by_filename(
+        self, filename: str, user_id: str
+    ) -> Optional[models.SharedFileEntity]:
+        return self.filter_one_or_none(
+            models.SharedFileEntity.file.name == filename,
+            models.SharedFileEntity.user_id == user_id,
+        )
+
+
+class LinkRepository(DatabaseRepository[models.LinkEntity]):
+    def __init__(self, session: Session):
+        super().__init__(models.LinkEntity, session)
+
+    def get_by_name_and_parent(
+        self, name: str, parent: models.FolderEntity
+    ) -> Optional[models.LinkEntity]:
+        return self.filter_one_or_none(
+            models.LinkEntity.name == name, models.LinkEntity.folder == parent
+        )
+
+    def get_by_file_id_and_owner_id(
+        self, file_id: str, owner_id: str
+    ) -> Optional[models.LinkEntity]:
+        return self.filter_one_or_none(
+            models.LinkEntity.target_file_id == file_id, models.LinkEntity.owner_id == owner_id
+        )
+
+    def get_by_file_id(self, file_id: str) -> list[models.LinkEntity]:
+        return self.filter(models.LinkEntity.target_file_id == file_id)

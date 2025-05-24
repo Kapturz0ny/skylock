@@ -9,8 +9,8 @@ def preconfigured_files(skylock, mock_user):
     user_path_file1 = UserPath(path="file1.txt", owner=mock_user)
     user_path_file2 = UserPath(path="folder1/file2.txt", owner=mock_user)
     skylock.create_folder(user_path_folder)
-    skylock.upload_file(user_path=user_path_file1, file_data=b"File 1 content")
-    skylock.upload_file(user_path=user_path_file2, file_data=b"File 2 content")
+    skylock.upload_file(user_path=user_path_file1, file_data=b"File 1 content", size=10)
+    skylock.upload_file(user_path=user_path_file2, file_data=b"File 2 content", size=20)
 
 
 # GET methods

@@ -10,6 +10,9 @@ from skylock.utils.exceptions import (
 from skylock.database.models import FileEntity, FolderEntity, UserEntity
 from skylock.utils.path import UserPath
 
+from skylock.api.models import Privacy, FolderType
+from fastapi import HTTPException
+
 
 def test_get_root_folder_success(resource_service, mock_folder_repository):
     user = UserEntity(id="user-123", username="testuser")
@@ -170,7 +173,7 @@ def test_create_file_success(resource_service, mock_folder_repository, mock_file
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
         root_folder,
@@ -178,7 +181,7 @@ def test_create_file_success(resource_service, mock_folder_repository, mock_file
     ]
 
     with patch.object(resource_service, "_save_file_data") as mock_save_file_data:
-        resource_service.create_file(user_path, data=b"file content")
+        resource_service.create_file(user_path, data=b"file content", size=10)
         mock_save_file_data.assert_called_once()
         mock_file_repository.save.assert_called_once()
 
@@ -187,8 +190,8 @@ def test_create_file_with_duplicate_name(resource_service, mock_folder_repositor
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/existing_file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id)
-    existing_file = FileEntity(id="file-123", name="existing_file.txt", owner=user)
+    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
+    existing_file = FileEntity(id="file-123", name="existing_file.txt", owner=user, size=10)
 
     subfolder.files.append(existing_file)
 
@@ -198,7 +201,7 @@ def test_create_file_with_duplicate_name(resource_service, mock_folder_repositor
     ]
 
     with pytest.raises(ResourceAlreadyExistsException):
-        resource_service.create_file(user_path, data=b"file content")
+        resource_service.create_file(user_path, data=b"file content", size=10)
 
 
 def test_get_file_not_found(resource_service, mock_file_repository):
@@ -215,7 +218,7 @@ def test_create_file_empty_name_forbidden(resource_service):
     user_path = UserPath("", user)
 
     with pytest.raises(ForbiddenActionException):
-        resource_service.create_file(user_path, data=b"file content")
+        resource_service.create_file(user_path, data=b"file content", size=10)
 
 
 def test_delete_file_success(resource_service, mock_file_repository):
@@ -261,3 +264,211 @@ def test_create_root_folder_duplicate(resource_service, mock_folder_repository):
 
     with pytest.raises(RootFolderAlreadyExistsException):
         resource_service.create_root_folder(user_path)
+
+
+def test_get_folder_by_id(resource_service):
+    folder_id = "folder-123"
+    folder = FolderEntity(id=folder_id, name="test_folder")
+    resource_service._folder_repository.get_by_id.return_value = folder
+
+    result = resource_service.get_folder_by_id(folder_id)
+
+    assert result == folder
+    resource_service._folder_repository.get_by_id.assert_called_once_with(folder_id)
+
+
+def test_get_folder_by_id_no_folder(resource_service):
+    folder_id = "folder-123"
+    resource_service._folder_repository.get_by_id.return_value = None
+
+    with pytest.raises(ResourceNotFoundException):
+        resource_service.get_folder_by_id(folder_id)
+
+
+def test_get_public_folder(resource_service):
+    folder_id = "folder-123"
+    folder = FolderEntity(id=folder_id, name="test_folder", privacy=Privacy.PUBLIC)
+    resource_service._folder_repository.get_by_id.return_value = folder
+
+    result = resource_service.get_public_folder(folder_id)
+
+    assert result == folder
+    resource_service._folder_repository.get_by_id.assert_called_once_with(folder_id)
+
+
+def test_get_public_folder_not_public(resource_service):
+    folder_id = "folder-123"
+    folder = FolderEntity(id=folder_id, name="test_folder", privacy=Privacy.PRIVATE)
+    resource_service._folder_repository.get_by_id.return_value = folder
+
+    with pytest.raises(ForbiddenActionException):
+        resource_service.get_public_folder(folder_id)
+
+
+def test_get_file_by_id(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", size=10)
+    resource_service._file_repository.get_by_id.return_value = file
+
+    result = resource_service.get_file_by_id(file_id)
+
+    assert result == file
+    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_file_by_id_no_file(resource_service):
+    file_id = "file-123"
+    resource_service._file_repository.get_by_id.return_value = None
+
+    with pytest.raises(ResourceNotFoundException):
+        resource_service.get_file_by_id(file_id)
+
+
+def test_get_verified_file_public(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC, size=10)
+
+    resource_service._file_repository.get_by_id.return_value = file
+    token = "Bearer valid_token"
+
+    result = resource_service.get_verified_file(file_id, token)
+    assert result == file
+    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_verified_file_private(resource_service):
+    file_id = "file-123"
+    file = FileEntity(
+        id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-123", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        result = resource_service.get_verified_file(file_id, token)
+        assert result == file
+        resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_verified_file_private_not_owner(resource_service):
+    file_id = "file-123"
+    file = FileEntity(
+        id=file_id, name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-456", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        with pytest.raises(ForbiddenActionException):
+            resource_service.get_verified_file(file_id, token)
+
+
+def test_get_verified_file_protected(resource_service):
+    file_id = "file-123"
+    file = FileEntity(
+        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123", size=10
+    )
+    file.shared_to = ["testuser"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-456", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        result = resource_service.get_verified_file(file_id, token)
+        assert result == file
+        resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_verified_file_protected_not_shared(resource_service):
+    file_id = "file-123"
+    file = FileEntity(
+        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123", size=10
+    )
+    file.shared_to = ["someone"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-789", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        with pytest.raises(ForbiddenActionException):
+            resource_service.get_verified_file(file_id, token)
+
+
+def test_get_verified_file_protected_owner(resource_service):
+    file_id = "file-123"
+    file = FileEntity(
+        id=file_id, name="test_file", privacy=Privacy.PROTECTED, owner_id="user-123", size=10
+    )
+    file.shared_to = ["user-456"]
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    token = "Bearer valid_token"
+    user = UserEntity(id="user-123", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        return_value=user,
+    ):
+        result = resource_service.get_verified_file(file_id, token)
+        assert result == file
+        resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_verified_file_invalid_token(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, size=10)
+
+    resource_service._file_repository.get_by_id.return_value = file
+    token = "Bearer invalid_token"
+    user = UserEntity(id="user-123", username="testuser")
+
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt",
+        side_effect=HTTPException(status_code=403),
+    ):
+        with pytest.raises(ForbiddenActionException):
+            resource_service.get_verified_file(file_id, token)
+
+
+def test_get_public_file(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC, size=10)
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    result = resource_service.get_public_file(file_id)
+    assert result == file
+    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+
+
+def test_get_public_file_not_public(resource_service):
+    file_id = "file-123"
+    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, size=10)
+
+    resource_service._file_repository.get_by_id.return_value = file
+
+    with pytest.raises(ForbiddenActionException):
+        resource_service.get_public_file(file_id)

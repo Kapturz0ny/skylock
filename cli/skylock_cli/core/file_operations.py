@@ -5,11 +5,13 @@ Module to handle logic for file operations
 from pathlib import Path
 import os
 import tempfile
+
 from pydantic import TypeAdapter
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.core import path_parser, context_manager
 from skylock_cli.model.file import File
 from skylock_cli.model.share_link import ShareLink
+from skylock_cli.model.privacy import Privacy
 from skylock_cli.api import file_requests
 from skylock_cli.exceptions.core_exceptions import NotAFileError
 from skylock_cli.config import DOWNLOADS_DIR
@@ -20,7 +22,7 @@ def upload_file(
     real_file_path: Path,
     destination_path: Path,
     force: bool = False,
-    public: bool = False,
+    privacy: Privacy = Privacy.PRIVATE,
 ) -> File:
     """Upload a file"""
     current_context = context_manager.ContextManager.get_context()
@@ -37,7 +39,7 @@ def upload_file(
                 joind_path,
                 files,
                 force,
-                public,
+                privacy,
             )
 
         new_file = TypeAdapter(File).validate_python(response)
@@ -83,25 +85,13 @@ def remove_file(file_path: str) -> Path:
     return joind_path
 
 
-def make_file_public(file_path: str) -> File:
-    """Make a file public"""
+def change_file_visibility(file_path: str, mode: Privacy, shared_to: list[str]) -> File:
+    """Change files visibitity to one of [protected, private, public]"""
     current_context = context_manager.ContextManager.get_context()
     with CLIExceptionHandler():
         joind_path = path_parser.parse_path(current_context.cwd.path, Path(file_path))
-        response = file_requests.send_make_public_request(
-            current_context.token, joind_path
-        )
-        changed_file = TypeAdapter(File).validate_python(response)
-    return changed_file
-
-
-def make_file_private(file_path: str) -> File:
-    """Make a file private"""
-    current_context = context_manager.ContextManager.get_context()
-    with CLIExceptionHandler():
-        joind_path = path_parser.parse_path(current_context.cwd.path, Path(file_path))
-        response = file_requests.send_make_private_request(
-            current_context.token, joind_path
+        response = file_requests.send_change_privacy(
+            current_context.token, joind_path, privacy=mode, shared_to=shared_to
         )
         changed_file = TypeAdapter(File).validate_python(response)
     return changed_file

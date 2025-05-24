@@ -11,12 +11,15 @@ from skylock_cli.core.context_manager import ContextManager
 from skylock_cli.exceptions import api_exceptions
 from skylock_cli.model.token import Token
 from skylock_cli.api import bearer_auth
+from skylock_cli.model.privacy import Privacy
 from skylock_cli.utils.cli_exception_handler import handle_standard_errors
 
 client = Client(base_url=ContextManager.get_context().base_url + API_URL)
 
 
-def send_mkdir_request(token: Token, path: Path, parent: bool, public: bool) -> dict:
+def send_mkdir_request(
+    token: Token, path: Path, parent: bool, privacy: Privacy
+) -> dict:
     """
     Send a mkdir request to the SkyLock backend API.
 
@@ -27,7 +30,7 @@ def send_mkdir_request(token: Token, path: Path, parent: bool, public: bool) -> 
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    params = {"parent": parent, "is_public": public}
+    params = {"parent": parent, "privacy": privacy.value}
 
     response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)
 
@@ -70,6 +73,7 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
+        HTTPStatus.FORBIDDEN: api_exceptions.SpecialDirectoryDeletionError(path),
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)
@@ -99,7 +103,7 @@ def send_make_public_request(token: Token, path: Path, recursive: bool) -> dict:
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": True, "recursive": recursive}
+    body = {"privacy": Privacy.PUBLIC.value, "recursive": recursive}
 
     response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
 
@@ -128,7 +132,7 @@ def send_make_private_request(token: Token, path: Path, recursive: bool) -> dict
     """
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"is_public": False, "recursive": recursive}
+    body = {"privacy": Privacy.PRIVATE.value, "recursive": recursive}
 
     response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
 
@@ -177,6 +181,30 @@ def send_share_request(token: Token, path: Path) -> dict:
     if response.status_code != HTTPStatus.OK:
         raise api_exceptions.SkyLockAPIError(
             f"Failed to share directory (Error Code: {response.status_code})"
+        )
+
+    return response.json()
+
+
+def send_zip_request(token: Token, path: Path, force: bool) -> dict:
+    url = "/zip" + quote(str(path))
+    auth = bearer_auth.BearerAuth(token)
+    params = {"force": force}
+
+    standard_error_dict = {
+        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
+        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
+        HTTPStatus.FORBIDDEN: api_exceptions.ZipJobStartedError(path),
+        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(path),
+    }
+
+    response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)
+
+    handle_standard_errors(standard_error_dict, response.status_code)
+
+    if response.status_code != HTTPStatus.CREATED:
+        raise api_exceptions.SkyLockAPIError(
+            f"Failed to zip directory (Error Code: {response.status_code})"
         )
 
     return response.json()
