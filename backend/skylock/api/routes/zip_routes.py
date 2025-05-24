@@ -16,6 +16,7 @@ from skylock.utils.logger import logger
 
 router = APIRouter(tags=["Resource"], prefix="/zip")
 
+
 @router.post(
     "/{path:path}",
     status_code=status.HTTP_201_CREATED,
@@ -63,9 +64,7 @@ def zip_folder(
     force: bool,
 ) -> dict:
     try:
-        task_id = skylock.create_zip(
-        UserPath(path=path, owner=user), force
-    )
+        task_id = skylock.create_zip(UserPath(path=path, owner=user), force)
     except ResourceAlreadyExistsException as exc:
         raise HTTPException(status_code=409, message=str(exc))
     return {"task_id": task_id, "message": "queued"}

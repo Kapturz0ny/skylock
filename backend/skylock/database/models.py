@@ -1,9 +1,9 @@
 import uuid
-from typing import Optional, List, Set
-from sqlalchemy import orm, ForeignKey, Enum, Table, Column, Text
-from sqlalchemy.dialects.sqlite import TEXT  # Use TEXT from sqlite dialect
-from skylock.api.models import Privacy, FolderType
 import json
+from typing import Optional, List
+from sqlalchemy import orm, ForeignKey
+from sqlalchemy.dialects.sqlite import TEXT
+from skylock.api.models import Privacy, FolderType
 
 
 class Base(orm.DeclarativeBase):

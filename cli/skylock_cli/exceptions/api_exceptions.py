@@ -132,6 +132,12 @@ class DirectoryNotPublicError(SkyLockAPIError):
         message = f"Directory `{directory_path}` is not public!"
         super().__init__(message)
 
+class ZipJobStartedError(SkyLockAPIError):
+    """Exception raised when a the request for zip is doubled.
+    """
+    def __init__(self, directory_path: Path):
+        message = f"The zip request for {directory_path} is already queued."
+        super().__init__(message)
 
 class InvalidPathError(SkyLockAPIError):
     """Exception raised when the path is invalid.

@@ -5,8 +5,11 @@ from skylock.config import REDIS_HOST, REDIS_PORT
 
 from skylock.database.session import get_db_session
 from skylock.database.repository import (
-    FileRepository, FolderRepository, UserRepository,
-    SharedFileRepository, LinkRepository
+    FileRepository,
+    FolderRepository,
+    UserRepository,
+    SharedFileRepository,
+    LinkRepository,
 )
 from skylock.service.path_resolver import PathResolver
 from skylock.utils.storage import FileStorageService
@@ -16,10 +19,9 @@ from skylock.utils.path import UserPath
 from skylock.api.models import Privacy
 from skylock.utils.reddis_mem import redis_mem
 
-# temp setup
-redis_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
-redis_broker = RedisBroker(url=redis_url)
+redis_broker = RedisBroker(url=REDIS_URL)
 dramatiq.set_broker(redis_broker)
 
 
@@ -45,8 +47,8 @@ def create_zip_task(owner_id: int, folder_path: str, force: bool, task_name: str
 
         folder = resource_service.get_folder(user_path)
 
-        zip_bytes = zip_service.create_zip_from_folder_to_bytes(folder)
+        zip_bytes, size = zip_service.create_zip_from_folder_to_bytes(folder)
         file_path = UserPath(path=folder_path + ".zip", owner=user)
-        resource_service.create_file(file_path, zip_bytes, force=force, privacy=Privacy.PRIVATE)
+        resource_service.create_file(file_path, zip_bytes, size=size, force=force, privacy=Privacy.PRIVATE)
     finally:
         redis_mem.delete(task_name)

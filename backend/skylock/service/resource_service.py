@@ -1,4 +1,5 @@
-from typing import IO, Optional, Literal
+from typing import IO, Optional
+from fastapi import HTTPException
 
 from skylock.database import models as db_models
 from skylock.database.repository import (
@@ -22,7 +23,6 @@ from skylock.utils.storage import FileStorageService
 from skylock.api.models import Privacy, FolderType, ResourceType
 from skylock.utils.security import get_user_from_jwt
 
-from fastapi import HTTPException
 from skylock.utils.logger import logger
 
 
@@ -142,7 +142,7 @@ class ResourceService:
             raise ForbiddenActionException("Deletion of root folder is forbidden")
 
         if folder.type == FolderType.SHARED:
-            logger.warning(f"Attempted to delete a special folder: {folder.name}")
+            logger.warning("Attempted to delete a special folder: %s", folder.name)
             raise ForbiddenActionException("You cannot delete special folders")
 
         has_folder_children = bool(folder.subfolders or folder.files or folder.links)
@@ -187,23 +187,23 @@ class ResourceService:
 
         if token is None:
             raise ForbiddenActionException("Authentication token is required for this resource.")
-        
+
         processed_token = token.replace("Bearer ", "")
 
         try:
             user = get_user_from_jwt(processed_token, self._user_repository)
-        except HTTPException:
-            raise ForbiddenActionException("Invalid token")
+        except HTTPException as exc:
+            raise ForbiddenActionException("Invalid token") from exc
 
         if (
             privacy == Privacy.PROTECTED
             and user.username not in file.shared_to
             and user.id != file.owner_id
         ):
-            raise ForbiddenActionException(f"file is not shared with you")
+            raise ForbiddenActionException("file is not shared with you")
 
         if privacy == Privacy.PRIVATE and user.id != file.owner_id:
-            raise ForbiddenActionException(f"file is not shared with you")
+            raise ForbiddenActionException("file is not shared with you")
 
         return file
 

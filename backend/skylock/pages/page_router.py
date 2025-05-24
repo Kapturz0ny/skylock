@@ -25,6 +25,7 @@ html_handler = FastAPI(docs_url=None, redoc_url=None)
 html_handler.state.limiter = limiter
 html_handler.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
 @html_handler.get("/", response_class=HTMLResponse)
 def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_bulder)]):
     return html_builder.build_main_page(request)
