@@ -2,7 +2,6 @@ from typing import IO
 from skylock.api import models
 from skylock.database import models as db_models
 from skylock.utils.path import UserPath
-from skylock.database.models import FolderType
 
 
 class ResponseBuilder:

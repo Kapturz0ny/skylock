@@ -1,4 +1,3 @@
-import dramatiq
 from skylock.service.path_resolver import PathResolver
 from skylock.service.resource_service import ResourceService
 from skylock.service.response_builder import ResponseBuilder
@@ -12,7 +11,6 @@ from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
 from skylock.database import models as db_models
 
-from skylock.utils.logger import logger
 
 class SkylockFacade:
     def __init__(
@@ -33,14 +31,13 @@ class SkylockFacade:
         self._zip_service = zip_service
 
     # User Management Methods
-    def register_user(self, username: str, password: str, email: str) -> None:
-        user = self._user_service.register_user(username, password, email)
-        # self._resource_service.create_root_folder(UserPath.root_folder_of(user))
+    def register_user(self, username: str, email: str) -> None:
+        self._user_service.register_user(username, email)
 
-    def verify_2FA(
+    def verify_2fa(
         self, username: str, password: str, code: str, email: str
     ) -> db_models.UserEntity:
-        return self._user_service.verify_2FA(username, password, code, email)
+        return self._user_service.verify_2fa(username, password, code, email)
 
     def login_user(self, username: str, password: str) -> models.Token:
         return self._user_service.login_user(username, password)

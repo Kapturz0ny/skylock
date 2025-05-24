@@ -50,7 +50,7 @@ def register_user(
     request: models.RegisterUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    skylock.register_user(username=request.username, password=request.password, email=request.email)
+    skylock.register_user(username=request.username, email=request.email)
     return {"message": "User is not in the database"}
 
 
@@ -84,7 +84,7 @@ def authenticate_user(
     request: models.FAWithCode,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> dict:
-    user = skylock.verify_2FA(
+    user = skylock.verify_2fa(
         username=request.username,
         password=request.password,
         code=request.code,
@@ -92,6 +92,7 @@ def authenticate_user(
     )
     skylock.configure_new_user(user)
     return {"message": "User successfully registered"}
+
 
 @router.post(
     "/login",
