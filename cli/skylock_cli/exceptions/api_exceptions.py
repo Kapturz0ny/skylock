@@ -53,6 +53,18 @@ class AuthenticationError(SkyLockAPIError):
         super().__init__(message)
 
 
+class RateLimitExceededError(SkyLockAPIError):
+    """
+    Exception raised when the API rate limit is exceeded.
+
+    Args:
+        retry_after: The number of seconds to wait before retrying, if available.
+    """
+    def __init__(self) -> None:
+        message = "Exceeded requests limit. Try again later."
+        super().__init__(message)
+
+
 class TokenNotFoundError(SkyLockAPIError):
     """Exception raised when the token is not found in the response."""
 
