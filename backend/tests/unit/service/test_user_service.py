@@ -52,10 +52,10 @@ def test_register_user_successful(user_service, mock_user_repository, user_data,
     mock_user_repository.get_by_email.return_value = None
     mock_user_repository.save.return_value = user_entity
 
-    user_service.register_user(user_data["username"], user_data["password"], user_data["email"])
+    user_service.register_user(user_data["username"], user_data["email"])
 
     user_service.redis_mem.setex.assert_called_once_with(
-        f"2fa:{user_data["username"]}", user_service.TOKEN_LIFE + 5, ANY
+        f"2fa:{user_data["username"]}", user_service.token_life + 5, ANY
     )
 
 
@@ -64,10 +64,10 @@ def test_register_user_already_exists(user_service, mock_user_repository, user_d
     mock_user_repository.get_by_email.return_value = user_entity
 
     with pytest.raises(UserAlreadyExists):
-        user_service.register_user(user_data["username"], user_data["password"], "random_email")
+        user_service.register_user(user_data["username"], "random_email")
 
     with pytest.raises(UserAlreadyExists):
-        user_service.register_user("random_username", user_data["password"], user_data["email"])
+        user_service.register_user("random_username", user_data["email"])
 
 
 def test_verify_2FA_success(mock_user_repository, user_service, user_data, user_entity):
@@ -75,7 +75,7 @@ def test_verify_2FA_success(mock_user_repository, user_service, user_data, user_
     user_service.redis_mem.get.return_value = f"2fa:{user_data["username"]}"
 
     with patch("skylock.service.user_service.pyotp.TOTP.verify", return_value=True) as totp_verify:
-        result = user_service.verify_2FA(
+        result = user_service.verify_2fa(
             user_data["username"],
             user_data["password"],
             "test_code",
@@ -90,7 +90,7 @@ def test_verify_2FA_wrong_code(user_service, user_data):
     user_service.redis_mem.get.return_value = None
 
     with pytest.raises(Wrong2FAException):
-        user_service.verify_2FA(
+        user_service.verify_2fa(
             user_data["username"],
             user_data["password"],
             "test_code",
