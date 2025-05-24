@@ -88,7 +88,8 @@ def send_login_request(_user: user.User) -> token.Token:
     response = client.post(url, json=_user.model_dump(), headers=API_HEADERS)
 
     standard_error_dict = {
-        HTTPStatus.UNAUTHORIZED: api_exceptions.AuthenticationError()
+        HTTPStatus.UNAUTHORIZED: api_exceptions.AuthenticationError(),
+        HTTPStatus.TOO_MANY_REQUESTS: api_exceptions.RateLimitExceededError()
     }
 
     handle_standard_errors(standard_error_dict, response.status_code)
