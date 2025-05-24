@@ -24,7 +24,7 @@ from skylock.utils.exception_handlers import (
     invalid_path_handler,
     email_authentication_error_handler,
     email_service_unavailable_handler,
-    zip_queue_error_handler
+    zip_queue_error_handler,
 )
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -37,7 +37,7 @@ from skylock.utils.exceptions import (
     InvalidPathException,
     EmailAuthenticationError,
     EmailServiceUnavailable,
-    ZipQueueError
+    ZipQueueError,
 )
 
 api = FastAPI(title="File Sharing API", version="1.0.0")

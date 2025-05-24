@@ -49,6 +49,8 @@ def create_zip_task(owner_id: int, folder_path: str, force: bool, task_name: str
 
         zip_bytes, size = zip_service.create_zip_from_folder_to_bytes(folder)
         file_path = UserPath(path=folder_path + ".zip", owner=user)
-        resource_service.create_file(file_path, zip_bytes, size=size, force=force, privacy=Privacy.PRIVATE)
+        resource_service.create_file(
+            file_path, zip_bytes, size=size, force=force, privacy=Privacy.PRIVATE
+        )
     finally:
         redis_mem.delete(task_name)

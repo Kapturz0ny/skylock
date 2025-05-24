@@ -17,8 +17,6 @@ from skylock.utils.exceptions import (
 
 from skylock.api.dependencies import get_user_service
 from skylock.service.user_service import UserService
-from skylock.api.dependencies import get_resource_service
-from skylock.service.resource_service import ResourceService
 
 html_handler = FastAPI(docs_url=None, redoc_url=None)
 

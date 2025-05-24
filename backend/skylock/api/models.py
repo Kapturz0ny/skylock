@@ -91,11 +91,6 @@ class UpdateFileRequest(BaseModel):
     shared: list[str] = []
 
 
-class UploadOptions(BaseModel):
-    force: bool
-    privacy: Privacy
-
-
 class ResourceLocationResponse(BaseModel):
     location: str
 

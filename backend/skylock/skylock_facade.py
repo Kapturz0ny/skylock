@@ -121,11 +121,6 @@ class SkylockFacade:
         data = self._resource_service.get_file_data(user_path)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
 
-    def download_public_file(self, file_id: str) -> models.FileData:
-        file = self._resource_service.get_public_file(file_id)
-        data = self._resource_service.get_public_file_data(file_id)
-        return self._response_builder.get_file_data_response(file=file, file_data=data)
-
     def download_shared_file(self, file_id: str, token=None) -> models.FileData:
         file = self._resource_service.get_verified_file(file_id, token)
         data = self._resource_service.get_shared_file_data(file_id)

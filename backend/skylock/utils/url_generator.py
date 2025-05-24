@@ -8,8 +8,5 @@ class UrlGenerator:
     def generate_download_url_for_file(self, file_id: str) -> str:
         return f"/api/v1/shared/files/download/{file_id}"
 
-    def generate_login_url_for_file(self, file_id: str) -> str:
-        return f"/files/{file_id}/login"
-
     def generate_import_url_for_file(self, file_id: str) -> str:
         return f"/files/{file_id}/import"

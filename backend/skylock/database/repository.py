@@ -80,9 +80,6 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
     def __init__(self, session: Session):
         super().__init__(models.SharedFileEntity, session)
 
-    def get_shared_files_by_user_id(self, user_id: str) -> list[models.SharedFileEntity]:
-        return self.filter(models.SharedFileEntity.user_id == user_id)
-
     def get_shared_files_by_file_id(self, file_id: str) -> list[models.SharedFileEntity]:
         return self.filter(models.SharedFileEntity.file_id == file_id)
 
@@ -102,14 +99,6 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
         )
         if shared_file:
             self.delete(shared_file)
-
-    def get_shared_file_by_filename(
-        self, filename: str, user_id: str
-    ) -> Optional[models.SharedFileEntity]:
-        return self.filter_one_or_none(
-            models.SharedFileEntity.file.name == filename,
-            models.SharedFileEntity.user_id == user_id,
-        )
 
 
 class LinkRepository(DatabaseRepository[models.LinkEntity]):
