@@ -1,9 +1,10 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 
 from skylock.api import models
 from skylock.api.dependencies import get_skylock_facade
 from skylock.skylock_facade import SkylockFacade
+from skylock.utils.ratelimit_config import DEFAULT_RATE_LIMIT, limiter
 
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
@@ -49,7 +50,7 @@ def register_user(
     request: models.RegisterUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
-    skylock.register_user(username=request.username, password=request.password, email=request.email)
+    skylock.register_user(username=request.username, email=request.email)
     return {"message": "User is not in the database"}
 
 
@@ -83,7 +84,7 @@ def authenticate_user(
     request: models.FAWithCode,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> dict:
-    user = skylock.verify_2FA(
+    user = skylock.verify_2fa(
         username=request.username,
         password=request.password,
         code=request.code,
@@ -118,8 +119,10 @@ def authenticate_user(
         },
     },
 )
-def login_user(
-    request: models.LoginUserRequest,
+@limiter.limit(DEFAULT_RATE_LIMIT)
+async def login_user(
+    request: Request,
+    login_payload: models.LoginUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> models.Token:
-    return skylock.login_user(username=request.username, password=request.password)
+    return skylock.login_user(username=login_payload.username, password=login_payload.password)

@@ -3,6 +3,10 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from skylock.utils.ratelimit_config import limiter, DEFAULT_RATE_LIMIT
+
 from skylock.pages.dependencies import get_html_bulder, get_templates
 from skylock.pages.html_builder import HtmlBuilder
 from skylock.utils.exceptions import (
@@ -17,6 +21,9 @@ from skylock.api.dependencies import get_resource_service
 from skylock.service.resource_service import ResourceService
 
 html_handler = FastAPI(docs_url=None, redoc_url=None)
+
+html_handler.state.limiter = limiter
+html_handler.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 @html_handler.get("/", response_class=HTMLResponse)

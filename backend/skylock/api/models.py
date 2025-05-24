@@ -1,7 +1,7 @@
-from dataclasses import dataclass
-from typing import IO, Literal
-from pydantic import BaseModel
 from enum import Enum as PyEnum
+from dataclasses import dataclass
+from typing import IO
+from pydantic import BaseModel
 
 
 class Privacy(str, PyEnum):

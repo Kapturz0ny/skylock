@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from skylock.utils.ratelimit_config import limiter
 
 from skylock.api.routes import (
     auth_routes,
@@ -21,6 +24,7 @@ from skylock.utils.exception_handlers import (
     invalid_path_handler,
     email_authentication_error_handler,
     email_service_unavailable_handler,
+    zip_queue_error_handler
 )
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
@@ -33,9 +37,12 @@ from skylock.utils.exceptions import (
     InvalidPathException,
     EmailAuthenticationError,
     EmailServiceUnavailable,
+    ZipQueueError
 )
 
 api = FastAPI(title="File Sharing API", version="1.0.0")
+api.state.limiter = limiter
+api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 api.add_exception_handler(UserAlreadyExists, user_already_exists_handler)
 api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler)
@@ -47,6 +54,7 @@ api.add_exception_handler(Wrong2FAException, wrong_code_handler)
 api.add_exception_handler(InvalidPathException, invalid_path_handler)
 api.add_exception_handler(EmailAuthenticationError, email_authentication_error_handler)
 api.add_exception_handler(EmailServiceUnavailable, email_service_unavailable_handler)
+api.add_exception_handler(ZipQueueError, zip_queue_error_handler)
 
 
 api.include_router(auth_routes.router)

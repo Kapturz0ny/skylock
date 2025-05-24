@@ -24,9 +24,9 @@ class UserService:
 
         self.logger = logger or s_logger
         self.redis_mem = redis_mem or s_redis_mem
-        self.TOKEN_LIFE = 600
+        self.token_life = 600
 
-    def register_user(self, username: str, password: str, email: str) -> None:
+    def register_user(self, username: str, email: str) -> None:
         existing_user_entity = self.user_repository.get_by_username(username)
         existing_mail_entity = self.user_repository.get_by_email(email)
 
@@ -34,12 +34,12 @@ class UserService:
             raise UserAlreadyExists()
         user_secret = pyotp.random_base32()
 
-        self.redis_mem.setex(f"2fa:{username}", self.TOKEN_LIFE + 5, user_secret)
+        self.redis_mem.setex(f"2fa:{username}", self.token_life + 5, user_secret)
 
-        totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
+        totp = pyotp.TOTP(user_secret, interval=self.token_life)
 
         subject = "Complete you registration to Skylock!"
-        body = two_fa_code_mail(username, totp.now(), self.TOKEN_LIFE)
+        body = two_fa_code_mail(username, totp.now(), self.token_life)
 
         try:
             send_mail(email, subject, body)
@@ -49,14 +49,14 @@ class UserService:
         if ENV_TYPE == "dev":
             self.logger.info(f"TOTP for user: {totp.now()}")
 
-    def verify_2FA(
+    def verify_2fa(
         self, username: str, password: str, code: str, email: str
     ) -> db_models.UserEntity:
         user_secret = self.redis_mem.get(f"2fa:{username}")
         if not user_secret:
             raise Wrong2FAException(message="Code has expired")
 
-        totp = pyotp.TOTP(user_secret, interval=self.TOKEN_LIFE)
+        totp = pyotp.TOTP(user_secret, interval=self.token_life)
         if totp.verify(code):
             hashed_password = self.password_hasher.hash(password)
             new_user_entity = db_models.UserEntity(

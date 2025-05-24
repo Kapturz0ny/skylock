@@ -194,7 +194,7 @@ def send_zip_request(token: Token, path: Path, force: bool) -> dict:
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-        HTTPStatus.FORBIDDEN: api_exceptions.DirectoryNotPublicError(path),
+        HTTPStatus.FORBIDDEN: api_exceptions.ZipJobStartedError(path),
         HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(path),
     }
 

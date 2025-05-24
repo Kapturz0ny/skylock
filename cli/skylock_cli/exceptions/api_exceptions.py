@@ -53,6 +53,18 @@ class AuthenticationError(SkyLockAPIError):
         super().__init__(message)
 
 
+class RateLimitExceededError(SkyLockAPIError):
+    """
+    Exception raised when the API rate limit is exceeded.
+
+    Args:
+        retry_after: The number of seconds to wait before retrying, if available.
+    """
+    def __init__(self) -> None:
+        message = "Exceeded requests limit. Try again later."
+        super().__init__(message)
+
+
 class TokenNotFoundError(SkyLockAPIError):
     """Exception raised when the token is not found in the response."""
 
@@ -120,6 +132,12 @@ class DirectoryNotPublicError(SkyLockAPIError):
         message = f"Directory `{directory_path}` is not public!"
         super().__init__(message)
 
+class ZipJobStartedError(SkyLockAPIError):
+    """Exception raised when a the request for zip is doubled.
+    """
+    def __init__(self, directory_path: Path):
+        message = f"The zip request for {directory_path} is already queued."
+        super().__init__(message)
 
 class InvalidPathError(SkyLockAPIError):
     """Exception raised when the path is invalid.
