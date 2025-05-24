@@ -1,9 +1,10 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 
 from skylock.api import models
 from skylock.api.dependencies import get_skylock_facade
 from skylock.skylock_facade import SkylockFacade
+from skylock.utils.ratelimit_config import DEFAULT_RATE_LIMIT, limiter
 
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
@@ -92,7 +93,6 @@ def authenticate_user(
     skylock.configure_new_user(user)
     return {"message": "User successfully registered"}
 
-
 @router.post(
     "/login",
     response_model=models.Token,
@@ -118,8 +118,10 @@ def authenticate_user(
         },
     },
 )
-def login_user(
-    request: models.LoginUserRequest,
+@limiter.limit(DEFAULT_RATE_LIMIT)
+async def login_user(
+    request: Request,
+    login_payload: models.LoginUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> models.Token:
-    return skylock.login_user(username=request.username, password=request.password)
+    return skylock.login_user(username=login_payload.username, password=login_payload.password)
