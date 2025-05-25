@@ -200,10 +200,6 @@ class SkylockFacade:
         # raise ForbiddenActionException(f"File {file.name} is not available for this user, cannot be shared")
 
     # Public Resource Access
-    def get_public_file(self, file_id: str) -> models.File:
-        file = self._resource_service.get_public_file(file_id)
-        path = self._path_resolver.path_from_file(file)
-        return self._response_builder.get_file_response(file=file, user_path=path)
 
     def get_file_for_login(self, file_id: str) -> models.File:
         file = self._resource_service.get_file_by_id(file_id)

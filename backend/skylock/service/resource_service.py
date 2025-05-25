@@ -209,14 +209,6 @@ class ResourceService:
 
         return file
 
-    def get_public_file(self, file_id: str) -> db_models.FileEntity:
-        file = self.get_file_by_id(file_id)
-
-        if file.privacy != Privacy.PUBLIC:
-            raise ForbiddenActionException(f"folder with id {file_id} is not public")
-
-        return file
-
     def create_file(
         self,
         user_path: UserPath,
@@ -296,14 +288,6 @@ class ResourceService:
 
     def get_file_data(self, user_path: UserPath) -> IO[bytes]:
         file = self.get_file(user_path)
-        return self._get_file_data(file)
-
-    def get_public_file_data(self, file_id: str) -> IO[bytes]:
-        file = self.get_file_by_id(file_id)
-
-        if file.privacy != Privacy.PUBLIC:
-            raise ForbiddenActionException(f"File with id {file_id} is not public")
-
         return self._get_file_data(file)
 
     def get_shared_file_data(self, file_id: str) -> IO[bytes]:

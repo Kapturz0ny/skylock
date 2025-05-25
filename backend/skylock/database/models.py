@@ -117,11 +117,11 @@ class LinkEntity(Base):
     )
     target_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(
         ForeignKey("folders.id"), nullable=True
-    )
+    )  # currently not used
 
     target_file: orm.Mapped[Optional["FileEntity"]] = orm.relationship(
         foreign_keys=[target_file_id]
-    )
+    )  # currently not used
     target_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
         foreign_keys=[target_folder_id]
     )

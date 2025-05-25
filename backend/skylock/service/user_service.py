@@ -73,12 +73,6 @@ class UserService:
             return models.Token(access_token=token, token_type="bearer")
         raise InvalidCredentialsException
 
-    def verify_user(self, username: str, password: str) -> bool:
-        user_entity = self.user_repository.get_by_username(username)
-        if user_entity and self._verify_password(user_entity.password, password):
-            return True
-        return False
-
     def _verify_password(self, hashed_password, password) -> bool:
         try:
             self.password_hasher.verify(hashed_password, password)
