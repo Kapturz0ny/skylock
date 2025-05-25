@@ -117,12 +117,16 @@ def authenticate_user(
             "description": "Invalid credentials provided",
             "content": {"application/json": {"example": {"detail": "Invalid credentials"}}},
         },
+        429: {
+            "description": "Requests limit exceeded",
+            "content": {"application/json": {"example": {"detail": "Requests limit exceeded"}}},
+        },
     },
 )
 @limiter.limit(DEFAULT_RATE_LIMIT)
 async def login_user(
     request: Request,
-    login_payload: models.LoginUserRequest,
+    payload: models.LoginUserRequest,
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ) -> models.Token:
-    return skylock.login_user(username=login_payload.username, password=login_payload.password)
+    return skylock.login_user(username=payload.username, password=payload.password)

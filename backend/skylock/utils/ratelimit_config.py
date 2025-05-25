@@ -5,7 +5,7 @@ from skylock.config import REDIS_URL_RATELIMIT
 
 RATE_LIMITING_ENABLED: bool = True
 
-DEFAULT_RATE_LIMIT: str = "2/minute"
+DEFAULT_RATE_LIMIT: str = "1/second"
 
 limiter = Limiter(
     key_func=get_remote_address,

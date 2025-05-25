@@ -39,6 +39,7 @@ def folder_contents(
 
 
 @html_handler.post("/files/{file_id}/login", response_class=HTMLResponse)
+@limiter.limit(DEFAULT_RATE_LIMIT)
 async def login_file_post(
     request: Request,
     file_id: str,
@@ -63,6 +64,12 @@ async def login_file_post(
             "login_form.html",
             {"request": request, "file_id": file_id, "error": "Invalid credentials"},
             status_code=401,
+        )
+    except RateLimitExceeded:
+        return templates.TemplateResponse(
+            "login_form.html",
+            {"request": request, "file_id": file_id, "error": "To many requests. Try again later."},
+            status_code=429,
         )
 
 

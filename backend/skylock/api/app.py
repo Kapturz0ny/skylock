@@ -17,6 +17,7 @@ from skylock.utils.exception_handlers import (
     folder_not_empty_handler,
     forbidden_action_handler,
     invalid_credentials_handler,
+    user_not_found_handler,
     resource_already_exists_handler,
     resource_not_found_handler,
     user_already_exists_handler,
@@ -30,6 +31,7 @@ from skylock.utils.exceptions import (
     FolderNotEmptyException,
     ForbiddenActionException,
     InvalidCredentialsException,
+    UserNotFoundException,
     ResourceAlreadyExistsException,
     ResourceNotFoundException,
     UserAlreadyExists,
@@ -46,6 +48,7 @@ api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 
 api.add_exception_handler(UserAlreadyExists, user_already_exists_handler)  # type: ignore[arg-type]
 api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler)  # type: ignore[arg-type]
+api.add_exception_handler(UserNotFoundException, user_not_found_handler)  # type: ignore[arg-type]
 api.add_exception_handler(ResourceAlreadyExistsException, resource_already_exists_handler)  # type: ignore[arg-type]
 api.add_exception_handler(ResourceNotFoundException, resource_not_found_handler)  # type: ignore[arg-type]
 api.add_exception_handler(FolderNotEmptyException, folder_not_empty_handler)  # type: ignore[arg-type]
