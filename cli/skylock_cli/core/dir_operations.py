@@ -9,7 +9,6 @@ from skylock_cli.core.nav import change_directory
 from skylock_cli.model.directory import Directory
 from skylock_cli.model.share_link import ShareLink
 from skylock_cli.model.privacy import Privacy
-from skylock_cli.model.file import File
 from skylock_cli.utils.cli_exception_handler import CLIExceptionHandler
 from skylock_cli.core import path_parser, context_manager
 from skylock_cli.exceptions.core_exceptions import (
@@ -53,32 +52,32 @@ def remove_directory(directory_path: str, recursive: bool) -> Path:
     return joind_path
 
 
-def make_directory_public(directory_path: str, recursive: bool = False) -> Directory:
-    """Make a directory public"""
-    current_context = context_manager.ContextManager.get_context()
-    with CLIExceptionHandler():
-        joind_path = path_parser.parse_path(
-            current_context.cwd.path, Path(directory_path)
-        )
-        response = dir_requests.send_make_public_request(
-            current_context.token, joind_path, recursive
-        )
-        changed_dir = TypeAdapter(Directory).validate_python(response)
-    return changed_dir
+# def make_directory_public(directory_path: str, recursive: bool = False) -> Directory:
+#     """Make a directory public"""
+#     current_context = context_manager.ContextManager.get_context()
+#     with CLIExceptionHandler():
+#         joind_path = path_parser.parse_path(
+#             current_context.cwd.path, Path(directory_path)
+#         )
+#         response = dir_requests.send_make_public_request(
+#             current_context.token, joind_path, recursive
+#         )
+#         changed_dir = TypeAdapter(Directory).validate_python(response)
+#     return changed_dir
 
 
-def make_directory_private(directory_path: str, recursive: bool = False) -> Directory:
-    """Make a directory private"""
-    current_context = context_manager.ContextManager.get_context()
-    with CLIExceptionHandler():
-        joind_path = path_parser.parse_path(
-            current_context.cwd.path, Path(directory_path)
-        )
-        response = dir_requests.send_make_private_request(
-            current_context.token, joind_path, recursive
-        )
-        changed_dir = TypeAdapter(Directory).validate_python(response)
-    return changed_dir
+# def make_directory_private(directory_path: str, recursive: bool = False) -> Directory:
+#     """Make a directory private"""
+#     current_context = context_manager.ContextManager.get_context()
+#     with CLIExceptionHandler():
+#         joind_path = path_parser.parse_path(
+#             current_context.cwd.path, Path(directory_path)
+#         )
+#         response = dir_requests.send_make_private_request(
+#             current_context.token, joind_path, recursive
+#         )
+#         changed_dir = TypeAdapter(Directory).validate_python(response)
+#     return changed_dir
 
 
 def share_directory(directory_path: str) -> ShareLink:

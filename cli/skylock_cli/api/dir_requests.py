@@ -93,64 +93,6 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
         )
 
 
-def send_make_public_request(token: Token, path: Path, recursive: bool) -> dict:
-    """
-    Send a make public request to the SkyLock backend API.
-
-    Args:
-        token (Token): The token object containing authentication token.
-        path (str): The path of the directory to be made public.
-    """
-    url = "/folders" + quote(str(path))
-    auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": Privacy.PUBLIC.value, "recursive": recursive}
-
-    response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
-
-    standard_error_dict = {
-        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
-        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-    }
-
-    handle_standard_errors(standard_error_dict, response.status_code)
-
-    if response.status_code != HTTPStatus.OK:
-        raise api_exceptions.SkyLockAPIError(
-            f"Failed to make directory public (Error Code: {response.status_code})"
-        )
-
-    return response.json()
-
-
-def send_make_private_request(token: Token, path: Path, recursive: bool) -> dict:
-    """
-    Send a make private request to the SkyLock backend API.
-
-    Args:
-        token (Token): The token object containing authentication token.
-        path (str): The path of the directory to be made private.
-    """
-    url = "/folders" + quote(str(path))
-    auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": Privacy.PRIVATE.value, "recursive": recursive}
-
-    response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
-
-    standard_error_dict = {
-        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
-        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-    }
-
-    handle_standard_errors(standard_error_dict, response.status_code)
-
-    if response.status_code != HTTPStatus.OK:
-        raise api_exceptions.SkyLockAPIError(
-            f"Failed to make directory private (Error Code: {response.status_code})"
-        )
-
-    return response.json()
-
-
 def send_share_request(token: Token, path: Path) -> dict:
     """
     Send a share request to the SkyLock backend API.
@@ -187,6 +129,17 @@ def send_share_request(token: Token, path: Path) -> dict:
 
 
 def send_zip_request(token: Token, path: Path, force: bool) -> dict:
+    """
+    Send a zip request to the SkyLock backend API.
+
+    Args:
+        token (Token): The token object containing authentication token.
+        path (str): The path of the directory to be ziped.
+        force (bool): Flag to overwrite a file <PATH>.zip if the file already exists
+
+    Returns:
+        dict: The response from the API.
+    """
     url = "/zip" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
     params = {"force": force}

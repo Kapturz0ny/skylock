@@ -1,12 +1,11 @@
 """
 This module contains commands the user can run to interact with the SkyLock.
 """
-
+import re
 from pathlib import Path
 from typing import Optional
 from typing_extensions import Annotated
 import typer
-import re
 from rich.console import Console
 from rich.table import Table
 from art import text2art
@@ -363,7 +362,7 @@ def zip(
         Optional[bool], typer.Option("-f", "--force", help="Overwrite existing file")
     ] = False,
 ) -> None:
-
+    """Zip a file or directory. """
     message = dir_operations.zip_directory(directory_path=dir_path, force=force)
     typer.secho(
         f"Response: {message}",

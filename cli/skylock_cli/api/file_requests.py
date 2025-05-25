@@ -128,15 +128,20 @@ def send_change_privacy(
     token: Token,
     virtual_path: Path,
     privacy: Privacy,
-    shared_to: list[str] = [],
+    shared_to: list[str] = None,
 ) -> dict:
     """
-    Send a make public request to the SkyLock backend API.
+    Send a request that changes privacy of the file to the SkyLock backend API.
 
     Args:
         token (Token): The token object containing authentication token.
-        virtual_path (Path): The path of the file to be made public.
+        virtual_path (Path): The path of the file to be changed.
+        privacy (Privacy enum): The visibility of the file we want to set.
+        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to. 
     """
+    if shared_to is None:
+        shared_to = []
+
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
     body = {"privacy": privacy.value, "shared": shared_to}

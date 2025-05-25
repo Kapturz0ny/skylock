@@ -1,4 +1,18 @@
+"""Extra functions that did not fit anywhere"""
+
 def stringify_size(size: int, decimals: int = 1) -> str:
+    """Converts a given size in bytes to a human-readable string representation.
+
+    The size is converted to the most appropriate unit (B, kB, MB, GB, TB).
+
+    Args:
+        size (int): The size in bytes.
+        decimals (int, optional): The number of decimal places to include for
+            non-byte units. Defaults to 1.
+
+    Returns:
+        str: A string representing the size with its unit, e.g., "10.5 MB".
+    """
     suffix_list = ["B", "kB", "MB", "GB", "TB"]
     current = float(size)
     i = 0
