@@ -24,7 +24,9 @@ def user_already_exists_handler(_request: Request, exc: UserAlreadyExists) -> JS
     )
 
 
-def invalid_credentials_handler(_request: Request, exc: InvalidCredentialsException) -> JSONResponse:
+def invalid_credentials_handler(
+    _request: Request, exc: InvalidCredentialsException
+) -> JSONResponse:
     return JSONResponse(
         status_code=401,
         content={"detail": str(exc)},
@@ -38,7 +40,9 @@ def user_not_found_handler(_request: Request, exc: UserNotFoundException) -> JSO
     )
 
 
-def resource_already_exists_handler(_request: Request, exc: ResourceAlreadyExistsException) -> JSONResponse:
+def resource_already_exists_handler(
+    _request: Request, exc: ResourceAlreadyExistsException
+) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
@@ -80,7 +84,9 @@ def wrong_code_handler(_request: Request, exc: Wrong2FAException) -> JSONRespons
     )
 
 
-def email_authentication_error_handler(_request: Request, exc: EmailAuthenticationError) -> JSONResponse:
+def email_authentication_error_handler(
+    _request: Request, exc: EmailAuthenticationError
+) -> JSONResponse:
     return JSONResponse(
         status_code=503,
         content={
@@ -89,7 +95,9 @@ def email_authentication_error_handler(_request: Request, exc: EmailAuthenticati
     )
 
 
-def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavailable) -> JSONResponse:
+def email_service_unavailable_handler(
+    _request: Request, exc: EmailServiceUnavailable
+) -> JSONResponse:
     return JSONResponse(
         status_code=503,
         content={

@@ -54,7 +54,7 @@ class ResponseBuilder:
             name=folder.name,
             path=f"/{user_path.path}",
             privacy=models.Privacy(folder.privacy),
-            type=models.FolderType(folder.type)
+            type=models.FolderType(folder.type),
         )
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:

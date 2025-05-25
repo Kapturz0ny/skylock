@@ -1,6 +1,5 @@
 import pathlib
 
-
 from skylock.database.models import UserEntity
 from skylock.utils.exceptions import ForbiddenActionException, InvalidPathException
 

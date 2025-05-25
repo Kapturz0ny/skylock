@@ -16,7 +16,7 @@ from skylock.utils.exceptions import (
     ResourceAlreadyExistsException,
     ResourceNotFoundException,
     RootFolderAlreadyExistsException,
-    UserNotFoundException
+    UserNotFoundException,
 )
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
@@ -158,7 +158,7 @@ class ResourceService:
 
         if folder.type == FolderType.SHARING_USER:
             for link in folder.links:
-                if link.target_file_id: # safe check
+                if link.target_file_id:  # safe check
                     self._shared_file_repository.delete_shared_files_from_users(
                         link.target_file_id, folder.owner.id
                     )

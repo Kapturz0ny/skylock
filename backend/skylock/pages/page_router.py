@@ -21,7 +21,7 @@ from skylock.service.user_service import UserService
 html_handler = FastAPI(docs_url=None, redoc_url=None)
 
 html_handler.state.limiter = limiter
-html_handler.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore[arg-type]
+html_handler.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 
 @html_handler.get("/", response_class=HTMLResponse)

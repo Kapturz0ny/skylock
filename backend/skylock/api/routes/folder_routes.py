@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import StreamingResponse
 
 from skylock.api import models
 from skylock.api.dependencies import get_current_user, get_skylock_facade
@@ -10,9 +9,6 @@ from skylock.database import models as db_models
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.api.models import Privacy
-
-
-from skylock.utils.logger import logger
 
 router = APIRouter(tags=["Resource"], prefix="/folders")
 

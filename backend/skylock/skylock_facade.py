@@ -168,11 +168,19 @@ class SkylockFacade:
                     self._resource_service._shared_file_repository.delete_shared_files_from_users(
                         current_file.id, sharing.user_id
                     )
-            found = list(set(current_file.shared_to).union(self._user_service.find_shared_to_users(shared_to)))
+            found = list(
+                set(current_file.shared_to).union(
+                    self._user_service.find_shared_to_users(shared_to)
+                )
+            )
 
         # don't change anything in shared_files table
         else:
-            found = list(set(current_file.shared_to).union(self._user_service.find_shared_to_users(shared_to)))
+            found = list(
+                set(current_file.shared_to).union(
+                    self._user_service.find_shared_to_users(shared_to)
+                )
+            )
         file = self._resource_service.update_file(user_path, privacy, found)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 

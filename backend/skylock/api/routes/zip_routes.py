@@ -1,9 +1,6 @@
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, status, HTTPException
-from fastapi.responses import StreamingResponse
 
-from skylock.api import models
 from skylock.api.dependencies import get_current_user, get_skylock_facade
 from skylock.api.validation import validate_path_not_empty
 from skylock.database import models as db_models
@@ -11,8 +8,6 @@ from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.utils.exceptions import ResourceAlreadyExistsException
 
-
-from skylock.utils.logger import logger
 
 router = APIRouter(tags=["Resource"], prefix="/zip")
 

@@ -1,10 +1,9 @@
 from fastapi import Request, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from skylock.skylock_facade import SkylockFacade
 from skylock.utils.url_generator import UrlGenerator
-from skylock.service.resource_service import ResourceService
 
 from skylock.utils.security import get_user_from_jwt
 from skylock.api.models import Privacy
