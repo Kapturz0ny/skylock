@@ -12,6 +12,8 @@ from skylock_cli.cli import app
 from skylock_cli.exceptions import api_exceptions
 from tests.helpers import mock_test_context, assert_connect_error
 
+from skylock_cli.model.privacy import Privacy
+
 
 class TestMKDIRCommand(unittest.TestCase):
     """Test cases for the mdkir command"""
@@ -31,14 +33,14 @@ class TestMKDIRCommand(unittest.TestCase):
         mock_send.return_value = {
             "name": "test_dir",
             "path": "/test_dir",
-            "is_public": False,
+            "privacy": Privacy.PRIVATE
         }
 
         result = self.runner.invoke(app, ["mkdir", "test_dir"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Current working directory: /", result.output)
         mock_send.assert_called_once_with(
-            mock_get_context.return_value.token, Path("/test_dir"), False, False
+            mock_get_context.return_value.token, Path("/test_dir"), False, Privacy.PRIVATE
         )
         self.assertIn("Directory /test_dir created successfully", result.output)
         self.assertIn("Visibility: private 🔐", result.output)
@@ -55,7 +57,7 @@ class TestMKDIRCommand(unittest.TestCase):
         mock_send.return_value = {
             "name": "test1_dir",
             "path": "/test_dir/test1_dir",
-            "is_public": False,
+            "privacy": Privacy.PRIVATE
         }
 
         result = self.runner.invoke(app, ["mkdir", "/test_dir/test1_dir", "--parent"])
@@ -65,7 +67,7 @@ class TestMKDIRCommand(unittest.TestCase):
             mock_get_context.return_value.token,
             Path("/test_dir/test1_dir"),
             True,
-            False,
+            Privacy.PRIVATE
         )
         self.assertIn(
             "Directory /test_dir/test1_dir created successfully", result.output
@@ -84,17 +86,41 @@ class TestMKDIRCommand(unittest.TestCase):
         mock_send.return_value = {
             "name": "test_dir",
             "path": "/test_dir",
-            "is_public": True,
+            "privacy": Privacy.PUBLIC
         }
 
-        result = self.runner.invoke(app, ["mkdir", "test_dir", "--public"])
+        result = self.runner.invoke(app, ["mkdir", "test_dir", "--mode", "public"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Current working directory: /", result.output)
         mock_send.assert_called_once_with(
-            mock_get_context.return_value.token, Path("/test_dir"), False, True
+            mock_get_context.return_value.token, Path("/test_dir"), False, Privacy.PUBLIC
         )
         self.assertIn("Directory /test_dir created successfully", result.output)
         self.assertIn("Visibility: public 🔓", result.output)
+
+    @patch("skylock_cli.model.token.Token.is_expired", return_value=False)
+    @patch("skylock_cli.model.token.Token.is_valid", return_value=True)
+    @patch("skylock_cli.core.dir_operations.dir_requests.send_mkdir_request")
+    @patch("skylock_cli.core.context_manager.ContextManager.get_context")
+    def test_mkdir_success_protected_flag(
+        self, mock_get_context, mock_send, _mock_is_valid, _mock_is_expired
+    ):
+        """Test the mkdir command"""
+        mock_get_context.return_value = mock_test_context()
+        mock_send.return_value = {
+            "name": "test_dir",
+            "path": "/test_dir",
+            "privacy": Privacy.PROTECTED
+        }
+
+        result = self.runner.invoke(app, ["mkdir", "test_dir", "--mode", "protected"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("Current working directory: /", result.output)
+        mock_send.assert_called_once_with(
+            mock_get_context.return_value.token, Path("/test_dir"), False, Privacy.PROTECTED
+        )
+        self.assertIn("Directory /test_dir created successfully", result.output)
+        self.assertIn("Visibility: protected 🔐/🔒", result.output)
 
     @patch("skylock_cli.core.dir_operations.dir_requests.send_mkdir_request")
     def test_mdkir_token_expired(self, mock_send):
