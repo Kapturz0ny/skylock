@@ -47,6 +47,7 @@ class TestListDirectory(unittest.TestCase):
         mock_send_ls_request.return_value = {
             "files": mock_files,
             "folders": mock_folders,
+            "links": []
         }
 
         result, path = list_directory("/test")
@@ -61,21 +62,21 @@ class TestListDirectory(unittest.TestCase):
             ),
             File(
                 name="file2.txt",
-                size=10,
+                size=20,
                 path="/test/file2.txt",
-                is_public=Privacy.PUBLIC,
+                privacy=Privacy.PUBLIC,
                 type_label="file",
             ),
             Directory(
                 name="folder1/",
                 path="/test/folder1/",
-                is_public=Privacy.PRIVATE,
+                privacy=Privacy.PRIVATE,
                 type_label="directory",
             ),
             Directory(
                 name="folder2/",
                 path="/test/folder2/",
-                is_public=Privacy.PUBLIC,
+                privacy=Privacy.PUBLIC,
                 type_label="directory",
             ),
         ]
@@ -100,21 +101,22 @@ class TestListDirectory(unittest.TestCase):
     def test_list_directory_success_only_files(self, mock_send_ls_request):
         """Test successful directory listing"""
         mock_files = [
-            {"name": "file1.txt", "path": "/test/file1.txt"},
-            {"name": "file2.txt", "path": "/test/file2.txt"},
+            {"name": "file1.txt", "path": "/test/file1.txt", "size": 10, "privacy": Privacy.PUBLIC},
+            {"name": "file2.txt", "path": "/test/file2.txt", "size": 20, "privacy": Privacy.PRIVATE},
         ]
         mock_folders = []
 
         mock_send_ls_request.return_value = {
             "files": mock_files,
             "folders": mock_folders,
+            "links": []
         }
 
         result, path = list_directory("/test")
 
         expected_result = [
-            File(name="file1.txt", path="/test/file1.txt"),
-            File(name="file2.txt", path="/test/file2.txt"),
+            File(name="file1.txt", path="/test/file1.txt", size=10, privacy = Privacy.PUBLIC),
+            File(name="file2.txt", path="/test/file2.txt", size=20, privacy = Privacy.PRIVATE),
         ]
 
         self.assertEqual(result, expected_result)
@@ -132,6 +134,7 @@ class TestListDirectory(unittest.TestCase):
         mock_send_ls_request.return_value = {
             "files": mock_files,
             "folders": mock_folders,
+            "links": []
         }
 
         result, path = list_directory("/test")
@@ -147,7 +150,7 @@ class TestListDirectory(unittest.TestCase):
     @patch("skylock_cli.core.nav.send_ls_request")
     def test_list_directory_success_empty_response(self, mock_send_ls_request):
         """Test successful directory listing"""
-        mock_send_ls_request.return_value = {"files": [], "folders": []}
+        mock_send_ls_request.return_value = {"files": [], "folders": [], "links": []}
 
         result, path = list_directory("/test")
 

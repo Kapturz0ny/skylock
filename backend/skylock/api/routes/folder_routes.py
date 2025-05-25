@@ -36,13 +36,15 @@ router = APIRouter(tags=["Resource"], prefix="/folders")
                                 "id": "file1-id",
                                 "name": "file1.txt",
                                 "path": "/folder/file1.txt",
-                                "is_public": True,
+                                "privacy": Privacy.PUBLIC,
+                                "size": 1024
                             },
                             {
                                 "id": "file2-id",
                                 "name": "file2.txt",
                                 "path": "/folder/file2.txt",
-                                "is_public": False,
+                                "privacy": Privacy.PRIVATE,
+                                "size": 1024
                             },
                         ],
                         "folders": [
@@ -50,13 +52,13 @@ router = APIRouter(tags=["Resource"], prefix="/folders")
                                 "id": "subfolder1-id",
                                 "name": "subfolder1",
                                 "path": "/folder/subfolder1",
-                                "is_public": True,
+                                "privacy": Privacy.PUBLIC,
                             },
                             {
                                 "id": "subfolder2-id",
                                 "name": "subfolder2",
                                 "path": "/folder/subfolder2",
-                                "is_public": False,
+                                "privacy": Privacy.PRIVATE,
                             },
                         ],
                     }
@@ -206,7 +208,7 @@ def delete_folder(
     summary="Change folder visablity",
     description=(
         """
-        This endpoint allows the user to change visability of a specified folder and its subfolders. 
+        This endpoint allows the user to change visability of a specified folder and its subfolders.
         Sharing a folder opens it up to public access.
         """
     ),
