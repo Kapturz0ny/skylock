@@ -561,21 +561,21 @@ class TestRemoveFile(unittest.TestCase):
 
 
 class TestMakeFilePublic(unittest.TestCase):
-    """Test cases for the make_file_public function from core.file_operations"""
+    """Test cases for the change_file_visibility function with param privacy=Privacy.PUBLIC from core.file_operations"""
 
     @patch("skylock_cli.api.file_requests.client.patch")
     def test_make_file_public_success(self, mock_patch):
         """Test successful file public access"""
-        response_json = {"name": "test.txt", "path": "", "is_public": True}
+        response_json = {"name": "test.txt", "path": "", "size": 10, "privacy": Privacy.PUBLIC}
         mock_patch.return_value = mock_response_with_status(
             HTTPStatus.OK, response_json
         )
 
-        changed_file = change_file_visibility("test.txt", Privacy.PUBLIC)
+        changed_file = change_file_visibility("test.txt", Privacy.PUBLIC, [])
         mock_patch.assert_called_once()
         self.assertEqual(changed_file.name, "test.txt")
         self.assertEqual(changed_file.path, Path("."))
-        self.assertTrue(changed_file.is_public)
+        self.assertEqual(changed_file.privacy, Privacy.PUBLIC)
         self.assertEqual(changed_file.color, "yellow")
         self.assertEqual(changed_file.type_label, "file")
         self.assertEqual(changed_file.visibility_label, "public 🔓")
@@ -591,7 +591,7 @@ class TestMakeFilePublic(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PUBLIC)
+                change_file_visibility("test.txt", Privacy.PUBLIC, [])
             self.assertIn("File `/test.txt` does not exist!", mock_stderr.getvalue())
 
     @patch("skylock_cli.api.file_requests.client.patch")
@@ -603,7 +603,7 @@ class TestMakeFilePublic(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PUBLIC)
+                change_file_visibility("test.txt", Privacy.PUBLIC, [])
             self.assertIn(
                 "Failed to make file public (Error Code: 500)",
                 mock_stderr.getvalue(),
@@ -615,7 +615,7 @@ class TestMakeFilePublic(unittest.TestCase):
         mock_patch.side_effect = ConnectError("Failed to connect to the server")
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PUBLIC)
+                change_file_visibility("test.txt", Privacy.PUBLIC, [])
             self.assertIn(
                 "The server is not reachable at the moment. Please try again later.",
                 mock_stderr.getvalue(),
@@ -623,21 +623,21 @@ class TestMakeFilePublic(unittest.TestCase):
 
 
 class TestMakeFilePrivate(unittest.TestCase):
-    """Test cases for the make_file_private function from core.file_operations"""
+    """Test cases for the change_file_visibility function with param privacy=Privacy.PRIVATE from core.file_operations"""
 
     @patch("skylock_cli.api.file_requests.client.patch")
     def test_make_file_private_success(self, mock_patch):
         """Test successful file private access"""
-        response_json = {"name": "test.txt", "path": "", "is_public": False}
+        response_json = {"name": "test.txt", "path": "", "size": 10, "privacy": Privacy.PRIVATE}
         mock_patch.return_value = mock_response_with_status(
             HTTPStatus.OK, response_json
         )
 
-        changed_file = change_file_visibility("test.txt", Privacy.PRIVATE)
+        changed_file = change_file_visibility("test.txt", Privacy.PRIVATE, [])
         mock_patch.assert_called_once()
         self.assertEqual(changed_file.name, "test.txt")
         self.assertEqual(changed_file.path, Path("."))
-        self.assertFalse(changed_file.is_public)
+        self.assertEqual(changed_file.privacy, Privacy.PRIVATE)
         self.assertEqual(changed_file.color, "yellow")
         self.assertEqual(changed_file.type_label, "file")
         self.assertEqual(changed_file.visibility_label, "private 🔐")
@@ -653,7 +653,7 @@ class TestMakeFilePrivate(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PRIVATE)
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
             self.assertIn("File `/test.txt` does not exist!", mock_stderr.getvalue())
 
     @patch("skylock_cli.api.file_requests.client.patch")
@@ -662,7 +662,7 @@ class TestMakeFilePrivate(unittest.TestCase):
         mock_patch.side_effect = ConnectError("Failed to connect to the server")
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PRIVATE)
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
             self.assertIn(
                 "The server is not reachable at the moment. Please try again later.",
                 mock_stderr.getvalue(),
@@ -677,11 +677,74 @@ class TestMakeFilePrivate(unittest.TestCase):
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                change_file_visibility("test.txt", Privacy.PRIVATE)
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
             self.assertIn(
                 "Failed to make file private (Error Code: 500)",
                 mock_stderr.getvalue(),
             )
+
+
+class TestMakeFileProtected(unittest.TestCase):
+    """Test cases for the change_file_visibility function with param privacy=Privacy.PROTECTED from core.file_operations"""
+
+    @patch("skylock_cli.api.file_requests.client.patch")
+    def test_make_file_protected_success(self, mock_patch):
+        """Test successful file private access"""
+        response_json = {"name": "test.txt", "path": "", "size": 10, "privacy": Privacy.PROTECTED}
+        mock_patch.return_value = mock_response_with_status(
+            HTTPStatus.OK, response_json
+        )
+
+        changed_file = change_file_visibility("test.txt", Privacy.PROTECTED, [])
+        mock_patch.assert_called_once()
+        self.assertEqual(changed_file.name, "test.txt")
+        self.assertEqual(changed_file.path, Path("."))
+        self.assertEqual(changed_file.privacy, Privacy.PROTECTED)
+        self.assertEqual(changed_file.color, "yellow")
+        self.assertEqual(changed_file.type_label, "file")
+        self.assertEqual(changed_file.visibility_label, "protected 🔐/🔒")
+
+    @patch(
+        "skylock_cli.core.context_manager.ContextManager.get_context",
+        return_value=mock_test_context(),
+    )
+    @patch("skylock_cli.api.file_requests.client.patch")
+    def test_make_file_private_not_found(self, mock_patch, _mock_get_context):
+        """Test making a file private when the file is not found"""
+        mock_patch.return_value = mock_response_with_status(HTTPStatus.NOT_FOUND)
+
+        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
+            with self.assertRaises(exceptions.Exit):
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
+            self.assertIn("File `/test.txt` does not exist!", mock_stderr.getvalue())
+
+    @patch("skylock_cli.api.file_requests.client.patch")
+    def test_make_file_private_connection_error(self, mock_patch):
+        """Test making a file private when a ConnectError occurs (backend is offline)"""
+        mock_patch.side_effect = ConnectError("Failed to connect to the server")
+        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
+            with self.assertRaises(exceptions.Exit):
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
+            self.assertIn(
+                "The server is not reachable at the moment. Please try again later.",
+                mock_stderr.getvalue(),
+            )
+
+    @patch("skylock_cli.api.file_requests.client.patch")
+    def test_make_file_private_skylock_api_error(self, mock_patch):
+        """Test making a file private with a SkyLockAPIError"""
+        mock_patch.return_value = mock_response_with_status(
+            HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+
+        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
+            with self.assertRaises(exceptions.Exit):
+                change_file_visibility("test.txt", Privacy.PRIVATE, [])
+            self.assertIn(
+                "Failed to make file private (Error Code: 500)",
+                mock_stderr.getvalue(),
+            )
+
 
 
 class TestShareFile(unittest.TestCase):
