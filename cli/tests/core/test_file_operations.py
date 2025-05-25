@@ -91,7 +91,7 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_success(self, mock_send, _mock_get_context):
         """Test the upload_file function with a successful upload"""
         force_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
@@ -99,13 +99,15 @@ class TestUploadFile(unittest.TestCase):
             mock_send.return_value = {
                 "name": temp_file_name,
                 "path": "",
-                "is_public": False,
+                "privacy": Privacy.PRIVATE,
+                "size": 10
             }
-            new_file = upload_file(temp_file_path, Path("."), force_flag, public_flag)
+            new_file = upload_file(temp_file_path, Path("."), force_flag, privacy)
 
             self.assertEqual(new_file.name, temp_file_name)
             self.assertEqual(new_file.path, Path("."))
-            self.assertFalse(new_file.is_public)
+            self.assertEqual(new_file.privacy, privacy)
+            self.assertEqual(new_file.size, 10)
             self.assertEqual(new_file.color, "yellow")
             self.assertEqual(new_file.type_label, "file")
             self.assertEqual(new_file.visibility_label, "private 🔐")
@@ -119,7 +121,7 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_success_public(self, mock_send, _mock_get_context):
         """Test the upload_file function with a successful upload"""
         force_flag = False
-        public_flag = True
+        privacy = Privacy.PUBLIC
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
@@ -127,13 +129,15 @@ class TestUploadFile(unittest.TestCase):
             mock_send.return_value = {
                 "name": temp_file_name,
                 "path": "",
-                "is_public": True,
+                "size": 10,
+                "privacy": Privacy.PUBLIC
             }
-            new_file = upload_file(temp_file_path, Path("."), force_flag, public_flag)
+            new_file = upload_file(temp_file_path, Path("."), force_flag, privacy)
 
             self.assertEqual(new_file.name, temp_file_name)
             self.assertEqual(new_file.path, Path("."))
-            self.assertTrue(new_file.is_public)
+            self.assertEqual(new_file.privacy, Privacy.PUBLIC)
+            self.assertEqual(new_file.size, 10)
             self.assertEqual(new_file.color, "yellow")
             self.assertEqual(new_file.type_label, "file")
             self.assertEqual(new_file.visibility_label, "public 🔓")
@@ -147,20 +151,21 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_with_different_cwd(self, mock_send, _mock_get_context):
         """Test the upload_file function with a different current working directory"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             temp_file_name = temp_file_path.name
             mock_send.return_value = {
                 "name": temp_file_name,
                 "path": "/test",
-                "is_public": False,
+                "size": 10,
+                "privacy": Privacy.PRIVATE
             }
-            new_file = upload_file(temp_file_path, Path("."), force_flag, public_flag)
+            new_file = upload_file(temp_file_path, Path("."), force_flag)
 
             self.assertEqual(new_file.name, temp_file_name)
             self.assertEqual(new_file.path, Path("/test"))
-            self.assertFalse(new_file.is_public)
+            self.assertEqual(new_file.privacy, Privacy.PRIVATE),
+            self.assertEqual(new_file.size, 10)
             self.assertEqual(new_file.color, "yellow")
             self.assertEqual(new_file.type_label, "file")
             self.assertEqual(new_file.visibility_label, "private 🔐")
@@ -176,12 +181,11 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_with_unauthorized_error(self, _mock_send, _mock_get_context):
         """Test the upload_file function with an unauthorized error"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     "User is unauthorized. Please login to use this command.",
@@ -199,13 +203,12 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_already_exists_no_force(self, _mock_send, _mock_get_context):
         """Test the upload_file function with an unauthorized error"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             temp_file_name = os.path.basename(temp_file_path)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     f"File `/{temp_file_name}` already exists! Use the --force flag to overwrite it.",
@@ -223,12 +226,11 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_already_exists_force(self, _mock_send, _mock_get_context):
         """Test the upload_file function with an unauthorized error"""
         force_flag = True
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     "Failed to upload file (Error Code: 409)",
@@ -246,13 +248,12 @@ class TestUploadFile(unittest.TestCase):
     def test_upload_file_dest_path_does_not_exists(self, _mock_send, _mock_get_context):
         """Test the upload_file function with an unauthorized error"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             temp_file_name = os.path.basename(temp_file_path)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     f"Invalid path `/{temp_file_name}`!", mock_stderr.getvalue()
@@ -271,12 +272,11 @@ class TestUploadFile(unittest.TestCase):
     ):
         """Test the upload_file function with an unauthorized error"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     "Failed to upload file (Error Code: 500)", mock_stderr.getvalue()
@@ -295,12 +295,11 @@ class TestUploadFile(unittest.TestCase):
     ):
         """Test the upload_file function with a not found error"""
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn("Directory `/` does not exist!", mock_stderr.getvalue())
 
@@ -313,12 +312,11 @@ class TestUploadFile(unittest.TestCase):
         """Test the upload_file function with a connection error"""
         mock_send.side_effect = ConnectError("Failed to connect to the server")
         force_flag = False
-        public_flag = False
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file_path = Path(temp_file.name)
             with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
                 with self.assertRaises(exceptions.Exit):
-                    upload_file(temp_file_path, Path("."), force_flag, public_flag)
+                    upload_file(temp_file_path, Path("."), force_flag)
 
                 self.assertIn(
                     "The server is not reachable at the moment. Please try again later.",
