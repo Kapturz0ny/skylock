@@ -1,10 +1,13 @@
 import pytest
+
+from unittest.mock import patch, MagicMock
+
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
+from slowapi import Limiter
 
 from skylock.api.dependencies import get_current_user, get_skylock_facade
-from skylock.app import app
 from skylock.api.app import api
 from skylock.database.models import Base, UserEntity
 from skylock.database.repository import (
@@ -24,6 +27,7 @@ from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 from skylock.utils.url_generator import UrlGenerator
+
 
 TEST_DATABASE_URL = "sqlite://"
 
@@ -154,13 +158,18 @@ def mock_user(db_session, resource_service):
     return user
 
 
+def mock_rate_limiter():
+    def noop_decorator(f):
+        return f
+    return noop_decorator
+
+
 @pytest.fixture
 def test_app(skylock, db_session, mock_user):
     api.dependency_overrides[get_skylock_facade] = lambda: skylock
     api.dependency_overrides[get_db_session] = lambda: db_session
     api.dependency_overrides[get_current_user] = lambda: mock_user
     return api
-
 
 @pytest.fixture
 def client(test_app):

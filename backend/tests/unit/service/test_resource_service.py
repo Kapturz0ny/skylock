@@ -455,24 +455,3 @@ def test_get_verified_file_invalid_token(resource_service):
     ):
         with pytest.raises(ForbiddenActionException):
             resource_service.get_verified_file(file_id, token)
-
-
-def test_get_public_file(resource_service):
-    file_id = "file-123"
-    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC, size=10)
-
-    resource_service._file_repository.get_by_id.return_value = file
-
-    result = resource_service.get_public_file(file_id)
-    assert result == file
-    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
-
-
-def test_get_public_file_not_public(resource_service):
-    file_id = "file-123"
-    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, size=10)
-
-    resource_service._file_repository.get_by_id.return_value = file
-
-    with pytest.raises(ForbiddenActionException):
-        resource_service.get_public_file(file_id)

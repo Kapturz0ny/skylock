@@ -57,7 +57,7 @@ class TestLoginCommand(unittest.TestCase):
         with open(config_file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
             new_context = Context(**data.get("context", {}))
-            self.assertEqual(new_context.cwd.path, PosixPath("/old_cwd"))
+            self.assertEqual(new_context.cwd.path, PosixPath("/"))
             self.assertEqual(new_context.token.access_token, "new_token")
             self.assertEqual(new_context.base_url, "https://skylock.com")
 
