@@ -1,6 +1,8 @@
 """Helper functions for tests."""
 
 from unittest.mock import Mock
+from http import HTTPStatus
+
 from skylock_cli.model.token import Token
 from skylock_cli.config import ROOT_PATH, LOCAL_HOST
 
@@ -29,3 +31,18 @@ def mock_test_context(path=ROOT_PATH, base_url=LOCAL_HOST):
         cwd=Mock(path=path, name="/"),
         base_url=base_url,
     )
+
+
+def mock_change_file_privacy(expected_privacy):
+    def mock_side_effect(*args, **kwargs):
+        passed_json = kwargs.get("json", {})
+
+        return_json = {
+            "name": "file.txt",
+            "path": "/file.txt",
+            "privacy": passed_json.get("privacy", expected_privacy),
+            "size": 10,
+        }
+
+        return mock_response_with_status(HTTPStatus.OK, return_json)
+    return mock_side_effect
