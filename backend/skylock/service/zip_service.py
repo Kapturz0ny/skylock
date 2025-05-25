@@ -12,13 +12,13 @@ class ZipService:
         self._file_storage_service = file_storage_service
         self._redis_mem = redis_mem or s_redis_mem
 
-    def acquire_zip_lock(self, owner_id: int, path: str) -> str:
+    def acquire_zip_lock(self, owner_id: str, path: str) -> str:
         task_key = f"zip:{owner_id}:{path}"
         if not self._redis_mem.set(task_key, "queued", nx=True, ex=3600):
             raise ZipQueueError("Zip task already in progress")
         return task_key
 
-    def create_zip_from_folder(self, folder: db_models.FolderEntity) -> tuple[IO[bytes], int]:
+    def create_zip_from_folder(self, folder: db_models.FolderEntity) -> tuple[io.BytesIO, int]:
         zip_buffer = io.BytesIO()
 
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:

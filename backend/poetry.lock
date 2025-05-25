@@ -1955,6 +1955,33 @@ files = [
 ]
 
 [[package]]
+name = "types-pyasn1"
+version = "0.6.0.20250516"
+description = "Typing stubs for pyasn1"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "types_pyasn1-0.6.0.20250516-py3-none-any.whl", hash = "sha256:b9925e4e22e09eed758b93b6f2a7881b89d842c2373dd11c09b173567d170142"},
+    {file = "types_pyasn1-0.6.0.20250516.tar.gz", hash = "sha256:1a9b35a4f033cd70c384a5043a3407b2cc07afc95900732b66e0d38426c7541d"},
+]
+
+[[package]]
+name = "types-python-jose"
+version = "3.4.0.20250516"
+description = "Typing stubs for python-jose"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "types_python_jose-3.4.0.20250516-py3-none-any.whl", hash = "sha256:cb4fdaa76acccc891ae47d67e26c39377b0fcbc4426ef2d9493e2161726e3132"},
+    {file = "types_python_jose-3.4.0.20250516.tar.gz", hash = "sha256:1a782781de06a4f370f8b545b7d46741398afb1032e36b53639d14cebe28c714"},
+]
+
+[package.dependencies]
+types-pyasn1 = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.13.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2270,4 +2297,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "686a78101e23c0d879159a9720fc5d6e5e3c4ab06ca172ea009a6e8405b1009c"
+content-hash = "63bcfcfbb0b30330138935bf6fb532c7091fbb55c836e0bce3d1068f77e4ae3e"

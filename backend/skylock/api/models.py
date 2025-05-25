@@ -32,6 +32,7 @@ class Folder(BaseModel):
     name: str
     path: str
     privacy: Privacy
+    type: FolderType
 
 
 class File(BaseModel):

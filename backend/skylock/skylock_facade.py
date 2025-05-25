@@ -63,7 +63,7 @@ class SkylockFacade:
 
     def download_folder(self, user_path: UserPath) -> models.FolderData:
         folder = self._resource_service.get_folder(user_path)
-        data = self._zip_service.create_zip_from_folder(folder)
+        data, size = self._zip_service.create_zip_from_folder(folder)
         return self._response_builder.get_folder_data_response(folder=folder, folder_data=data)
 
     def get_folder_contents(self, user_path: UserPath) -> models.FolderContents:
@@ -156,7 +156,7 @@ class SkylockFacade:
         # delete shared_files from users that are not on shared_to list
         elif privacy == Privacy.PROTECTED and current_file.privacy == Privacy.PUBLIC:
             for sharing in current_file.shared_with:
-                if sharing.user.username not in current_file.shared_to.union(shared_to):
+                if sharing.user.username not in set(current_file.shared_to).union(shared_to):
                     linked_file = (
                         self._resource_service._link_repository.get_by_file_id_and_owner_id(
                             current_file.id, sharing.user_id
@@ -168,11 +168,11 @@ class SkylockFacade:
                     self._resource_service._shared_file_repository.delete_shared_files_from_users(
                         current_file.id, sharing.user_id
                     )
-            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
+            found = list(set(current_file.shared_to).union(self._user_service.find_shared_to_users(shared_to)))
 
         # don't change anything in shared_files table
         else:
-            found = current_file.shared_to.union(self._user_service.find_shared_to_users(shared_to))
+            found = list(set(current_file.shared_to).union(self._user_service.find_shared_to_users(shared_to)))
         file = self._resource_service.update_file(user_path, privacy, found)
         return self._response_builder.get_file_response(file=file, user_path=user_path)
 

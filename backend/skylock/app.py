@@ -9,6 +9,6 @@ from skylock.utils.ratelimit_config import limiter
 app = FastAPI()
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore[arg-type]
 app.mount("/api/v1", api)
 app.mount("/", html_handler)

@@ -13,7 +13,7 @@ class ResponseBuilder:
             models.File(
                 id=file.id,
                 name=file.name,
-                privacy=file.privacy,
+                privacy=models.Privacy(file.privacy),
                 size=file.size,
                 path=f"{parent_path}/{file.name}",
                 owner_id=file.owner_id,
@@ -24,9 +24,9 @@ class ResponseBuilder:
             models.Folder(
                 id=folder.id,
                 name=folder.name,
-                privacy=folder.privacy,
+                privacy=models.Privacy(folder.privacy),
                 path=f"{parent_path}/{folder.name}",
-                type=folder.type,
+                type=models.FolderType(folder.type),
             )
             for folder in folder.subfolders
         ]
@@ -53,7 +53,8 @@ class ResponseBuilder:
             id=folder.id,
             name=folder.name,
             path=f"/{user_path.path}",
-            privacy=folder.privacy,
+            privacy=models.Privacy(folder.privacy),
+            type=models.FolderType(folder.type)
         )
 
     def get_file_response(self, file: db_models.FileEntity, user_path: UserPath) -> models.File:
@@ -62,7 +63,7 @@ class ResponseBuilder:
             name=file.name,
             path=f"/{user_path.path}",
             size=file.size,
-            privacy=file.privacy,
+            privacy=models.Privacy(file.privacy),
             owner_id=file.owner_id,
             shared_to=file.shared_to,
         )

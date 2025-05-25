@@ -18,6 +18,7 @@ from skylock.service.zip_service import ZipService
 from skylock.utils.path import UserPath
 from skylock.api.models import Privacy
 from skylock.utils.reddis_mem import redis_mem
+from skylock.utils.exceptions import UserNotFoundException
 
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
@@ -26,7 +27,7 @@ dramatiq.set_broker(redis_broker)
 
 
 @dramatiq.actor
-def create_zip_task(owner_id: int, folder_path: str, force: bool, task_name: str) -> None:
+def create_zip_task(owner_id: str, folder_path: str, force: bool, task_name: str) -> None:
     try:
         db = next(get_db_session())
 
@@ -43,6 +44,8 @@ def create_zip_task(owner_id: int, folder_path: str, force: bool, task_name: str
         zip_service = ZipService(storage)
 
         user = user_repo.get_by_id(owner_id)
+        if not user:
+            raise UserNotFoundException
         user_path = UserPath(path=folder_path, owner=user)
 
         folder = resource_service.get_folder(user_path)

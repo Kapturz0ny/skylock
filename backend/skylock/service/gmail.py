@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from google.auth.transport.requests import Request
 from google.auth import exceptions
 from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build # type: ignore[import-untyped]
 from dotenv import load_dotenv
 from skylock.config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN
 from skylock.utils.exceptions import (

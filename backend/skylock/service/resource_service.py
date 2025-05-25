@@ -16,6 +16,7 @@ from skylock.utils.exceptions import (
     ResourceAlreadyExistsException,
     ResourceNotFoundException,
     RootFolderAlreadyExistsException,
+    UserNotFoundException
 )
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
@@ -157,9 +158,10 @@ class ResourceService:
 
         if folder.type == FolderType.SHARING_USER:
             for link in folder.links:
-                self._shared_file_repository.delete_shared_files_from_users(
-                    link.target_file_id, folder.owner.id
-                )
+                if link.target_file_id: # safe check
+                    self._shared_file_repository.delete_shared_files_from_users(
+                        link.target_file_id, folder.owner.id
+                    )
                 self._link_repository.delete(link)
         else:
             for link in folder.links:
@@ -314,6 +316,8 @@ class ResourceService:
             if not self._shared_file_repository.is_file_shared_to_user(file_id, user_id):
                 self.add_to_shared_files(user_id, file_id)
                 user = self._user_repository.get_by_id(user_id)
+                if not user:
+                    raise UserNotFoundException
                 importing_user_folder = (
                     UserPath.root_folder_of(user) / "Shared" / file.owner.username
                 )
@@ -354,7 +358,7 @@ class ResourceService:
             resource_type=ResourceType.FILE.value,
             target_file=file,
         )
-        return self._file_repository.save(new_file)
+        return self._link_repository.save(new_file)
 
     def get_link(self, user_path: UserPath) -> db_models.LinkEntity:
         folder = self.get_folder(user_path.parent)
@@ -369,9 +373,10 @@ class ResourceService:
         link = self.get_link(user_path)
         folder = self.get_folder(user_path.parent)
         if folder.type == FolderType.SHARING_USER:
-            self._shared_file_repository.delete_shared_files_from_users(
-                link.target_file_id, user_path.owner.id
-            )
+            if link.target_file_id:
+                self._shared_file_repository.delete_shared_files_from_users(
+                    link.target_file_id, user_path.owner.id
+                )
             self._link_repository.delete(link)
             if len(folder.links) == 0:
                 self._folder_repository.delete(folder)

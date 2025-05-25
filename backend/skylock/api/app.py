@@ -42,19 +42,19 @@ from skylock.utils.exceptions import (
 
 api = FastAPI(title="File Sharing API", version="1.0.0")
 api.state.limiter = limiter
-api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore[arg-type]
 
-api.add_exception_handler(UserAlreadyExists, user_already_exists_handler)
-api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler)
-api.add_exception_handler(ResourceAlreadyExistsException, resource_already_exists_handler)
-api.add_exception_handler(ResourceNotFoundException, resource_not_found_handler)
-api.add_exception_handler(FolderNotEmptyException, folder_not_empty_handler)
-api.add_exception_handler(ForbiddenActionException, forbidden_action_handler)
-api.add_exception_handler(Wrong2FAException, wrong_code_handler)
-api.add_exception_handler(InvalidPathException, invalid_path_handler)
-api.add_exception_handler(EmailAuthenticationError, email_authentication_error_handler)
-api.add_exception_handler(EmailServiceUnavailable, email_service_unavailable_handler)
-api.add_exception_handler(ZipQueueError, zip_queue_error_handler)
+api.add_exception_handler(UserAlreadyExists, user_already_exists_handler) # type: ignore[arg-type] 
+api.add_exception_handler(InvalidCredentialsException, invalid_credentials_handler) # type: ignore[arg-type]
+api.add_exception_handler(ResourceAlreadyExistsException, resource_already_exists_handler) # type: ignore[arg-type]
+api.add_exception_handler(ResourceNotFoundException, resource_not_found_handler) # type: ignore[arg-type]
+api.add_exception_handler(FolderNotEmptyException, folder_not_empty_handler) # type: ignore[arg-type]
+api.add_exception_handler(ForbiddenActionException, forbidden_action_handler) # type: ignore[arg-type]
+api.add_exception_handler(Wrong2FAException, wrong_code_handler) # type: ignore[arg-type]
+api.add_exception_handler(InvalidPathException, invalid_path_handler) # type: ignore[arg-type]
+api.add_exception_handler(EmailAuthenticationError, email_authentication_error_handler) # type: ignore[arg-type]
+api.add_exception_handler(EmailServiceUnavailable, email_service_unavailable_handler) # type: ignore[arg-type]
+api.add_exception_handler(ZipQueueError, zip_queue_error_handler) # type: ignore[arg-type]
 
 
 api.include_router(auth_routes.router)

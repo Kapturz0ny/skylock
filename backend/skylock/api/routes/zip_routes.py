@@ -66,5 +66,5 @@ def zip_folder(
     try:
         task_id = skylock.create_zip(UserPath(path=path, owner=user), force)
     except ResourceAlreadyExistsException as exc:
-        raise HTTPException(status_code=409, message=str(exc))
+        raise HTTPException(status_code=409, detail=str(exc))
     return {"task_id": task_id, "message": "queued"}

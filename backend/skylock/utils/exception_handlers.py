@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from skylock.utils.exceptions import (
     FolderNotEmptyException,
     InvalidCredentialsException,
+    UserNotFoundException,
     ResourceAlreadyExistsException,
     UserAlreadyExists,
     InvalidPathException,
@@ -16,63 +17,70 @@ from skylock.utils.exceptions import (
 )
 
 
-def user_already_exists_handler(_request: Request, exc: UserAlreadyExists):
+def user_already_exists_handler(_request: Request, exc: UserAlreadyExists) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
     )
 
 
-def invalid_credentials_handler(_request: Request, exc: InvalidCredentialsException):
+def invalid_credentials_handler(_request: Request, exc: InvalidCredentialsException) -> JSONResponse:
     return JSONResponse(
         status_code=401,
         content={"detail": str(exc)},
     )
 
 
-def resource_already_exists_handler(_request: Request, exc: ResourceAlreadyExistsException):
+def user_not_found_handler(_request: Request, exc: UserNotFoundException) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)},
+    )
+
+
+def resource_already_exists_handler(_request: Request, exc: ResourceAlreadyExistsException) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
     )
 
 
-def invalid_path_handler(_request: Request, exc: InvalidPathException):
+def invalid_path_handler(_request: Request, exc: InvalidPathException) -> JSONResponse:
     return JSONResponse(
         status_code=400,
         content={"detail": str(exc)},
     )
 
 
-def resource_not_found_handler(_request: Request, exc: ResourceNotFoundException):
+def resource_not_found_handler(_request: Request, exc: ResourceNotFoundException) -> JSONResponse:
     return JSONResponse(
         status_code=404,
         content={"detail": str(exc), "missing": exc.missing_resource_name},
     )
 
 
-def folder_not_empty_handler(_request: Request, exc: FolderNotEmptyException):
+def folder_not_empty_handler(_request: Request, exc: FolderNotEmptyException) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
     )
 
 
-def forbidden_action_handler(_request: Request, exc: ForbiddenActionException):
+def forbidden_action_handler(_request: Request, exc: ForbiddenActionException) -> JSONResponse:
     return JSONResponse(
         status_code=403,
         content={"detail": str(exc)},
     )
 
 
-def wrong_code_handler(_request: Request, exc: Wrong2FAException):
+def wrong_code_handler(_request: Request, exc: Wrong2FAException) -> JSONResponse:
     return JSONResponse(
         status_code=401,
         content={"detail": str(exc)},
     )
 
 
-def email_authentication_error_handler(_request: Request, exc: EmailAuthenticationError):
+def email_authentication_error_handler(_request: Request, exc: EmailAuthenticationError) -> JSONResponse:
     return JSONResponse(
         status_code=503,
         content={
@@ -81,7 +89,7 @@ def email_authentication_error_handler(_request: Request, exc: EmailAuthenticati
     )
 
 
-def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavailable):
+def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavailable) -> JSONResponse:
     return JSONResponse(
         status_code=503,
         content={
@@ -90,7 +98,7 @@ def email_service_unavailable_handler(_request: Request, exc: EmailServiceUnavai
     )
 
 
-def zip_queue_error_handler(_request: Request, exc: ZipQueueError):
+def zip_queue_error_handler(_request: Request, exc: ZipQueueError) -> JSONResponse:
     return JSONResponse(
         status_code=403,
         content={
