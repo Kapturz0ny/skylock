@@ -10,6 +10,8 @@ from skylock_cli.cli import app
 from skylock_cli.exceptions import api_exceptions
 from tests.helpers import assert_connect_error, mock_test_context
 
+from skylock_cli.model.privacy import Privacy
+
 
 class TestLSCommand(unittest.TestCase):
     """Test cases for the ls command"""
@@ -28,15 +30,15 @@ class TestLSCommand(unittest.TestCase):
         mock_get_context.return_value = mock_test_context()
 
         mock_files = [
-            {"name": "file2.txt", "path": "/file2.txt"},
-            {"name": "file1.txt", "path": "/file1.txt"},
+            {"name": "file2.txt", "path": "/file2.txt", "size": 10, "privacy": Privacy.PUBLIC },
+            {"name": "file1.txt", "path": "/file1.txt", "size": 20, "privacy": Privacy.PROTECTED },
         ]
         mock_folders = [
             {"name": "folder1", "path": "/folder1"},
             {"name": "folder2", "path": "/folder2"},
         ]
 
-        mock_send.return_value = {"files": mock_files, "folders": mock_folders}
+        mock_send.return_value = {"files": mock_files, "folders": mock_folders, "links": []}
 
         result = self.runner.invoke(app, ["ls"])
         self.assertEqual(result.exit_code, 0)
@@ -54,30 +56,34 @@ class TestLSCommand(unittest.TestCase):
         mock_get_context.return_value = mock_test_context()
 
         mock_files = [
-            {"name": "file2.txt", "path": "/file2.txt", "is_public": True},
-            {"name": "file1.txt", "path": "/file1.txt", "is_public": False},
+            {"name": "file1.txt", "path": "/file1.txt", "size": 10, "privacy": Privacy.PRIVATE },
+            {"name": "file2.txt", "path": "/file2.txt", "size": 2975, "privacy": Privacy.PROTECTED },
+            {"name": "file3.txt", "path": "/file3.txt", "size": 1234913, "privacy": Privacy.PUBLIC },
         ]
         mock_folders = [
-            {"name": "folder1", "path": "/folder1", "is_public": True},
-            {"name": "folder2", "path": "/folder2", "is_public": False},
+            {"name": "folder1", "path": "/folder1", "privacy" : Privacy.PUBLIC},
+            {"name": "folder2", "path": "/folder2", "privacy" : Privacy.PRIVATE},
         ]
 
-        mock_send.return_value = {"files": mock_files, "folders": mock_folders}
+        mock_send.return_value = {"files": mock_files, "folders": mock_folders, "links": []}
 
         result = self.runner.invoke(app, ["ls", "-l"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Contents of /", result.output)
         self.assertIn(
-            "│ file      │ file1.txt │ /file1.txt │ private 🔐 │", result.output
+            "│ file      │ file1.txt │ /file1.txt │ private 🔐      │ 10 B", result.output
         )
         self.assertIn(
-            "│ file      │ file2.txt │ /file2.txt │ public 🔓  │", result.output
+            "│ file      │ file2.txt │ /file2.txt │ protected 🔐/🔒 │ 2.9 kB", result.output
         )
         self.assertIn(
-            "│ directory │ folder1/  │ /folder1   │ public 🔓  │", result.output
+            "│ file      │ file3.txt │ /file3.txt │ public 🔓       │ 1.2 MB", result.output
         )
         self.assertIn(
-            "│ directory │ folder2/  │ /folder2   │ private 🔐 │", result.output
+            "│ directory │ folder1/  │ /folder1   │ public 🔓       │", result.output
+        )
+        self.assertIn(
+            "│ directory │ folder2/  │ /folder2   │ private 🔐      │", result.output
         )
 
     @patch("skylock_cli.model.token.Token.is_expired", return_value=False)
@@ -90,7 +96,7 @@ class TestLSCommand(unittest.TestCase):
         """Test the ls command"""
         mock_get_context.return_value = mock_test_context()
 
-        mock_send.return_value = {"files": [], "folders": []}
+        mock_send.return_value = {"files": [], "folders": [], "links": []}
 
         result = self.runner.invoke(app, ["ls"])
         self.assertEqual(result.exit_code, 0)
@@ -108,12 +114,12 @@ class TestLSCommand(unittest.TestCase):
         mock_get_context.return_value = mock_test_context()
 
         mock_files = [
-            {"name": "file1.txt", "path": "/test/file1.txt"},
-            {"name": "file2.txt", "path": "/test/file2.txt"},
+            {"name": "file1.txt", "path": "/test/file1.txt", "size": 10},
+            {"name": "file2.txt", "path": "/test/file2.txt", "size": 20},
         ]
         mock_folders = []
 
-        mock_send.return_value = {"files": mock_files, "folders": mock_folders}
+        mock_send.return_value = {"files": mock_files, "folders": mock_folders, "links": []}
 
         result = self.runner.invoke(app, ["ls", "/test"])
         self.assertEqual(result.exit_code, 0)
@@ -136,7 +142,7 @@ class TestLSCommand(unittest.TestCase):
             {"name": "folder2", "path": "/folder2"},
         ]
 
-        mock_send.return_value = {"files": mock_files, "folders": mock_folders}
+        mock_send.return_value = {"files": mock_files, "folders": mock_folders, "links": []}
 
         result = self.runner.invoke(app, ["ls"])
         self.assertEqual(result.exit_code, 0)
