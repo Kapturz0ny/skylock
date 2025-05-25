@@ -28,6 +28,24 @@ dramatiq.set_broker(redis_broker)
 
 @dramatiq.actor
 def create_zip_task(owner_id: str, folder_path: str, force: bool, task_name: str) -> None:
+    """Zips a folder and saves it as a new file for the owner.
+
+    This background task creates a ZIP archive of the specified folder's contents
+    and stores it as a new private file. It cleans up a task-related Redis entry
+    after execution.
+
+    Args:
+        owner_id (str): ID of the folder owner.
+        folder_path (str): Path to the folder to be zipped.
+        force (bool): If True, overwrite if the ZIP file already exists.
+        task_name (str): Name of the task for tracking/cleanup in Redis.
+
+    Returns:
+        None
+
+    Raises:
+        UserNotFoundException: If the owner_id does not correspond to an existing user.
+    """
     try:
         db = next(get_db_session())
 
