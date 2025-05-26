@@ -21,13 +21,28 @@ Before running the application, you should to create a `.env` file in the root d
 # .env file
 JWT_SECRET=<your-jwt-secret>
 DATABASE_URL=<your-database-url>
+
+# redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB_RATELIMIT=0
+
+# logging
+ENV='dev'
+
+# gmail api
+CLIENT_ID=<your-google-client-id>
+CLIENT_SECRET=<your-google-cilent-secret>
+REFRESH_TOKEN=<generated-using-your-google-client-id-and-secret>
 ```
 
-If not created, random JWT_SECRET and default DATABASE_URL ("sqlite:///./data/db.sqlite") will be set instead
+If not created, random `JWT_SECRET` and default `DATABASE_URL` ("sqlite:///./data/db.sqlite") will be set instead
 
 Make sure to replace the `JWT_SECRET` with your own secure secret key and configure `DATABASE_URL` according to your database setup.
 
 Note that it is possible to run docker compose with optional .env file from Docker Compose 2.24.0 version
+
+For `CLIENT_ID`, and `CLIENT_SECRET` you will need a gmail account. Log in to google cloud platform website, there you can get these credentials. Then log in to [oauthplayround](https://developers.google.com/oauthplayground) to generate `REFRESH_TOKEN` using aquired google credentials.
 
 ## How to run
 
@@ -58,12 +73,12 @@ To be changed...
 
 If starting backend with Poetry, you still have to start Redis service in Docker. First, change your `.env` file:
 ```
-REDIS_HOST=localhost
+REDIS_HOST=redis
 ```
 Now you can start service using command:
 
 ```bash
-docker compose -f docker-compose.dev.yml up redis --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 
