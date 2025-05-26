@@ -168,6 +168,9 @@ class ResourceService:
         self, folder: db_models.FolderEntity, privacy: Privacy, recursive: bool
     ) -> None:
         """Helper to update folder privacy recursively."""
+        if folder.type == FolderType.SHARED or folder.type == FolderType.SHARING_USER:
+            return
+        
         folder.privacy = privacy
 
         for file in folder.files:
