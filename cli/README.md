@@ -6,16 +6,17 @@ We created a file hosting solution that allows users to store, manage, and share
 
 This user command line interface enables to:
 
-- **User Authentication**: Create an account, log in, and access your root folder containing all your files and folders.
-- **Add Files and Folders**: Upload files or create folders. Choose whether they are public or private.
+- **User Authentication**: Create an account (with 2FA email authentication), log in, and access your root folder containing all your files and folders.
+- **Add Files and Folders**: Upload files or create folders.
 - **Delete Files and Folders**: Remove any of your own files or folders.
 - **Overwrite Files**: Replace your existing files with new versions.
 - **Manage Folders**: Nest folders within each other and organize your files.
-- **Change Visibility**: Set files and folders to public or private.
+- **Change Visibility**: Set files to public, protected or private. Protected meaning that the file is visible only to those you pick.
 - **Generate urls**: Generate urls to share private contents with your friends.
 - **View Contents**: Display the contents of any folder.
 - **Download Files**: Fetch your own files or publicly accessible files.
-- **Download Folders**: Download entire folders as ZIP files.
+- **Create ZIP files**: Pack folders into ZIP files.
+- **Download Folders**: Download entire folders as created previously ZIP files.
 - **Unix-Style Navigation**: Move through your file tree using familiar Unix-style commands.
 
 ## Example usage

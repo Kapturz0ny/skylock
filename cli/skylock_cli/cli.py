@@ -334,13 +334,14 @@ def share(
             raise typer.Exit(code=1)
 
         user_list = [u.strip() for u in users.split(",")]
-    resource = file_operations.change_file_visibility(resource_path, mode, user_list)
+    is_dir = path_parser.is_directory(resource_path)
+    if not is_dir:
+        resource = file_operations.change_file_visibility(resource_path, mode, user_list)
+        share_link = file_operations.share_file(resource_path)
+    else:
+        resource = dir_operations.change_folder_visibility(resource_path, mode)
+        share_link = dir_operations.share_directory(resource_path)
 
-    share_link = (
-        dir_operations.share_directory(resource_path)
-        if path_parser.is_directory(resource_path)
-        else file_operations.share_file(resource_path)
-    )
     typer.secho(
         f"{resource.type_label.capitalize()} {resource.path} is now {resource.visibility_label}",
         fg=resource.visibility_color,

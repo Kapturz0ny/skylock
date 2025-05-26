@@ -92,6 +92,36 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
             f"Failed to delete directory (Error Code: {response.status_code})"
         )
 
+def send_change_visibility_request(token: Token, path: Path, privacy: Privacy) -> dict:
+    """
+    Send a request that changes privacy of the file to the SkyLock backend API.
+
+    Args:
+        token (Token): The token object containing authentication token.
+        virtual_path (Path): The path of the file to be changed.
+        privacy (Privacy enum): The visibility of the file we want to set.
+        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to.
+    """
+
+    url = "/folders" + quote(str(path))
+    auth = bearer_auth.BearerAuth(token)
+    body = {"privacy": privacy.value, "recursive": True}
+    response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
+
+    standard_error_dict = {
+        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
+        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
+    }
+
+    handle_standard_errors(standard_error_dict, response.status_code)
+
+    if response.status_code != HTTPStatus.OK:
+        raise api_exceptions.SkyLockAPIError(
+            f"Failed to make folder {privacy.value} (Error Code: {response.status_code})"
+        )
+
+    return response.json()
+
 
 def send_share_request(token: Token, path: Path) -> dict:
     """
