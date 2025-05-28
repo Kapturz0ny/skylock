@@ -110,7 +110,6 @@ def send_download_shared_request(token: Token, virtual_path: Path) -> bytes:
     """
     url = "/shared/files/download/path" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
-    print(f"{token=}")
 
     response = client.get(url=url, auth=auth, headers=API_HEADERS)
 
