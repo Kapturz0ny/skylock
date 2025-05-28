@@ -679,3 +679,16 @@ class ResourceService:
             raise ResourceAlreadyExistsException(
                 f"A resource named '{name}' already exists in this folder."
             )
+
+    def zip_exists(self, user_path: UserPath, force: bool) -> bool:
+        """Checks if a folder exists at the given path."""
+        zip_path = user_path.path + ".zip"
+        user_zip_path = UserPath(path=zip_path, owner=user_path.owner)
+
+        if (force):
+            return False
+        try:
+            self._path_resolver.file_from_path(user_zip_path)
+            raise ResourceAlreadyExistsException(f"file {user_zip_path.name} already exists")
+        except ResourceNotFoundException:
+            return False

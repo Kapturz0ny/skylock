@@ -173,12 +173,13 @@ def send_zip_request(token: Token, path: Path, force: bool) -> dict:
     url = "/zip" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
     params = {"force": force}
+    zip_path = path.name+".zip"
 
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
         HTTPStatus.FORBIDDEN: api_exceptions.ZipJobStartedError(path),
-        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(path),
+        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(zip_path),
     }
 
     response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)

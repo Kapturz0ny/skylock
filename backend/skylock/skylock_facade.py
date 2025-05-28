@@ -6,7 +6,7 @@ from skylock.service.zip_service import ZipService
 from skylock.service.dramatiq_tasks import create_zip_task
 from skylock.api import models
 from skylock.api.models import Privacy, FolderType
-from skylock.utils.exceptions import ForbiddenActionException
+from skylock.utils.exceptions import ForbiddenActionException, ResourceNotFoundException
 from skylock.utils.path import UserPath
 from skylock.utils.url_generator import UrlGenerator
 from skylock.database import models as db_models
@@ -222,6 +222,9 @@ class SkylockFacade:
         Raises:
             ZipQueueError: If a zipping task for this folder is already in progress (from `_zip_service.acquire_zip_lock`).
         """
+        self._resource_service.zip_exists(user_path, force)
+        
+        self._resource_service.get_folder(user_path)
         task_key = self._zip_service.acquire_zip_lock(user_path.owner.id, user_path.path)
         create_zip_task.send(
             user_path.owner.id,
