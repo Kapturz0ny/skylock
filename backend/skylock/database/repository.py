@@ -11,6 +11,7 @@ Model = TypeVar("Model", bound=models.Base)
 
 class DatabaseRepository(Generic[Model]):
     """Generic repository for database operations on a specific model."""
+
     def __init__(self, model: Type[Model], session: Session) -> None:
         """Initializes the repository with a model type and a database session.
 
@@ -86,6 +87,7 @@ class DatabaseRepository(Generic[Model]):
 
 class UserRepository(DatabaseRepository[models.UserEntity]):
     """Repository for UserEntity database operations."""
+
     def __init__(self, session: Session):
         """Initializes the user repository.
 
@@ -119,6 +121,7 @@ class UserRepository(DatabaseRepository[models.UserEntity]):
 
 class FolderRepository(DatabaseRepository[models.FolderEntity]):
     """Repository for FolderEntity database operations."""
+
     def __init__(self, session: Session):
         """Initializes the folder repository.
 
@@ -147,6 +150,7 @@ class FolderRepository(DatabaseRepository[models.FolderEntity]):
 
 class FileRepository(DatabaseRepository[models.FileEntity]):
     """Repository for FileEntity database operations."""
+
     def __init__(self, session: Session):
         """Initializes the file repository.
 
@@ -174,6 +178,7 @@ class FileRepository(DatabaseRepository[models.FileEntity]):
 
 class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
     """Repository for SharedFileEntity database operations."""
+
     def __init__(self, session: Session):
         """Initializes the shared file repository.
 
@@ -228,6 +233,7 @@ class SharedFileRepository(DatabaseRepository[models.SharedFileEntity]):
 
 class LinkRepository(DatabaseRepository[models.LinkEntity]):
     """Repository for LinkEntity database operations."""
+
     def __init__(self, session: Session):
         """Initializes the link repository.
 

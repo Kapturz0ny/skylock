@@ -61,7 +61,7 @@ class ZipService:
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             self._add_folder_to_zip(zip_file, folder, "")
         size = zip_buffer.tell()
-        zip_buffer.seek(0) # Reset buffer position to the beginning for reading
+        zip_buffer.seek(0)  # Reset buffer position to the beginning for reading
         return (zip_buffer, size)
 
     def create_zip_from_folder_to_bytes(self, folder: db_models.FolderEntity) -> tuple[bytes, int]:
@@ -107,7 +107,7 @@ class ZipService:
             file_path_in_zip = f"{folder_path}{file.name}"
             file_content_stream = self._file_storage_service.get_file(file)
             zip_file.writestr(file_path_in_zip, file_content_stream.read())
-            if hasattr(file_content_stream, 'close'):
+            if hasattr(file_content_stream, "close"):
                 file_content_stream.close()
 
         for subfolder in folder.subfolders:

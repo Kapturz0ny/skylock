@@ -37,14 +37,14 @@ router = APIRouter(tags=["Resource"], prefix="/folders")
                                 "name": "file1.txt",
                                 "path": "/folder/file1.txt",
                                 "privacy": Privacy.PUBLIC,
-                                "size": 1024
+                                "size": 1024,
                             },
                             {
                                 "id": "file2-id",
                                 "name": "file2.txt",
                                 "path": "/folder/file2.txt",
                                 "privacy": Privacy.PRIVATE,
-                                "size": 1024
+                                "size": 1024,
                             },
                         ],
                         "folders": [

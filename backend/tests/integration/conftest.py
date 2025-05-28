@@ -161,6 +161,7 @@ def mock_user(db_session, resource_service):
 def mock_rate_limiter():
     def noop_decorator(f):
         return f
+
     return noop_decorator
 
 
@@ -170,6 +171,7 @@ def test_app(skylock, db_session, mock_user):
     api.dependency_overrides[get_db_session] = lambda: db_session
     api.dependency_overrides[get_current_user] = lambda: mock_user
     return api
+
 
 @pytest.fixture
 def client(test_app):

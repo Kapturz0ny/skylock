@@ -170,7 +170,7 @@ class ResourceService:
         """Helper to update folder privacy recursively."""
         if folder.type == FolderType.SHARED or folder.type == FolderType.SHARING_USER:
             return
-        
+
         folder.privacy = privacy
 
         for file in folder.files:
@@ -331,6 +331,35 @@ class ResourceService:
 
         if privacy == Privacy.PRIVATE and user.id != file.owner_id:
             raise ForbiddenActionException("file is not shared with you")
+
+        return file
+
+    def get_file_by_token_path(self, path: str, token=None) -> db_models.FileEntity:
+        if token is None:
+            raise ForbiddenActionException("Authentication token is required for this resource.")
+
+        processed_token = token.replace("Bearer ", "")
+
+        try:
+            user = get_user_from_jwt(processed_token, self._user_repository)
+        except HTTPException as exc:
+            raise ForbiddenActionException("Invalid token") from exc
+
+        user_path = UserPath(path, user)
+        resource_type = self.check_resource_type(user_path)
+        if resource_type == ResourceType.FILE:
+            file = self.get_file(user_path)
+        elif resource_type == ResourceType.LINK:
+            link = self.get_link(user_path)
+            if link.resource_type == ResourceType.FILE:
+                file = link.target_file
+            else:
+                raise ResourceNotFoundException(user_path.name)
+        else:
+            raise ResourceNotFoundException(user_path.name)
+
+        if not file:
+            raise ResourceNotFoundException(user_path.name)
 
         return file
 
@@ -572,7 +601,9 @@ class ResourceService:
             ResourceNotFoundException: If the link is not found.
         """
         folder = self.get_folder(user_path.parent)
-        link = self._link_repository.get_by_name_and_parent(user_path.name, folder) # Renamed variable
+        link = self._link_repository.get_by_name_and_parent(
+            user_path.name, folder
+        )  # Renamed variable
         if link is None:
             raise ResourceNotFoundException(
                 missing_resource_name=f"Link {user_path.name} not found"
@@ -646,5 +677,5 @@ class ResourceService:
         exists_folder_of_name = name in [subfolder.name for subfolder in folder.subfolders]
         if exists_file_of_name or exists_folder_of_name:
             raise ResourceAlreadyExistsException(
-                 f"A resource named '{name}' already exists in this folder."
+                f"A resource named '{name}' already exists in this folder."
             )

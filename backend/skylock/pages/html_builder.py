@@ -171,4 +171,3 @@ class HtmlBuilder:
             "login_form.html",
             {"file_id": file_id, "error": error},
         )
-    

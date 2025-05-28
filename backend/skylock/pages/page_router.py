@@ -35,7 +35,7 @@ templates = get_templates()
         Serves the main landing page of the application.
         This endpoint provides the initial HTML view for users visiting the root URL.
         """
-    )
+    ),
 )
 def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_html_builder)]):
     return html_builder.build_main_page(request)
@@ -50,7 +50,7 @@ def index(request: Request, html_builder: Annotated[HtmlBuilder, Depends(get_htm
         Retrieves and displays the publicly accessible files and subfolders
         within the folder specified by its ID.
         """
-    )
+    ),
 )
 def folder_contents(
     request: Request,
@@ -72,7 +72,7 @@ def folder_contents(
         the user to the file page.
         Returns an error page for invalid credentials or if rate limits are exceeded.
         """
-    )
+    ),
 )
 @limiter.limit(DEFAULT_RATE_LIMIT)
 async def login_file_post(
@@ -102,7 +102,11 @@ async def login_file_post(
     except RateLimitExceeded:
         return templates.TemplateResponse(
             "login_form.html",
-            {"request": request, "file_id": file_id, "error": "Too many requests. Try again later."},
+            {
+                "request": request,
+                "file_id": file_id,
+                "error": "Too many requests. Try again later.",
+            },
             status_code=429,
         )
 
@@ -118,7 +122,7 @@ async def login_file_post(
         and user authentication/authorization) is handled by the HtmlBuilder,
         which may render the file details or a login page.
         """
-    )
+    ),
 )
 def file(
     request: Request,
@@ -140,7 +144,7 @@ def file(
         often requiring login. The cookie helps retain context.
         Redirects back to the file page.
         """
-    )
+    ),
 )
 def import_file(file_id: str):
     response = RedirectResponse(url=f"/files/{file_id}", status_code=302)

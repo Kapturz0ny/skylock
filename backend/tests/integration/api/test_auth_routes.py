@@ -19,7 +19,6 @@ def test_register_user_success(client):
     assert response.status_code == 201
 
 
-
 def test_register_user_already_exists(client, db_session):
     username = "existinguser"
     password = "securepassword"
@@ -57,10 +56,7 @@ def test_authenticate_user_success(verify_mock, configure_mock, client):
     configure_mock.assert_called_once_with(user)
 
     verify_mock.assert_called_once_with(
-        username = username,
-        password = password,
-        code = code,
-        email = email
+        username=username, password=password, code=code, email=email
     )
 
     assert response.status_code == 201
@@ -84,7 +80,6 @@ def test_authenticate_user_wrong_2fa(verify_mock, configure_mock, client):
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Wrong 2FA code"
-
 
 
 # def test_login_user_success(client, db_session):

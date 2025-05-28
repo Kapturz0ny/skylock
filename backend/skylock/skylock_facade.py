@@ -17,6 +17,7 @@ class SkylockFacade:
     Provides a unified interface to Skylock's core functionalities,
     orchestrating various services for user and resource management.
     """
+
     def __init__(
         self,
         *,
@@ -130,7 +131,7 @@ class SkylockFacade:
             A `models.FolderData` response model containing the folder name and ZIP data stream.
         """
         folder = self._resource_service.get_folder(user_path)
-        data, _ = self._zip_service.create_zip_from_folder(folder) # size is ignored here
+        data, _ = self._zip_service.create_zip_from_folder(folder)  # size is ignored here
         return self._response_builder.get_folder_data_response(folder=folder, folder_data=data)
 
     def get_folder_contents(self, user_path: UserPath) -> models.FolderContents:
@@ -267,7 +268,7 @@ class SkylockFacade:
         data = self._resource_service.get_file_data(user_path)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
 
-    def download_shared_file(self, file_id: str, token=None) -> models.FileData:
+    def download_shared_file_by_id(self, file_id: str, token=None) -> models.FileData:
         """Downloads a file that might be shared, potentially requiring a token for access.
 
         Args:
@@ -280,6 +281,19 @@ class SkylockFacade:
         file = self._resource_service.get_verified_file(file_id, token)
         data = self._resource_service.get_shared_file_data(file_id)
         return self._response_builder.get_file_data_response(file=file, file_data=data)
+
+    def download_shared_file_by_path(self, path: str, token=None) -> models.FileData:
+        """Downloads a file that might be shared, potentially requiring a token for access.
+
+        Args:
+            file_id: The unique ID of the file.
+            token: An optional access token if the file requires specific authorization.
+
+        Returns:
+            A `models.FileData` response model.
+        """
+        file = self._resource_service.get_file_by_token_path(path, token)
+        return self.download_shared_file_by_id(file.id, token)
 
     def update_file(
         self, user_path: UserPath, privacy: Privacy, shared_to: list[str]
@@ -365,7 +379,9 @@ class SkylockFacade:
         elif resource_type == models.ResourceType.LINK:
             self._resource_service.delete_link(user_path)
         else:
-            raise ForbiddenActionException(f"Resource at {user_path.path} is not a deletable file or link type.")
+            raise ForbiddenActionException(
+                f"Resource at {user_path.path} is not a deletable file or link type."
+            )
 
     def get_file_url(self, user_path: UserPath) -> str:
         """Generates a shareable URL for a file.
