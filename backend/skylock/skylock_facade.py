@@ -223,7 +223,7 @@ class SkylockFacade:
             ZipQueueError: If a zipping task for this folder is already in progress (from `_zip_service.acquire_zip_lock`).
         """
         self._resource_service.zip_exists(user_path, force)
-        
+
         self._resource_service.get_folder(user_path)
         task_key = self._zip_service.acquire_zip_lock(user_path.owner.id, user_path.path)
         create_zip_task.send(

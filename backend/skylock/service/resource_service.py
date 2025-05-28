@@ -685,7 +685,7 @@ class ResourceService:
         zip_path = user_path.path + ".zip"
         user_zip_path = UserPath(path=zip_path, owner=user_path.owner)
 
-        if (force):
+        if force:
             return False
         try:
             self._path_resolver.file_from_path(user_zip_path)
