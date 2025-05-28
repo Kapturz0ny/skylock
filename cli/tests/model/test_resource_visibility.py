@@ -35,6 +35,19 @@ class TestResourceVisibility(unittest.TestCase):
         """
         self.assertEqual(ResourceVisibility.PUBLIC.color, "green")
 
+    def test_protected_label(self):
+        """
+        Test the label of the PROTECTED visibility.
+        """
+        self.assertEqual(ResourceVisibility.PROTECTED.label, "protected 🔐/🔒")
+
+    def test_protected_color(self):
+        """
+        Test the color of the PROTECTED visibility.
+        """
+        self.assertEqual(ResourceVisibility.PROTECTED.color, "yellow")
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -78,7 +78,16 @@ def remove_directory(directory_path: str, recursive: bool) -> Path:
 #         )
 #         changed_dir = TypeAdapter(Directory).validate_python(response)
 #     return changed_dir
-
+def change_folder_visibility(dir_path: str, mode: Privacy) -> Directory:
+    """Change files visibitity to one of [protected, private, public]"""
+    current_context = context_manager.ContextManager.get_context()
+    with CLIExceptionHandler():
+        joind_path = path_parser.parse_path(current_context.cwd.path, Path(dir_path))
+        response = dir_requests.send_change_visibility_request(
+            current_context.token, joind_path, privacy=mode
+        )
+        changed_file = TypeAdapter(Directory).validate_python(response)
+    return changed_file
 
 def share_directory(directory_path: str) -> ShareLink:
     """Share a directory"""

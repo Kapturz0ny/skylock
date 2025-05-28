@@ -51,7 +51,7 @@ def register_user(
     skylock: Annotated[SkylockFacade, Depends(get_skylock_facade)],
 ):
     skylock.register_user(username=request.username, email=request.email)
-    return {"message": "User is not in the database"}
+    return {"message": "User object created"}
 
 
 @router.post(

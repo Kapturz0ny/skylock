@@ -137,7 +137,7 @@ def send_change_privacy(
         token (Token): The token object containing authentication token.
         virtual_path (Path): The path of the file to be changed.
         privacy (Privacy enum): The visibility of the file we want to set.
-        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to. 
+        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to.
     """
     if shared_to is None:
         shared_to = []
@@ -156,7 +156,7 @@ def send_change_privacy(
 
     if response.status_code != HTTPStatus.OK:
         raise api_exceptions.SkyLockAPIError(
-            f"Failed to make file public (Error Code: {response.status_code})"
+            f"Failed to make file {privacy.value} (Error Code: {response.status_code})"
         )
 
     return response.json()

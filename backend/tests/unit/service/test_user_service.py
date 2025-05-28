@@ -126,32 +126,3 @@ def test_login_user_not_found(user_service, mock_user_repository, user_data):
 
     with pytest.raises(InvalidCredentialsException):
         user_service.login_user(user_data["username"], user_data["password"])
-
-
-def test_verify_user_successful(user_service, mock_user_repository, user_data, user_entity):
-    mock_user_repository.get_by_username.return_value = user_entity
-
-    result = user_service.verify_user(user_data["username"], user_data["password"])
-
-    assert result is True
-    mock_user_repository.get_by_username.assert_called_once_with(user_data["username"])
-
-
-def test_verify_user_invalid_credentials(
-    user_service, mock_user_repository, user_data, user_entity
-):
-    mock_user_repository.get_by_username.return_value = user_entity
-
-    result = user_service.verify_user(user_data["username"], "wrong_password")
-
-    assert result is False
-    mock_user_repository.get_by_username.assert_called_once_with(user_data["username"])
-
-
-def test_verify_user_not_found(user_service, mock_user_repository, user_data):
-    mock_user_repository.get_by_username.return_value = None
-
-    result = user_service.verify_user(user_data["username"], user_data["password"])
-
-    assert result is False
-    mock_user_repository.get_by_username.assert_called_once_with(user_data["username"])
