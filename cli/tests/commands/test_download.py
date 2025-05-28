@@ -88,8 +88,12 @@ class TestDownloadCommand(unittest.TestCase):
             "File file.txt downloaded successfully to /mocked/Downloads", result.output
         )
 
+    @patch(
+        "skylock_cli.core.context_manager.ContextManager.get_context",
+        return_value=mock_test_context(),
+    )
     @patch("skylock_cli.core.file_operations.file_requests.send_download_request")
-    def test_download_token_expired(self, mock_send):
+    def test_download_token_expired(self, mock_send, _mock_get_context):
         """Test the download command when the token has expired"""
         mock_send.side_effect = api_exceptions.UserUnauthorizedError()
         result = self.runner.invoke(app, ["download", "file.txt"])
@@ -98,16 +102,24 @@ class TestDownloadCommand(unittest.TestCase):
             "User is unauthorized. Please login to use this command.", result.output
         )
 
+    @patch(
+        "skylock_cli.core.context_manager.ContextManager.get_context",
+        return_value=mock_test_context(),
+    )
     @patch("skylock_cli.core.file_operations.file_requests.send_download_request")
-    def test_download_file_not_found(self, mock_send):
+    def test_download_file_not_found(self, mock_send, _mock_get_context):
         """Test the download command when the file is not found"""
         mock_send.side_effect = api_exceptions.FileNotFoundError("file.txt")
         result = self.runner.invoke(app, ["download", "file.txt"])
         self.assertEqual(result.exit_code, 1)
         self.assertIn("File `file.txt` does not exist!", result.output)
 
+    @patch(
+        "skylock_cli.core.context_manager.ContextManager.get_context",
+        return_value=mock_test_context(),
+    )
     @patch("skylock_cli.core.file_operations.file_requests.send_download_request")
-    def test_download_connection_error(self, mock_send):
+    def test_download_connection_error(self, mock_send, _mock_get_context):
         """Test the download command when a connection error occurs (server is down)"""
         mock_send.side_effect = ConnectError("Failed to connect to the server")
         result = self.runner.invoke(app, ["download", "file.txt"])
@@ -121,8 +133,12 @@ class TestDownloadCommand(unittest.TestCase):
         self.assertEqual(result.exit_code, 1)
         self.assertIn("Invalid path `/$/file.txt`", result.output)
 
+    @patch(
+        "skylock_cli.core.context_manager.ContextManager.get_context",
+        return_value=mock_test_context(),
+    )
     @patch("skylock_cli.core.file_operations.file_requests.send_download_request")
-    def test_download_api_error(self, mock_send):
+    def test_download_api_error(self, mock_send, _mock_get_context):
         """Test the download command when an API error occurs"""
         mock_send.side_effect = api_exceptions.SkyLockAPIError(
             "Failed to download file (Error Code: 500)"
