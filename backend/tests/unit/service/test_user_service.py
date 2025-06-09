@@ -47,7 +47,8 @@ def user_entity(user_data):
     )
 
 
-def test_register_user_successful(user_service, mock_user_repository, user_data, user_entity):
+@patch("skylock.service.user_service.send_mail")
+def test_register_user_successful(send_mail, user_service, mock_user_repository, user_data, user_entity):
     mock_user_repository.get_by_username.return_value = None
     mock_user_repository.get_by_email.return_value = None
     mock_user_repository.save.return_value = user_entity
