@@ -33,6 +33,8 @@ google-api-python-client = "^2.166.0"
 mypy = "^1.15.0"
 dramatiq = {extras = ["watch"], version = "^1.14"}
 slowapi = "^0.1.9"
+vulture = "^2.14"
+types-python-jose = "^3.4.0.20250516"
 
 
 [build-system]

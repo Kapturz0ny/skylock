@@ -92,20 +92,21 @@ def send_rmdir_request(token: Token, path: Path, recursive: bool) -> None:
             f"Failed to delete directory (Error Code: {response.status_code})"
         )
 
-
-def send_make_public_request(token: Token, path: Path, recursive: bool) -> dict:
+def send_change_visibility_request(token: Token, path: Path, privacy: Privacy) -> dict:
     """
-    Send a make public request to the SkyLock backend API.
+    Send a request that changes privacy of the file to the SkyLock backend API.
 
     Args:
         token (Token): The token object containing authentication token.
-        path (str): The path of the directory to be made public.
+        virtual_path (Path): The path of the file to be changed.
+        privacy (Privacy enum): The visibility of the file we want to set.
+        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to.
     """
+
     url = "/folders" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": Privacy.PUBLIC.value, "recursive": recursive}
-
-    response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
+    body = {"privacy": privacy.value, "recursive": True}
+    response = client.patch(url=url, auth=auth, headers=API_HEADERS, json=body)
 
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
@@ -116,36 +117,7 @@ def send_make_public_request(token: Token, path: Path, recursive: bool) -> dict:
 
     if response.status_code != HTTPStatus.OK:
         raise api_exceptions.SkyLockAPIError(
-            f"Failed to make directory public (Error Code: {response.status_code})"
-        )
-
-    return response.json()
-
-
-def send_make_private_request(token: Token, path: Path, recursive: bool) -> dict:
-    """
-    Send a make private request to the SkyLock backend API.
-
-    Args:
-        token (Token): The token object containing authentication token.
-        path (str): The path of the directory to be made private.
-    """
-    url = "/folders" + quote(str(path))
-    auth = bearer_auth.BearerAuth(token)
-    body = {"privacy": Privacy.PRIVATE.value, "recursive": recursive}
-
-    response = client.patch(url=url, auth=auth, json=body, headers=API_HEADERS)
-
-    standard_error_dict = {
-        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
-        HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
-    }
-
-    handle_standard_errors(standard_error_dict, response.status_code)
-
-    if response.status_code != HTTPStatus.OK:
-        raise api_exceptions.SkyLockAPIError(
-            f"Failed to make directory private (Error Code: {response.status_code})"
+            f"Failed to make folder {privacy.value} (Error Code: {response.status_code})"
         )
 
     return response.json()
@@ -187,15 +159,27 @@ def send_share_request(token: Token, path: Path) -> dict:
 
 
 def send_zip_request(token: Token, path: Path, force: bool) -> dict:
+    """
+    Send a zip request to the SkyLock backend API.
+
+    Args:
+        token (Token): The token object containing authentication token.
+        path (str): The path of the directory to be ziped.
+        force (bool): Flag to overwrite a file <PATH>.zip if the file already exists
+
+    Returns:
+        dict: The response from the API.
+    """
     url = "/zip" + quote(str(path))
     auth = bearer_auth.BearerAuth(token)
     params = {"force": force}
+    zip_path = path.name+".zip"
 
     standard_error_dict = {
         HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
         HTTPStatus.NOT_FOUND: api_exceptions.DirectoryNotFoundError(path),
         HTTPStatus.FORBIDDEN: api_exceptions.ZipJobStartedError(path),
-        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(path),
+        HTTPStatus.CONFLICT: api_exceptions.FileAlreadyExistsError(zip_path),
     }
 
     response = client.post(url=url, auth=auth, headers=API_HEADERS, params=params)

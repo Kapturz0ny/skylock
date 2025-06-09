@@ -97,6 +97,41 @@ def send_download_request(token: Token, virtual_path: Path) -> bytes:
     return response.content
 
 
+def send_download_shared_request(token: Token, virtual_path: Path) -> bytes:
+    """
+    Send a download request to the SkyLock backend API.
+
+    Args:
+        token (Token): The token object containing authentication token.
+        virtual_path (Path): The path of the file to download.
+
+    Returns:
+        bytes: The binary content of the downloaded file.
+    """
+    url = "/shared/files/download/path" + quote(str(virtual_path))
+    auth = bearer_auth.BearerAuth(token)
+
+    response = client.get(url=url, auth=auth, headers=API_HEADERS)
+
+    standard_error_dict = {
+        HTTPStatus.UNAUTHORIZED: api_exceptions.UserUnauthorizedError(),
+        HTTPStatus.NOT_FOUND: api_exceptions.FileNotFoundError(virtual_path),
+        HTTPStatus.BAD_REQUEST: api_exceptions.InvalidPathError(virtual_path),
+    }
+
+    handle_standard_errors(standard_error_dict, response.status_code)
+
+    if response.status_code != HTTPStatus.OK:
+        raise api_exceptions.SkyLockAPIError(
+            f"Failed to download file (Error Code: {response.status_code})"
+        )
+
+    if not response.content:
+        raise api_exceptions.InvalidResponseFormatError()
+
+    return response.content
+
+
 def send_rm_request(token: Token, virtual_path: Path) -> None:
     """
     Send a remove request to the SkyLock backend API.
@@ -128,15 +163,20 @@ def send_change_privacy(
     token: Token,
     virtual_path: Path,
     privacy: Privacy,
-    shared_to: list[str] = [],
+    shared_to: list[str] = None,
 ) -> dict:
     """
-    Send a make public request to the SkyLock backend API.
+    Send a request that changes privacy of the file to the SkyLock backend API.
 
     Args:
         token (Token): The token object containing authentication token.
-        virtual_path (Path): The path of the file to be made public.
+        virtual_path (Path): The path of the file to be changed.
+        privacy (Privacy enum): The visibility of the file we want to set.
+        shared_to (list[str]): If the visibility is set to "Protected", this argument specifies to whom should the file be visible to.
     """
+    if shared_to is None:
+        shared_to = []
+
     url = "/files" + quote(str(virtual_path))
     auth = bearer_auth.BearerAuth(token)
     body = {"privacy": privacy.value, "shared": shared_to}
@@ -151,7 +191,7 @@ def send_change_privacy(
 
     if response.status_code != HTTPStatus.OK:
         raise api_exceptions.SkyLockAPIError(
-            f"Failed to make file public (Error Code: {response.status_code})"
+            f"Failed to make file {privacy.value} (Error Code: {response.status_code})"
         )
 
     return response.json()

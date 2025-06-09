@@ -1,7 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response, UploadFile, status
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, UploadFile, status
 
 
 from skylock.api.dependencies import get_current_user, get_skylock_facade
@@ -52,7 +51,7 @@ def upload_file(
     force: bool = False,
     privacy: Privacy = Privacy.PRIVATE,
 ) -> models.File:
-    size = file.size
+    size = file.size if file.size else 0
     return skylock.upload_file(
         user_path=UserPath(path=path, owner=user),
         file_data=file.file.read(),

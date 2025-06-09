@@ -32,6 +32,7 @@ class Folder(BaseModel):
     name: str
     path: str
     privacy: Privacy
+    type: FolderType
 
 
 class File(BaseModel):
@@ -89,11 +90,6 @@ class UpdateFolderRequest(BaseModel):
 class UpdateFileRequest(BaseModel):
     privacy: Privacy
     shared: list[str] = []
-
-
-class UploadOptions(BaseModel):
-    force: bool
-    privacy: Privacy
 
 
 class ResourceLocationResponse(BaseModel):

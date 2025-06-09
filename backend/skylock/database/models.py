@@ -41,6 +41,9 @@ class FolderEntity(Base):
     parent_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(ForeignKey("folders.id"))
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
     privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
+    type: orm.Mapped[str] = orm.mapped_column(nullable=False, default=FolderType.NORMAL)
+
+    owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="folders")
 
     parent_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
         "FolderEntity", remote_side="FolderEntity.id", back_populates="subfolders"
@@ -61,10 +64,6 @@ class FolderEntity(Base):
         foreign_keys="LinkEntity.folder_id",
     )
 
-    owner: orm.Mapped[UserEntity] = orm.relationship("UserEntity", back_populates="folders")
-
-    type: orm.Mapped[str] = orm.mapped_column(nullable=False, default=FolderType.NORMAL)
-
     def is_root(self) -> bool:
         return self.parent_folder_id is None
 
@@ -76,7 +75,7 @@ class FileEntity(Base):
     folder_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("folders.id"))
     owner_id: orm.Mapped[str] = orm.mapped_column(ForeignKey("users.id"))
     privacy: orm.Mapped[str] = orm.mapped_column(nullable=False, default=Privacy.PRIVATE)
-    shared_to: orm.Mapped[List[str]] = orm.mapped_column(TEXT, default=set)
+    __shared_to: orm.Mapped[Optional[str]] = orm.mapped_column(TEXT, default=None, name="shared_to")
     size: orm.Mapped[int] = orm.mapped_column(nullable=False)
 
     folder: orm.Mapped[FolderEntity] = orm.relationship("FolderEntity", back_populates="files")
@@ -93,7 +92,6 @@ class FileEntity(Base):
             return set(json.loads(self.__shared_to))
         return set()
 
-    __shared_to: orm.Mapped[Optional[str]] = orm.mapped_column(TEXT, default=None, name="shared_to")
     shared_to = property(_get_shared_to, _set_shared_to)
 
 
@@ -119,11 +117,11 @@ class LinkEntity(Base):
     )
     target_folder_id: orm.Mapped[Optional[str]] = orm.mapped_column(
         ForeignKey("folders.id"), nullable=True
-    )
+    )  # currently not used
 
     target_file: orm.Mapped[Optional["FileEntity"]] = orm.relationship(
         foreign_keys=[target_file_id]
-    )
+    )  # currently not used
     target_folder: orm.Mapped[Optional["FolderEntity"]] = orm.relationship(
         foreign_keys=[target_folder_id]
     )

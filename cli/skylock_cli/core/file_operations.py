@@ -52,10 +52,15 @@ def download_file(virtual_file_path: Path) -> Path:
     current_context = context_manager.ContextManager.get_context()
     with CLIExceptionHandler():
         joind_path = path_parser.parse_path(current_context.cwd.path, virtual_file_path)
-
-        file_content = file_requests.send_download_request(
-            current_context.token, joind_path
-        )
+        file_content = None
+        if joind_path.is_relative_to("/Shared"):
+            file_content = file_requests.send_download_shared_request(
+                current_context.token, joind_path
+            )
+        else:
+            file_content = file_requests.send_download_request(
+                current_context.token, joind_path
+            )
 
         if not DOWNLOADS_DIR.exists():
             create_downloads_dir()

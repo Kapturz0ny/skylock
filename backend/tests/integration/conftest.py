@@ -1,10 +1,13 @@
 import pytest
+
+from unittest.mock import patch, MagicMock
+
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
+from slowapi import Limiter
 
 from skylock.api.dependencies import get_current_user, get_skylock_facade
-from skylock.app import app
 from skylock.api.app import api
 from skylock.database.models import Base, UserEntity
 from skylock.database.repository import (
@@ -24,6 +27,7 @@ from skylock.skylock_facade import SkylockFacade
 from skylock.utils.path import UserPath
 from skylock.utils.storage import FileStorageService
 from skylock.utils.url_generator import UrlGenerator
+
 
 TEST_DATABASE_URL = "sqlite://"
 
@@ -70,6 +74,7 @@ def folder_repository(db_session):
 @pytest.fixture
 def file_repository(db_session):
     return FileRepository(db_session)
+
 
 @pytest.fixture
 def shared_file_repository(db_session):
@@ -151,6 +156,13 @@ def mock_user(db_session, resource_service):
 
     resource_service.create_root_folder(UserPath.root_folder_of(user))
     return user
+
+
+def mock_rate_limiter():
+    def noop_decorator(f):
+        return f
+
+    return noop_decorator
 
 
 @pytest.fixture

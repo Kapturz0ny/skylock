@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from typer.colors import YELLOW
 from skylock_cli.model.file import File
+from skylock_cli.model.privacy import Privacy
 
 
 class TestFile(unittest.TestCase):
@@ -17,18 +18,18 @@ class TestFile(unittest.TestCase):
         """
         Test the creation of a File instance.
         """
-        file = File(name="example.txt", path=Path("/home/user/example.txt"))
+        file = File(name="example.txt", path=Path("/home/user/example.txt"), size=10)
         self.assertEqual(file.name, "example.txt")
         self.assertEqual(file.path, Path("/home/user/example.txt"))
         self.assertEqual(file.color, YELLOW)
-        self.assertFalse(file.is_public)
+        self.assertEqual(file.privacy, Privacy.PRIVATE)
         self.assertEqual(file.type_label, "file")
 
     def test_file_default_color(self):
         """
         Test the default color of a File instance.
         """
-        file = File(name="example.txt", path=Path("/home/user/example.txt"))
+        file = File(name="example.txt", path=Path("/home/user/example.txt"), size=10)
         self.assertEqual(file.color, YELLOW)
 
     def test_file_custom_color(self):
@@ -37,7 +38,7 @@ class TestFile(unittest.TestCase):
         """
         custom_color = "blue"
         file = File(
-            name="example.txt", path=Path("/home/user/example.txt"), color=custom_color
+            name="example.txt", path=Path("/home/user/example.txt"), color=custom_color, size=10
         )
         self.assertEqual(file.color, custom_color)
 

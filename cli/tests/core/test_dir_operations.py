@@ -13,11 +13,10 @@ from httpx import ConnectError
 from skylock_cli.core.dir_operations import (
     create_directory,
     remove_directory,
-    make_directory_public,
-    make_directory_private,
     share_directory,
 )
 from tests.helpers import mock_response_with_status, mock_test_context
+from skylock_cli.model.privacy import Privacy
 
 
 class TestCreateDirectory(unittest.TestCase):
@@ -26,18 +25,18 @@ class TestCreateDirectory(unittest.TestCase):
     @patch("skylock_cli.api.dir_requests.client.post")
     def test_create_directory_success(self, mock_post):
         """Test successful directory creation"""
-        return_json = {"name": "test_dir", "path": "", "is_public": False}
+        return_json = {"name": "test_dir", "path": "", "privacy": Privacy.PRIVATE}
         mock_post.return_value = mock_response_with_status(
             HTTPStatus.CREATED, return_json
         )
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
-        new_dir = create_directory("test_dir", parent_flag, public_flag)
+        new_dir = create_directory("test_dir", parent_flag, privacy)
         mock_post.assert_called_once()
         self.assertEqual(new_dir.name, "test_dir/")
         self.assertEqual(new_dir.path, Path("."))
-        self.assertFalse(new_dir.is_public)
+        self.assertEqual(new_dir.privacy, Privacy.PRIVATE)
         self.assertEqual(new_dir.color, "magenta")
         self.assertEqual(new_dir.type_label, "directory")
         self.assertEqual(new_dir.visibility_label, "private 🔐")
@@ -46,18 +45,18 @@ class TestCreateDirectory(unittest.TestCase):
     @patch("skylock_cli.api.dir_requests.client.post")
     def test_create_directory_success_public(self, mock_post):
         """Test successful directory creation"""
-        return_json = {"name": "test_dir", "path": "", "is_public": True}
+        return_json = {"name": "test_dir", "path": "", "privacy": Privacy.PUBLIC}
         mock_post.return_value = mock_response_with_status(
             HTTPStatus.CREATED, return_json
         )
         parent_flag = False
-        public_flag = True
+        privacy = Privacy.PUBLIC
 
-        new_dir = create_directory("test_dir", parent_flag, public_flag)
+        new_dir = create_directory("test_dir", parent_flag, privacy)
         mock_post.assert_called_once()
         self.assertEqual(new_dir.name, "test_dir/")
         self.assertEqual(new_dir.path, Path("."))
-        self.assertTrue(new_dir.is_public)
+        self.assertEqual(new_dir.privacy, Privacy.PUBLIC)
         self.assertEqual(new_dir.color, "magenta")
         self.assertEqual(new_dir.type_label, "directory")
         self.assertEqual(new_dir.visibility_label, "public 🔓")
@@ -68,11 +67,11 @@ class TestCreateDirectory(unittest.TestCase):
         """Test registration when the user already exists"""
         mock_post.return_value = mock_response_with_status(HTTPStatus.UNAUTHORIZED)
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("test_dir", parent_flag, public_flag)
+                create_directory("test_dir", parent_flag, privacy)
             self.assertIn(
                 "User is unauthorized. Please login to use this command.",
                 mock_stderr.getvalue(),
@@ -85,11 +84,11 @@ class TestCreateDirectory(unittest.TestCase):
         mock_post.return_value = mock_response_with_status(HTTPStatus.CONFLICT)
         mock_context.return_value = mock_test_context()
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("test_dir", parent_flag, public_flag)
+                create_directory("test_dir", parent_flag, privacy)
             self.assertIn(
                 "Directory `/test_dir` already exists!", mock_stderr.getvalue()
             )
@@ -101,11 +100,11 @@ class TestCreateDirectory(unittest.TestCase):
             HTTPStatus.INTERNAL_SERVER_ERROR
         )
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("test_dir", parent_flag, public_flag)
+                create_directory("test_dir", parent_flag, privacy)
             self.assertIn(
                 "Failed to create directory (Error Code: 500)",
                 mock_stderr.getvalue(),
@@ -116,11 +115,11 @@ class TestCreateDirectory(unittest.TestCase):
         """Test registration when a ConnectError occurs (backend is offline)"""
         mock_post.side_effect = ConnectError("Failed to connect to the server")
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("test_dir", parent_flag, public_flag)
+                create_directory("test_dir", parent_flag, privacy)
             self.assertIn(
                 "The server is not reachable at the moment. Please try again later.",
                 mock_stderr.getvalue(),
@@ -131,11 +130,11 @@ class TestCreateDirectory(unittest.TestCase):
         """Test registration when the path is invalid (BAD_REQUEST)"""
         mock_post.return_value = mock_response_with_status(HTTPStatus.BAD_REQUEST)
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("/test_dir1/test_dir2", parent_flag, public_flag)
+                create_directory("/test_dir1/test_dir2", parent_flag, privacy)
             self.assertIn("Invalid path `/test_dir1/test_dir2`", mock_stderr.getvalue())
 
     @patch("skylock_cli.api.dir_requests.client.post")
@@ -144,11 +143,11 @@ class TestCreateDirectory(unittest.TestCase):
         mock_post.return_value = mock_response_with_status(HTTPStatus.NOT_FOUND)
         mock_post.return_value.json.return_value = {"missing": "test_dir2"}
         parent_flag = False
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("/test_dir1/test_dir2", parent_flag, public_flag)
+                create_directory("/test_dir1/test_dir2", parent_flag, privacy)
             self.assertRegex(
                 mock_stderr.getvalue(),
                 re.compile(
@@ -163,11 +162,11 @@ class TestCreateDirectory(unittest.TestCase):
         mock_post.return_value = mock_response_with_status(HTTPStatus.NOT_FOUND)
         mock_post.return_value.json.return_value = {"missing": "test_dir2"}
         parent_flag = True
-        public_flag = False
+        privacy = Privacy.PRIVATE
 
         with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
             with self.assertRaises(exceptions.Exit):
-                create_directory("/test_dir1/test_dir2", parent_flag, public_flag)
+                create_directory("/test_dir1/test_dir2", parent_flag, privacy)
             self.assertIn(
                 "Failed to create directory (Error Code: 404)",
                 mock_stderr.getvalue(),
@@ -322,151 +321,6 @@ class TestRemoveDirectory(unittest.TestCase):
             mock_delete.assert_called_once()
             mock_change_directory.assert_called_once_with("/")
 
-
-class TestMakeDirectoryPublic(unittest.TestCase):
-    """Test cases for the make_directory_public function from core.dir_operations"""
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_public_success(self, mock_patch):
-        """Test successful directory public access"""
-        response_json = {"name": "test_dir", "path": "", "is_public": True}
-        mock_patch.return_value = mock_response_with_status(
-            HTTPStatus.OK, response_json
-        )
-
-        changed_dir = make_directory_public("test_dir/")
-        mock_patch.assert_called_once()
-        self.assertEqual(changed_dir.name, "test_dir/")
-        self.assertEqual(changed_dir.path, Path("."))
-        self.assertTrue(changed_dir.is_public)
-        self.assertEqual(changed_dir.color, "magenta")
-        self.assertEqual(changed_dir.type_label, "directory")
-        self.assertEqual(changed_dir.visibility_label, "public 🔓")
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_public_unauthorized(self, mock_patch):
-        """Test public access when the user is unauthorized"""
-        mock_patch.return_value = mock_response_with_status(HTTPStatus.UNAUTHORIZED)
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_public("test_dir/")
-            self.assertIn(
-                "User is unauthorized. Please login to use this command.",
-                mock_stderr.getvalue(),
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_public_not_found(self, mock_patch):
-        """Test public access when the directory is not found"""
-        mock_patch.return_value = mock_response_with_status(HTTPStatus.NOT_FOUND)
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_public("/test1/test2/")
-            self.assertIn(
-                "Directory `/test1/test2` does not exist!\n", mock_stderr.getvalue()
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_public_skylock_api_error(self, mock_patch):
-        """Test public access with a SkyLockAPIError"""
-        mock_patch.return_value = mock_response_with_status(
-            HTTPStatus.INTERNAL_SERVER_ERROR
-        )
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_public("test_dir/")
-            self.assertIn(
-                "Failed to make directory public (Error Code: 500)",
-                mock_stderr.getvalue(),
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_public_connection_error(self, mock_patch):
-        """Test public access when a ConnectError occurs (backend is offline)"""
-        mock_patch.side_effect = ConnectError("Failed to connect to the server")
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_public("test_dir/")
-            self.assertIn(
-                "The server is not reachable at the moment. Please try again later.",
-                mock_stderr.getvalue(),
-            )
-
-
-class TestMakeDirectoryPrivate(unittest.TestCase):
-    """Test cases for the make_directory_private function from core.dir_operations"""
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_private_success(self, mock_patch):
-        """Test successful directory private access"""
-        response_json = {"name": "test_dir", "path": "", "is_public": False}
-        mock_patch.return_value = mock_response_with_status(
-            HTTPStatus.OK, response_json
-        )
-
-        changed_dir = make_directory_private("test_dir/")
-        mock_patch.assert_called_once()
-        self.assertEqual(changed_dir.name, "test_dir/")
-        self.assertEqual(changed_dir.path, Path("."))
-        self.assertFalse(changed_dir.is_public)
-        self.assertEqual(changed_dir.color, "magenta")
-        self.assertEqual(changed_dir.type_label, "directory")
-        self.assertEqual(changed_dir.visibility_label, "private 🔐")
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_private_unauthorized(self, mock_patch):
-        """Test private access when the user is unauthorized"""
-        mock_patch.return_value = mock_response_with_status(HTTPStatus.UNAUTHORIZED)
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_private("test_dir/")
-            self.assertIn(
-                "User is unauthorized. Please login to use this command.",
-                mock_stderr.getvalue(),
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_private_not_found(self, mock_patch):
-        """Test private access when the directory is not found"""
-        mock_patch.return_value = mock_response_with_status(HTTPStatus.NOT_FOUND)
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_private("/test1/test2/")
-            self.assertIn(
-                "Directory `/test1/test2` does not exist!\n", mock_stderr.getvalue()
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_private_skylock_api_error(self, mock_patch):
-        """Test private access with a SkyLockAPIError"""
-        mock_patch.return_value = mock_response_with_status(
-            HTTPStatus.INTERNAL_SERVER_ERROR
-        )
-
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_private("test_dir/")
-            self.assertIn(
-                "Failed to make directory private (Error Code: 500)",
-                mock_stderr.getvalue(),
-            )
-
-    @patch("skylock_cli.api.dir_requests.client.patch")
-    def test_make_directory_private_connection_error(self, mock_patch):
-        """Test private access when a ConnectError occurs (backend is offline)"""
-        mock_patch.side_effect = ConnectError("Failed to connect to the server")
-        with patch("sys.stderr", new_callable=StringIO) as mock_stderr:
-            with self.assertRaises(exceptions.Exit):
-                make_directory_private("test_dir/")
-            self.assertIn(
-                "The server is not reachable at the moment. Please try again later.",
-                mock_stderr.getvalue(),
-            )
 
 
 class TestShareDirectory(unittest.TestCase):

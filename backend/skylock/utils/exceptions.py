@@ -14,6 +14,14 @@ class InvalidCredentialsException(Exception):
         super().__init__(self.message)
 
 
+class UserNotFoundException(Exception):
+    """Exception raised when trying to get not existing user"""
+
+    def __init__(self, message="User not found"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class ResourceAlreadyExistsException(Exception):
     """Exception raised when trying to create a resource when there is already one with the same name"""
 

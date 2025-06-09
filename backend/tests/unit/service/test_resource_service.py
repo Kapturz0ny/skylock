@@ -6,12 +6,18 @@ from skylock.utils.exceptions import (
     ResourceAlreadyExistsException,
     ResourceNotFoundException,
     RootFolderAlreadyExistsException,
+    UserNotFoundException,
 )
-from skylock.database.models import FileEntity, FolderEntity, UserEntity
-from skylock.utils.path import UserPath
 
-from skylock.api.models import Privacy, FolderType
+from skylock.database.models import FileEntity, FolderEntity, UserEntity, LinkEntity
+from skylock.utils.path import UserPath
+from skylock.service.resource_service import ResourceService
+from skylock.service.path_resolver import PathResolver
+
+from skylock.api.models import Privacy, FolderType, ResourceType
 from fastapi import HTTPException
+from types import SimpleNamespace
+from pathlib import Path
 
 
 def test_get_root_folder_success(resource_service, mock_folder_repository):
@@ -173,7 +179,9 @@ def test_create_file_success(resource_service, mock_folder_repository, mock_file
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
+    subfolder = FolderEntity(
+        id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL
+    )
 
     mock_folder_repository.get_by_name_and_parent_id.side_effect = [
         root_folder,
@@ -190,7 +198,9 @@ def test_create_file_with_duplicate_name(resource_service, mock_folder_repositor
     user = UserEntity(id="user-123", username="testuser")
     user_path = UserPath("subfolder/existing_file.txt", user)
     root_folder = FolderEntity(id="folder-root", name=user_path.root_folder_name, owner=user)
-    subfolder = FolderEntity(id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL)
+    subfolder = FolderEntity(
+        id="folder-123", name="subfolder", parent_folder_id=root_folder.id, type=FolderType.NORMAL
+    )
     existing_file = FileEntity(id="file-123", name="existing_file.txt", owner=user, size=10)
 
     subfolder.files.append(existing_file)
@@ -453,22 +463,298 @@ def test_get_verified_file_invalid_token(resource_service):
             resource_service.get_verified_file(file_id, token)
 
 
-def test_get_public_file(resource_service):
-    file_id = "file-123"
-    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PUBLIC, size=10)
+def test_get_file_by_token_path_no_token(resource_service):
+    with pytest.raises(ForbiddenActionException) as exc_info:
+        resource_service.get_file_by_token_path("path")
 
-    resource_service._file_repository.get_by_id.return_value = file
-
-    result = resource_service.get_public_file(file_id)
-    assert result == file
-    resource_service._file_repository.get_by_id.assert_called_once_with(file_id)
+    assert str(exc_info.value) == "Authentication token is required for this resource."
 
 
-def test_get_public_file_not_public(resource_service):
-    file_id = "file-123"
-    file = FileEntity(id=file_id, name="test_file", privacy=Privacy.PRIVATE, size=10)
+def test_get_file_by_token_path_invalid_token(resource_service):
+    with patch(
+        "skylock.service.resource_service.get_user_from_jwt", side_effect=HTTPException(404)
+    ):
+        with pytest.raises(ForbiddenActionException) as exc_info:
+            resource_service.get_file_by_token_path("path", "token")
 
-    resource_service._file_repository.get_by_id.return_value = file
+    assert str(exc_info.value) == "Invalid token"
 
-    with pytest.raises(ForbiddenActionException):
-        resource_service.get_public_file(file_id)
+
+@patch("skylock.service.resource_service.get_user_from_jwt")
+@patch("skylock.service.resource_service.ResourceService.check_resource_type")
+@patch("skylock.service.resource_service.ResourceService.get_file")
+def test_get_file_by_token_path_file(
+    mock_get_file, mock_resource_type, mock_user_from_jwt, resource_service
+):
+    user = UserEntity(id="user-789", username="testuser")
+    mock_user_from_jwt.return_value = user
+
+    mock_resource_type.return_value = ResourceType.FILE
+
+    file = FileEntity(
+        id="123", name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+
+    mock_get_file.return_value = file
+
+    assert resource_service.get_file_by_token_path("path", "token") == file
+
+
+@patch("skylock.service.resource_service.get_user_from_jwt")
+@patch("skylock.service.resource_service.ResourceService.check_resource_type")
+@patch("skylock.service.resource_service.ResourceService.get_link")
+def test_get_file_by_token_path_link_file(
+    mock_get_link, mock_resource_type, mock_user_from_jwt, resource_service
+):
+    user = UserEntity(id="user-789", username="testuser")
+    mock_user_from_jwt.return_value = user
+
+    mock_resource_type.return_value = ResourceType.LINK
+
+    file = FileEntity(
+        id="123", name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+    link = LinkEntity(
+        name="link_name", folder_id=1, owner_id=2, resource_type=ResourceType.FILE, target_file=file
+    )
+
+    mock_get_link.return_value = link
+
+    assert resource_service.get_file_by_token_path("path", "token") == file
+
+
+@patch("skylock.service.resource_service.get_user_from_jwt")
+@patch("skylock.service.resource_service.ResourceService.check_resource_type")
+@patch("skylock.service.resource_service.ResourceService.get_link")
+def test_get_file_by_token_path_link_other_type(
+    mock_get_link, mock_resource_type, mock_user_from_jwt, resource_service
+):
+    user = UserEntity(id="user-789", username="testuser")
+    mock_user_from_jwt.return_value = user
+
+    mock_resource_type.return_value = ResourceType.LINK
+
+    link = LinkEntity(name="link_name", folder_id=1, owner_id=2, resource_type=ResourceType.FOLDER)
+
+    mock_get_link.return_value = link
+
+    with pytest.raises(ResourceNotFoundException):
+        resource_service.get_file_by_token_path("path", "token")
+
+
+@patch("skylock.service.resource_service.get_user_from_jwt")
+@patch("skylock.service.resource_service.ResourceService.check_resource_type")
+@patch("skylock.service.resource_service.ResourceService.get_link")
+def test_get_file_by_token_path_other(
+    mock_get_link, mock_resource_type, mock_user_from_jwt, resource_service
+):
+    user = UserEntity(id="user-789", username="testuser")
+    mock_user_from_jwt.return_value = user
+
+    mock_resource_type.return_value = ResourceType.FOLDER
+
+    with pytest.raises(ResourceNotFoundException):
+        resource_service.get_file_by_token_path("path", "token")
+
+
+@patch("skylock.service.resource_service.get_user_from_jwt")
+@patch("skylock.service.resource_service.ResourceService.check_resource_type")
+@patch("skylock.service.resource_service.ResourceService.get_link")
+def test_get_file_by_token_path_link_file_no_target(
+    mock_get_link, mock_resource_type, mock_user_from_jwt, resource_service
+):
+    user = UserEntity(id="user-789", username="testuser")
+    mock_user_from_jwt.return_value = user
+
+    mock_resource_type.return_value = ResourceType.LINK
+
+    link = LinkEntity(
+        name="link_name", folder_id=1, owner_id=2, resource_type=ResourceType.FILE, target_file=None
+    )
+
+    mock_get_link.return_value = link
+
+    with pytest.raises(ResourceNotFoundException):
+        resource_service.get_file_by_token_path("path", "token")
+
+
+@patch("skylock.service.resource_service.ResourceService.get_file_by_id")
+def test_potential_file_import_owner(mock_get_file_by_id, resource_service):
+    file = FileEntity(
+        id="123", name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+    mock_get_file_by_id.return_value = file
+
+    assert resource_service.potential_file_import("user-123", "file_id") == None
+
+
+@patch.object(ResourceService, "get_file_by_id")
+def test_potential_file_import_file_shared_no_user(mock_get_user_by_id, resource_service):
+    file = FileEntity(
+        id="123", name="test_file", privacy=Privacy.PRIVATE, owner_id="user-123", size=10
+    )
+
+    mock_get_user_by_id.return_value = file
+    resource_service._shared_file_repository.is_file_shared_to_user.return_value = False
+    resource_service._user_repository.get_by_id.return_value = None
+
+    with pytest.raises(UserNotFoundException):
+        resource_service.potential_file_import("1", "2")
+
+
+@patch.object(ResourceService, "get_file_by_id")
+@patch.object(UserPath, "root_folder_of")
+@patch.object(ResourceService, "get_folder")
+@patch.object(ResourceService, "create_link_to_file")
+def test_potential_file_import_file_existing_folder_creating_file(
+    mock_create_link_to_file, mock_get_folder, mock_root_folder_of, mock_get_user_by_id, resource_service
+):
+
+    user = UserEntity(id="user-789", username="testuser")
+    file = FileEntity(
+        id="123",
+        name="test_file",
+        privacy=Privacy.PRIVATE,
+        owner_id="user-123",
+        size=10,
+        owner=user,
+    )
+
+    mock_get_user_by_id.return_value = file
+    resource_service._shared_file_repository.is_file_shared_to_user.return_value = False
+    resource_service._user_repository.get_by_id.return_value = user
+
+    mock_root_folder_of.return_value = UserPath("/home", user)
+
+    resource_service.potential_file_import("1", 2)
+
+    mock_get_folder.assert_called_once_with(UserPath("/home/Shared/testuser", user))
+    mock_create_link_to_file.assert_called_once_with(UserPath("/home/Shared/testuser/test_file", user), file)
+
+@patch.object(ResourceService, "get_file_by_id")
+@patch.object(UserPath, "root_folder_of")
+@patch.object(ResourceService, "get_folder")
+@patch.object(ResourceService, "create_link_to_file")
+@patch.object(ResourceService, "create_folder")
+def test_potential_file_import_file_shared_no_existing_folder(
+    mock_create_folder, mock_create_link_to_file, mock_get_folder, mock_root_folder_of, mock_get_user_by_id, resource_service
+):
+
+    user = UserEntity(id="user-789", username="testuser")
+    file = FileEntity(
+        id="123",
+        name="test_file",
+        privacy=Privacy.PRIVATE,
+        owner_id="user-123",
+        size=10,
+        owner=user,
+    )
+
+    mock_get_user_by_id.return_value = file
+    resource_service._shared_file_repository.is_file_shared_to_user.return_value = False
+    resource_service._user_repository.get_by_id.return_value = user
+
+    mock_root_folder_of.return_value = UserPath("/home", user)
+    mock_get_folder.side_effect = ResourceNotFoundException("hi")
+
+    resource_service.potential_file_import("1", 2)
+
+    mock_create_folder.assert_called_once_with(
+        UserPath("/home/Shared/testuser", user), Privacy.PRIVATE, FolderType.SHARING_USER
+    )
+    mock_create_link_to_file.assert_called_once_with(UserPath("/home/Shared/testuser/test_file", user), file)
+
+
+@patch.object(ResourceService, "get_file_by_id")
+@patch.object(UserPath, "root_folder_of")
+@patch.object(ResourceService, "get_folder")
+@patch.object(ResourceService, "create_link_to_file")
+def test_potential_file_import_file_existing_folder_file_already_exists(
+    mock_create_link_to_file, mock_get_folder, mock_root_folder_of, mock_get_user_by_id, resource_service
+):
+
+    user = UserEntity(id="user-789", username="testuser")
+    file = FileEntity(
+        id="123",
+        name="test_file",
+        privacy=Privacy.PRIVATE,
+        owner_id="user-123",
+        size=10,
+        owner=user,
+    )
+
+    mock_get_user_by_id.return_value = file
+    resource_service._shared_file_repository.is_file_shared_to_user.return_value = False
+    resource_service._user_repository.get_by_id.return_value = user
+
+    mock_root_folder_of.return_value = UserPath("/home", user)
+    mock_create_link_to_file.side_effect = ResourceAlreadyExistsException()
+
+    assert resource_service.potential_file_import("1", 2) == None
+
+    mock_get_folder.assert_called_once_with(UserPath("/home/Shared/testuser", user))
+
+
+def test_zip_exists_force(resource_service):
+    user = UserEntity(id="user-789", username="testuser")
+    assert resource_service.zip_exists(UserPath("path", user), True) == False
+
+
+@patch.object(PathResolver, "file_from_path")
+def test_zip_exists_resource_not_found(mock_file_from_path, resource_service):
+    user = UserEntity(id="user-789", username="testuser")
+
+    mock_file_from_path.side_effect = ResourceNotFoundException("zip")
+    assert resource_service.zip_exists(UserPath("path", user), False) == False
+
+def test_zip_exists_resource_found(resource_service):
+    user = UserEntity(id="user-789", username="testuser")
+
+    with pytest.raises(ResourceAlreadyExistsException):
+        resource_service.zip_exists(UserPath("path", user), False)
+
+def test_create_link_to_file_link_exists(resource_service):
+    user = UserEntity(id="user-789", username="testuser")
+    user_path = UserPath("/home", user)
+    file = FileEntity(
+        id="123",
+        name="test_file",
+        privacy=Privacy.PRIVATE,
+        owner_id="user-123",
+        size=10,
+        owner=user,
+    )
+
+    resource_service._link_repository.get_by_file_id_and_owner_id.return_value = True
+
+    with pytest.raises(ResourceAlreadyExistsException):
+        resource_service.create_link_to_file(user_path, file)
+
+
+@patch.object(PathResolver, "folder_from_path")
+def test_create_link_to_file(mock_folder_from_path, resource_service):
+    user = UserEntity(id="user-789", username="testuser")
+    user_path = UserPath("/home", user)
+    file = FileEntity(
+        id="123",
+        name="test_file",
+        privacy=Privacy.PRIVATE,
+        owner_id="user-123",
+        size=10,
+        owner=user,
+    )
+    folder=FolderEntity(id="folder-456", name=user_path.root_folder_name, owner=user)
+    link = LinkEntity(
+        name='home',
+        folder=folder,
+        owner=user,
+        resource_type='file',
+        target_file=file
+    )
+
+
+    resource_service._link_repository.get_by_file_id_and_owner_id.return_value = None
+    resource_service._link_repository.save.return_value = link
+    mock_folder_from_path.return_value = folder
+
+    assert resource_service.create_link_to_file(user_path, file) == link
